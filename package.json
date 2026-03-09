@@ -2,6 +2,7 @@
   "name": "cropper-next-vue",
   "version": "0.1.0",
   "description": "A Vue 3 image cropper focused on rotation, boundary control, and clean library distribution.",
+  "packageManager": "npm@10.9.2",
   "main": "./dist/cropper-next-vue.cjs",
   "module": "./dist/cropper-next-vue.mjs",
   "types": "./dist/types/index.d.ts",
