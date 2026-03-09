@@ -45,13 +45,13 @@ app.mount('#app')
 
 ```bash
 # 文档站开发
-npm run dev
+pnpm run dev
 
 # 构建 npm 包
-npm run build:lib
+pnpm run build:lib
 
 # 构建文档站
-npm run build:docs
+pnpm run build:docs
 ```
 
 ### 推荐阅读路径
@@ -118,13 +118,13 @@ app.mount('#app')
 
 ```bash
 # docs dev server
-npm run dev
+pnpm run dev
 
 # build npm package
-npm run build:lib
+pnpm run build:lib
 
 # build docs site
-npm run build:docs
+pnpm run build:docs
 ```
 
 ### Recommended reading order

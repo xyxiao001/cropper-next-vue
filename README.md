@@ -1,7 +1,7 @@
 # cropper-next-vue
 
 ![license](https://img.shields.io/badge/license-ISC-blue.svg)
-![node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)
+![node](https://img.shields.io/badge/node-22.x-339933.svg)
 ![coverage](https://img.shields.io/badge/coverage-%E2%89%A585%25-brightgreen.svg)
 ![tests](https://img.shields.io/badge/tests-37%20passing-brightgreen.svg)
 
@@ -74,24 +74,24 @@ const img = ref('https://example.com/demo.jpg')
 
 ```bash
 # 文档站开发
-npm run dev
+pnpm run dev
 
 # 只构建 npm 包
-npm run build:lib
+pnpm run build:lib
 
 # 只构建文档站
-npm run build:docs
+pnpm run build:docs
 
 # 同时构建 npm 包和文档站
-npm run build
+pnpm run build
 ```
 
 ### 质量门
 
-- `npm run typecheck`
-- `npm run test:coverage`
-- `npm run build:lib`
-- `npm run check`
+- `pnpm run typecheck`
+- `pnpm run test:coverage`
+- `pnpm run build:lib`
+- `pnpm run check`
 
 覆盖率阈值定义在 [vitest.config.ts](/Users/bytedance/projects/cropper-next/vitest.config.ts)：
 
@@ -108,15 +108,15 @@ npm run build
 发布前建议执行：
 
 ```bash
-npm run build:lib
-npm pack --dry-run
+pnpm run build:lib
+pnpm pack --pack-destination /tmp
 ```
 
 ### 开源协作
 
 - 许可证：`ISC`
-- Node 版本要求：`>=18`
-- 提交前建议执行：`npm run check`
+- Node 版本要求：`22.x`
+- 提交前建议执行：`pnpm run check`
 - 贡献说明见 [CONTRIBUTING.md](/Users/bytedance/projects/cropper-next/CONTRIBUTING.md)
 - 行为约定见 [CODE_OF_CONDUCT.md](/Users/bytedance/projects/cropper-next/CODE_OF_CONDUCT.md)
 
@@ -187,24 +187,24 @@ const img = ref('https://example.com/demo.jpg')
 
 ```bash
 # docs dev server
-npm run dev
+pnpm run dev
 
 # build npm package only
-npm run build:lib
+pnpm run build:lib
 
 # build docs site only
-npm run build:docs
+pnpm run build:docs
 
 # build both package and docs
-npm run build
+pnpm run build
 ```
 
 ### Quality gates
 
-- `npm run typecheck`
-- `npm run test:coverage`
-- `npm run build:lib`
-- `npm run check`
+- `pnpm run typecheck`
+- `pnpm run test:coverage`
+- `pnpm run build:lib`
+- `pnpm run check`
 
 Coverage thresholds are defined in [vitest.config.ts](/Users/bytedance/projects/cropper-next/vitest.config.ts):
 
@@ -221,14 +221,14 @@ Coverage thresholds are defined in [vitest.config.ts](/Users/bytedance/projects/
 Recommended before publishing:
 
 ```bash
-npm run build:lib
-npm pack --dry-run
+pnpm run build:lib
+pnpm pack --pack-destination /tmp
 ```
 
 ### Open source collaboration
 
 - License: `ISC`
-- Required Node version: `>=18`
-- Recommended pre-commit check: `npm run check`
+- Required Node version: `22.x`
+- Recommended pre-commit check: `pnpm run check`
 - Contribution guide: [CONTRIBUTING.md](/Users/bytedance/projects/cropper-next/CONTRIBUTING.md)
 - Code of conduct: [CODE_OF_CONDUCT.md](/Users/bytedance/projects/cropper-next/CODE_OF_CONDUCT.md)
