@@ -18,6 +18,10 @@
 - 独立的 npm 包构建
 - 独立的文档站构建
 
+在线预览：
+
+- [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
+
 ### 安装
 
 ```bash
@@ -148,6 +152,10 @@ pnpm run release:npm -- patch --tag next
 - realtime preview
 - standalone npm package output
 - standalone docs site output
+
+Live preview:
+
+- [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
 
 ### Install
 
