@@ -112,6 +112,24 @@ pnpm run build:lib
 pnpm pack --pack-destination /tmp
 ```
 
+发布 npm 可直接使用：
+
+```bash
+pnpm run release:npm -- patch
+pnpm run release:npm -- minor
+pnpm run release:npm -- 0.2.0
+pnpm run release:npm -- patch --tag next
+```
+
+这个脚本会依次执行：
+
+- 更新 `package.json` 版本号
+- 运行 `pnpm run check`
+- 重新构建 lib 产物
+- 发布到 npm
+
+默认要求 git 工作区干净，并且当前机器已经完成 `npm login`。
+
 ### 开源协作
 
 - 许可证：`ISC`
@@ -224,6 +242,24 @@ Recommended before publishing:
 pnpm run build:lib
 pnpm pack --pack-destination /tmp
 ```
+
+Release to npm:
+
+```bash
+pnpm run release:npm -- patch
+pnpm run release:npm -- minor
+pnpm run release:npm -- 0.2.0
+pnpm run release:npm -- patch --tag next
+```
+
+The release script will:
+
+- update the version in `package.json`
+- run `pnpm run check`
+- rebuild the library output
+- publish the package to npm
+
+It requires a clean git working tree and a valid `npm login` session by default.
 
 ### Open source collaboration
 

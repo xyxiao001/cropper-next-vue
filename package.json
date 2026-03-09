@@ -46,6 +46,7 @@
     "test:coverage": "vitest run --coverage",
     "check": "pnpm run typecheck && pnpm run test:coverage && pnpm run build:lib",
     "prepublishOnly": "pnpm run check",
+    "release:npm": "bash ./scripts/release-npm.sh",
     "serve": "vite preview"
   },
   "engines": {
