@@ -1,0 +1,78 @@
+{
+  "name": "cropper-next-vue",
+  "version": "0.1.0",
+  "description": "A Vue 3 image cropper focused on rotation, boundary control, and clean library distribution.",
+  "main": "./dist/cropper-next-vue.cjs",
+  "module": "./dist/cropper-next-vue.mjs",
+  "types": "./dist/types/index.d.ts",
+  "style": "./dist/index.css",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/cropper-next-vue.mjs",
+      "require": "./dist/cropper-next-vue.cjs"
+    },
+    "./style.css": "./dist/index.css",
+    "./dist/index.css": "./dist/index.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "cropper",
+    "cropper-next-vue",
+    "image-cropper",
+    "vue-component"
+  ],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:lib && npm run build:docs",
+    "build:docs": "vite build",
+    "build:lib": "vite build -c vite.lib.config.ts && vue-tsc -p tsconfig.lib.json",
+    "typecheck": "vue-tsc --noEmit && vue-tsc -p tsconfig.lib.json --noEmit && tsc --noEmit --noUnusedLocals --noUnusedParameters -p tsconfig.lib.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check": "npm run typecheck && npm run test:coverage && npm run build:lib",
+    "prepublishOnly": "npm run check",
+    "serve": "vite preview"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vitejs/plugin-vue-jsx": "^5.1.4",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/compiler-sfc": "^3.5.29",
+    "@vitest/coverage-v8": "^4.0.18",
+    "cheerio": "^1.2.0",
+    "element-plus": "^2.11.5",
+    "highlight.js": "^11.11.1",
+    "jsdom": "^28.1.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-container": "^4.0.0",
+    "sass": "^1.93.2",
+    "typescript": "^5.9.3",
+    "unplugin-vue-markdown": "^30.0.0",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.18",
+    "vue": "^3.5.29",
+    "vue-router": "^5.0.3",
+    "vue-tsc": "^3.2.5"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  }
+}
