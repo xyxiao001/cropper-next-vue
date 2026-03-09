@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+PUBLISH_REGISTRY="$(node -p "require('./package.json').publishConfig?.registry || 'https://registry.npmjs.org/'")"
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -33,6 +35,9 @@ SKIP_GIT_CHECK=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --)
+      shift
+      ;;
     patch|minor|major|prepatch|preminor|premajor|prerelease)
       if [[ -n "$VERSION_INPUT" ]]; then
         echo "Only one version argument is allowed." >&2
@@ -85,7 +90,7 @@ if [[ $SKIP_GIT_CHECK -ne 1 ]] && [[ -n "$(git status --porcelain)" ]]; then
 fi
 
 echo "Checking npm authentication..."
-npm whoami >/dev/null
+npm whoami --registry "$PUBLISH_REGISTRY" >/dev/null
 
 CURRENT_VERSION="$(node -p "require('./package.json').version")"
 echo "Current version: $CURRENT_VERSION"
@@ -118,7 +123,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
 fi
 
 echo "Publishing cropper-next-vue@$NEW_VERSION to npm..."
-npm "${PUBLISH_ARGS[@]}"
+npm "${PUBLISH_ARGS[@]}" --registry "$PUBLISH_REGISTRY"
 
 trap - ERR
 echo "Release complete: cropper-next-vue@$NEW_VERSION"
