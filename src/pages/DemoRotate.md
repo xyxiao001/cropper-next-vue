@@ -34,9 +34,11 @@ This demo highlights two things:
   :default-rotate="rotate"
   :wrapper="wrapper"
   ref="cropper"
-  img="https://p6-addone.byteimg.com/tos-cn-i-hhc0kcolqq/e140e367ab964968a3e1a3ab73a469e9.jpeg~tplv-hhc0kcolqq-image-v7:1920:q50.image"
+  :img="img"
+  :crop-layout="{ width: 220, height: 220 }"
 >
 </vue-cropper>
+<demo-image-switch v-model="img" />
 <p>
   <el-switch v-model="centerBox" :active-text="labels.centerBox" />
   <span class="delay-label">{{ labels.rebound }} {{ centerBoxDelay }}ms</span>
@@ -56,12 +58,8 @@ This demo highlights two things:
   <el-button @click="rotateLeft">{{ labels.rotateLeft }}</el-button>
   <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
   <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
-  <el-button :loading="loading" type="primary" @click="click">{{ labels.exportCrop }}</el-button>
 </section>
-<section v-if="resultUrl" class="result-panel">
-  <p>{{ labels.resultTitle }}</p>
-  <img :src="resultUrl" class="result-image" alt="result" />
-</section>
+<crop-export-panel :cropper="cropper" :display-width="220" :display-height="220" />
 ```
 
 ```js
@@ -70,13 +68,12 @@ This demo highlights two things:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const centerBox = ref(false)
   const centerBoxDelay = ref(100)
   const centerWrapper = ref(false)
   const centerWrapperDelay = ref(100)
   const rotate = ref(30)
-  const resultUrl = ref('')
   const wrapper = { width: '500px', height: '500px' }
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
@@ -87,8 +84,6 @@ This demo highlights two things:
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
   } : {
     centerBox: '图片限制截图框内',
     centerWrapper: '图片限制容器内',
@@ -97,18 +92,7 @@ This demo highlights two things:
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
   })
-
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 
   const rotateLeft = () => {
     cropper.value.rotateLeft()
@@ -133,13 +117,12 @@ This demo highlights two things:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const centerBox = ref(false)
   const centerBoxDelay = ref(100)
   const centerWrapper = ref(false)
   const centerWrapperDelay = ref(100)
   const rotate = ref(30)
-  const resultUrl = ref('')
   const wrapper = { width: '500px', height: '500px' }
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
@@ -150,8 +133,6 @@ This demo highlights two things:
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
   } : {
     centerBox: '图片限制截图框内',
     centerWrapper: '图片限制容器内',
@@ -160,18 +141,7 @@ This demo highlights two things:
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
   })
-
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 
   const rotateLeft = () => {
     cropper.value.rotateLeft()
@@ -200,19 +170,5 @@ This demo highlights two things:
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 24px;
-  }
-
-  .result-panel {
-    margin-top: 20px;
-  }
-
-  .result-image {
-    display: block;
-    width: 220px;
-    height: 220px;
-    object-fit: contain;
-    border: 1px solid #e5e6eb;
-    background: #fff;
-    margin-top: 8px;
   }
 </style>

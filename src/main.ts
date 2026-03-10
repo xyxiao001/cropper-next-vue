@@ -3,6 +3,8 @@ import App from './App.vue'
 import Demo from './components/Demo.vue'
 import LangBlock from './components/LangBlock.vue'
 import LangText from './components/LangText.vue'
+import DemoImageSwitch from './components/DemoImageSwitch.vue'
+import CropExportPanel from './components/CropExportPanel.vue'
 import { createRouter, createWebHashHistory} from 'vue-router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -87,6 +89,11 @@ const router = createRouter({
       path: '/demo-export',
       component: () => import('./pages/DemoExport.md'),
     },
+    {
+      name: 'DemoAll',
+      path: '/demo-all',
+      component: () => import('./pages/DemoAll.md'),
+    },
   ], // `routes: routes` 的缩写
 })
 
@@ -97,4 +104,6 @@ app.use(router)
 app.component('demo', Demo)
 app.component('LangBlock', LangBlock)
 app.component('LangText', LangText)
+app.component('DemoImageSwitch', DemoImageSwitch)
+app.component('CropExportPanel', CropExportPanel)
 app.mount('#app')

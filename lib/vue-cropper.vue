@@ -199,6 +199,41 @@ const cropLayoutStyle = computed(() => ({
   height: parseLength(props.cropLayout.height),
 }))
 
+const updateWrapLayoutFromDom = () => {
+  if (!cropperRef.value) {
+    return
+  }
+  const width = Number.parseFloat((window.getComputedStyle(cropperRef.value).width || '').replace('px', ''))
+  const height = Number.parseFloat((window.getComputedStyle(cropperRef.value).height || '').replace('px', ''))
+  if (Number.isFinite(width) && Number.isFinite(height)) {
+    LayoutContainer.wrapLayout = { width, height }
+  }
+}
+
+const effectiveCropLayoutStyle = computed(() => {
+  const wrapWidth = LayoutContainer.wrapLayout.width
+  const wrapHeight = LayoutContainer.wrapLayout.height
+  const cropWidth = cropLayoutStyle.value.width
+  const cropHeight = cropLayoutStyle.value.height
+
+  return {
+    width: wrapWidth > 0 ? Math.min(cropWidth, wrapWidth) : cropWidth,
+    height: wrapHeight > 0 ? Math.min(cropHeight, wrapHeight) : cropHeight,
+  }
+})
+
+const shouldShowCropBox = computed(() => {
+  const wrapWidth = LayoutContainer.wrapLayout.width
+  const wrapHeight = LayoutContainer.wrapLayout.height
+  if (wrapWidth <= 0 || wrapHeight <= 0) {
+    return true
+  }
+  return (
+    effectiveCropLayoutStyle.value.width < wrapWidth ||
+    effectiveCropLayoutStyle.value.height < wrapHeight
+  )
+})
+
 const getBoundaryDuration = () => {
   if (centerBox.value) {
     return Math.max(0, centerBoxDelay.value)
@@ -221,7 +256,7 @@ watch(imgs, (val) => {
       bindMoveImg()
     })
 
-    if (cropping.value) {
+    if (cropping.value && shouldShowCropBox.value) {
       nextTick(() => {
         bindMoveCrop()
       })
@@ -231,9 +266,11 @@ watch(imgs, (val) => {
 
 watch(cropping, (val) => {
   if (val) {
-    nextTick(() => {
-      bindMoveCrop()
-    })
+    if (shouldShowCropBox.value) {
+      nextTick(() => {
+        bindMoveCrop()
+      })
+    }
   }
 })
 
@@ -250,6 +287,54 @@ watch(mode, () => {
 watch(defaultRotate, (val) => {
   setRotate(val)
 })
+
+watch(
+  wrapperStyle,
+  async () => {
+    await nextTick()
+    updateWrapLayoutFromDom()
+    if (!imgs.value) {
+      return
+    }
+    if (cropping.value) {
+      renderCrop({ ...LayoutContainer.cropAxis })
+    }
+    setImgAxis({ x: LayoutContainer.imgAxis.x, y: LayoutContainer.imgAxis.y })
+    reboundImg()
+  },
+  { deep: true, flush: 'post' },
+)
+
+watch(
+  cropLayoutStyle,
+  () => {
+    if (!imgs.value) {
+      return
+    }
+    if (cropping.value) {
+      renderCrop({ ...LayoutContainer.cropAxis })
+    }
+    reboundImg()
+  },
+  { deep: true },
+)
+
+watch(
+  shouldShowCropBox,
+  (val) => {
+    if (!imgs.value) {
+      return
+    }
+    if (val && cropping.value) {
+      nextTick(() => {
+        bindMoveCrop()
+      })
+      return
+    }
+    unbindMoveCrop()
+  },
+  { flush: 'post' },
+)
 
 
 watch(centerBox, (val) => {
@@ -287,8 +372,8 @@ const getRealTimePreview = (): InterfaceRealTimePreview | null => {
       (LayoutContainer.imgAxis.y - LayoutContainer.cropAxis.y)) /
     scale
   const transform = `scale(${scale}, ${scale}) translate3d(${transformX}px, ${transformY}px, 0) rotateZ(${LayoutContainer.imgAxis.rotate}deg)`
-  const width = cropLayoutStyle.value.width
-  const height = cropLayoutStyle.value.height
+  const width = effectiveCropLayoutStyle.value.width
+  const height = effectiveCropLayoutStyle.value.height
 
   return {
     w: width,
@@ -578,7 +663,7 @@ const moveImg = (message: InterfaceMessageEvent) => {
       // 这个时候去校验下是否图片已经被拖拽出了不可限制区域，添加回弹
       const crossing = detectionBoundary(
         { ...LayoutContainer.cropAxis },
-        { ...cropLayoutStyle.value },
+        { ...effectiveCropLayoutStyle.value },
         { ...LayoutContainer.imgAxis },
         { ...LayoutContainer.imgLayout },
       )
@@ -622,7 +707,7 @@ const reboundImg = (): void => {
   if (centerBox.value) {
     crossing = detectionBoundary(
       { ...LayoutContainer.cropAxis },
-      { ...cropLayoutStyle.value },
+      { ...effectiveCropLayoutStyle.value },
       { ...LayoutContainer.imgAxis },
       { ...LayoutContainer.imgLayout },
     )
@@ -714,6 +799,9 @@ const unbindMoveImg = (): void => {
 const bindMoveCrop = (): void => {
   unbindMoveCrop()
   const domBox = cropperBox.value
+  if (!domBox) {
+    return
+  }
   cropBox = new TouchEvent(domBox)
   cropBox.on('down-to-move', moveCrop)
   cropBox.on('down-to-scale', moveScale)
@@ -764,7 +852,7 @@ const getCropData = (type: 'base64' | 'blob' = 'base64') => {
     url: imgs.value,
     imgAxis: { ...LayoutContainer.imgAxis },
     imgLayout: { ...LayoutContainer.imgLayout },
-    cropLayout: { ...cropLayoutStyle.value },
+    cropLayout: { ...effectiveCropLayoutStyle.value },
     cropAxis: { ...LayoutContainer.cropAxis },
     cropping: cropping.value,
   }
@@ -780,7 +868,7 @@ const getCropBlob = () => {
     url: imgs.value,
     imgAxis: { ...LayoutContainer.imgAxis },
     imgLayout: { ...LayoutContainer.imgLayout },
-    cropLayout: { ...cropLayoutStyle.value },
+    cropLayout: { ...effectiveCropLayoutStyle.value },
     cropAxis: { ...LayoutContainer.cropAxis },
     cropping: cropping.value,
   }) as Promise<Blob>
@@ -792,8 +880,12 @@ const renderCrop = (axis?: InterfaceAxis): void => {
   const { width, height } = LayoutContainer.wrapLayout
   let cropW = cropLayoutStyle.value.width
   let cropH = cropLayoutStyle.value.height
-  cropW = cropW < width ? cropW : width
-  cropH = cropW < height ? cropH : height
+  if (width > 0) {
+    cropW = Math.min(cropW, width)
+  }
+  if (height > 0) {
+    cropH = Math.min(cropH, height)
+  }
   const defaultAxis: InterfaceAxis = {
     x: (width - cropW) / 2,
     y: (height - cropH) / 2,
@@ -824,8 +916,10 @@ const checkedCrop = (axis: InterfaceAxis) => {
   // 截图了默认不允许超过容器
   const maxLeft = 0
   const maxTop = 0
-  const maxRight = LayoutContainer.wrapLayout.width - cropLayoutStyle.value.width
-  const maxBottom = LayoutContainer.wrapLayout.height - cropLayoutStyle.value.height
+  const cropWidth = effectiveCropLayoutStyle.value.width
+  const cropHeight = effectiveCropLayoutStyle.value.height
+  const maxRight = LayoutContainer.wrapLayout.width - cropWidth
+  const maxBottom = LayoutContainer.wrapLayout.height - cropHeight
   if (axis.x < maxLeft) {
     axis.x = maxLeft
   }
@@ -882,8 +976,8 @@ const computedClassDrag = (): string => {
 // 计算截图框外层样式
 const getCropBoxStyle = (): InterfaceTransformStyle => {
   const style = {
-    width: `${cropLayoutStyle.value.width}px`,
-    height: `${cropLayoutStyle.value.height}px`,
+    width: `${effectiveCropLayoutStyle.value.width}px`,
+    height: `${effectiveCropLayoutStyle.value.height}px`,
     transform: `translate3d(${LayoutContainer.cropAxis.x}px, ${LayoutContainer.cropAxis.y}px, 0)`,
   }
   LayoutContainer.cropExhibitionStyle.div = style
@@ -938,7 +1032,7 @@ defineExpose({
       <section :class="computedClassDrag()" ref="cropperImg" />
     </section>
     <section
-      v-if="cropping && imgs"
+      v-if="cropping && imgs && shouldShowCropBox"
       class="cropper-crop-box cropper-fade-in"
       :style="getCropBoxStyle()"
     >

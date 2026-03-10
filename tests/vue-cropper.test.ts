@@ -85,7 +85,7 @@ describe('vue-cropper component api', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => {
       callback(new Blob(['preview'], { type: 'image/png' }))
     })
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
       callback(0)
       return 1
     })
@@ -173,6 +173,56 @@ describe('vue-cropper component api', () => {
         imgAxis: expect.objectContaining({
           rotate: 0,
         }),
+      }),
+    )
+  })
+
+  it('hides crop box when crop layout covers the wrapper', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        wrapper: { width: 320, height: 240 },
+        cropLayout: { width: 320, height: 240 },
+      },
+    })
+
+    await flush()
+    await flush()
+
+    expect(wrapper.find('.cropper-crop-box').exists()).toBe(false)
+
+    await (wrapper.vm as unknown as { getCropData: () => Promise<string> }).getCropData()
+
+    expect(getCropImgData).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cropping: true,
+        cropLayout: { width: 320, height: 240 },
+        cropAxis: { x: 0, y: 0 },
+      }),
+    )
+  })
+
+  it('clamps export crop layout when crop layout exceeds the wrapper', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        wrapper: { width: 320, height: 240 },
+        cropLayout: { width: 999, height: 999 },
+      },
+    })
+
+    await flush()
+    await flush()
+
+    expect(wrapper.find('.cropper-crop-box').exists()).toBe(false)
+
+    await (wrapper.vm as unknown as { getCropData: () => Promise<string> }).getCropData()
+
+    expect(getCropImgData).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cropping: true,
+        cropLayout: { width: 320, height: 240 },
+        cropAxis: { x: 0, y: 0 },
       }),
     )
   })

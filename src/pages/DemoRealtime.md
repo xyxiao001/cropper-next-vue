@@ -38,20 +38,21 @@ This page demonstrates the APIs that work best for live business integration:
       @real-time="handlePreview"
     ></vue-cropper>
 
+    <demo-image-switch v-model="img" />
+
     <section class="actions">
       <el-button @click="rotateLeft">{{ labels.rotateLeft }}</el-button>
       <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
       <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
-      <el-button type="primary" @click="exportCurrent">{{ labels.exportCurrent }}</el-button>
     </section>
+
+    <crop-export-panel :cropper="cropper" :display-width="preview.w || 220" :display-height="preview.h || 220" />
   </section>
 
   <section class="preview">
     <p>{{ labels.currentRotation }}：{{ rotate }}°</p>
     <p>{{ labels.previewSize }}：{{ preview.w }} x {{ preview.h }}</p>
     <p>{{ labels.previewHint }}</p>
-    <section class="preview-box" v-html="preview.html"></section>
-    <p v-if="previewImage">{{ labels.realtimeImage }}</p>
     <img
       v-if="previewImage"
       class="result-image"
@@ -65,20 +66,6 @@ This page demonstrates the APIs that work best for live business integration:
       <p>{{ labels.fileSize }}：{{ previewInfo.sizeText }}</p>
       <p>{{ labels.pixelRatio }}：{{ previewInfo.pixelRatioText }}</p>
     </section>
-    <p v-if="resultUrl">{{ labels.manualResult }}</p>
-    <img
-      v-if="resultUrl"
-      class="result-image"
-      :src="resultUrl"
-      :style="{ width: `${preview.w}px`, height: `${preview.h}px` }"
-      alt="result"
-    />
-    <section v-if="resultInfo" class="result-meta">
-      <p>{{ labels.displaySize }}：{{ preview.w }} x {{ preview.h }}</p>
-      <p>{{ labels.exportPixels }}：{{ resultInfo.width }} x {{ resultInfo.height }}</p>
-      <p>{{ labels.fileSize }}：{{ resultInfo.sizeText }}</p>
-      <p>{{ labels.pixelRatio }}：{{ resultInfo.pixelRatioText }}</p>
-    </section>
   </section>
 </section>
 ```
@@ -89,7 +76,7 @@ This page demonstrates the APIs that work best for live business integration:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const img = ref('https://p3-pc.douyinpic.com/aweme/1080x1080/aweme-avatar/tos-cn-avt-0015_2f07496a52314c3e024eaafaba73dd35.jpeg')
+  const img = ref('')
   const { isEn } = useLocale()
   const rotate = ref(0)
   const preview = reactive({
@@ -99,19 +86,15 @@ This page demonstrates the APIs that work best for live business integration:
   })
   const previewImage = ref('')
   const previewInfo = ref(null)
-  const resultUrl = ref('')
-  const resultInfo = ref(null)
   let previewTimer = null
   const labels = computed(() => isEn.value ? {
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
-    exportCurrent: 'Export current crop',
     currentRotation: 'Current rotation',
     previewSize: 'Preview size',
     previewHint: 'The block above is the lightweight real-time preview. The image below is the throttled real crop result.',
     realtimeImage: 'Realtime crop preview',
-    manualResult: 'Manual export result',
     displaySize: 'Display size',
     exportPixels: 'Export pixels',
     fileSize: 'File size',
@@ -120,12 +103,10 @@ This page demonstrates the APIs that work best for live business integration:
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
-    exportCurrent: '导出当前截图',
     currentRotation: '当前角度',
     previewSize: '预览尺寸',
     previewHint: '上面是 real-time 返回的轻量预览，下面是节流后的实际截图结果。',
     realtimeImage: '实时截图预览',
-    manualResult: '手动导出结果',
     displaySize: '展示尺寸',
     exportPixels: '导出像素',
     fileSize: '文件大小',
@@ -191,15 +172,6 @@ This page demonstrates the APIs that work best for live business integration:
     rotate.value = 0
   }
 
-  const exportCurrent = () => {
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-      readImageInfo(res, preview.w, Math.round((res.length * 3) / 4)).then(info => {
-        resultInfo.value = info
-      })
-    })
-  }
-
   onBeforeUnmount(() => {
     if (previewTimer) {
       clearTimeout(previewTimer)
@@ -214,7 +186,7 @@ This page demonstrates the APIs that work best for live business integration:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const img = ref('https://p3-pc.douyinpic.com/aweme/1080x1080/aweme-avatar/tos-cn-avt-0015_2f07496a52314c3e024eaafaba73dd35.jpeg')
+  const img = ref('')
   const { isEn } = useLocale()
   const rotate = ref(0)
   const preview = reactive({
@@ -224,19 +196,15 @@ This page demonstrates the APIs that work best for live business integration:
   })
   const previewImage = ref('')
   const previewInfo = ref(null)
-  const resultUrl = ref('')
-  const resultInfo = ref(null)
   let previewTimer = null
   const labels = computed(() => isEn.value ? {
-    rotateLeft: 'Rotate left 90deg',
-    rotateRight: 'Rotate right 90deg',
+    rotateLeft: 'Rotate left 90°',
+    rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
-    exportCurrent: 'Export current crop',
     currentRotation: 'Current rotation',
     previewSize: 'Preview size',
     previewHint: 'The block above is the lightweight real-time preview. The image below is the throttled real crop result.',
     realtimeImage: 'Realtime crop preview',
-    manualResult: 'Manual export result',
     displaySize: 'Display size',
     exportPixels: 'Export pixels',
     fileSize: 'File size',
@@ -245,12 +213,10 @@ This page demonstrates the APIs that work best for live business integration:
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
-    exportCurrent: '导出当前截图',
     currentRotation: '当前角度',
     previewSize: '预览尺寸',
     previewHint: '上面是 real-time 返回的轻量预览，下面是节流后的实际截图结果。',
     realtimeImage: '实时截图预览',
-    manualResult: '手动导出结果',
     displaySize: '展示尺寸',
     exportPixels: '导出像素',
     fileSize: '文件大小',
@@ -298,7 +264,7 @@ This page demonstrates the APIs that work best for live business integration:
           previewInfo.value = info
         })
       })
-    }, 120)
+    }, 16)
   }
 
   const rotateLeft = () => {
@@ -314,15 +280,6 @@ This page demonstrates the APIs that work best for live business integration:
   const rotateClear = () => {
     cropper.value.rotateClear()
     rotate.value = 0
-  }
-
-  const exportCurrent = () => {
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-      readImageInfo(res, preview.w, Math.round((res.length * 3) / 4)).then(info => {
-        resultInfo.value = info
-      })
-    })
   }
 
   onBeforeUnmount(() => {

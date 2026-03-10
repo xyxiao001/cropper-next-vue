@@ -76,6 +76,10 @@
       path: '/demo-export'
     },
     {
+      name: isEn.value ? 'Full Config' : '全功能配置',
+      path: '/demo-all'
+    },
+    {
       name: isEn.value ? 'Loading Slot' : '替换loading例子',
       path: '/demo-loading'
     },
@@ -161,7 +165,7 @@
     text-decoration: none;
     text-align: center;
     line-height: 1.5;
-    font-size: 18px;
+    font-size: 16px;
     background-image: -webkit-linear-gradient(
       left,
       #3498db,

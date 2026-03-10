@@ -16,10 +16,12 @@
 
 :::demo
 ```html
+<demo-image-switch v-model="img" />
 <vue-cropper 
   ref="cropper"
+  :img="img"
   :filter="filterFunc"
-  img="https://p3-pc.douyinpic.com/aweme/1080x1080/aweme-avatar/tos-cn-avt-0015_2f07496a52314c3e024eaafaba73dd35.jpeg"
+  :crop-layout="{ width: 220, height: 220 }"
 >
 </vue-cropper>
 <section class="control">
@@ -31,12 +33,8 @@
       :value="item.value"
     />
   </el-select>
-  <el-button :loading="loading" @click="click">{{ labels.exportCrop }}</el-button>
 </section>
-<section v-if="resultUrl" class="result-panel">
-  <p>{{ labels.resultTitle }}</p>
-  <img :src="resultUrl" class="result-image" alt="result" />
-</section>
+<crop-export-panel :cropper="cropper" :display-width="220" :display-height="220" />
 ```
 
 ```js
@@ -46,17 +44,12 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const filter = ref(1)
-  const resultUrl = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
     options: ['No filter', 'Grayscale', 'Black and white', 'Old photo'],
   } : {
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
     options: ['无滤镜', '灰度滤镜', '黑白滤镜', '老照片滤镜'],
   })
   const options = computed(() => [
@@ -66,14 +59,6 @@
     { label: labels.value.options[3], value: 3, filter: oldPhoto },
   ])
   const filterFunc = computed(() => options.value.find(item => item.value === filter.value)?.filter || null)
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then(res => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 </script>
 ```
 :::
@@ -84,17 +69,12 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const filter = ref(1)
-  const resultUrl = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
     options: ['No filter', 'Grayscale', 'Black and white', 'Old photo'],
   } : {
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
     options: ['无滤镜', '灰度滤镜', '黑白滤镜', '老照片滤镜'],
   })
   const options = computed(() => [
@@ -104,39 +84,13 @@
     { label: labels.value.options[3], value: 3, filter: oldPhoto },
   ])
   const filterFunc = computed(() => options.value.find(item => item.value === filter.value)?.filter || null)
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then(res => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 </script>
 
 <style lang="scss" scoped>
-  button {
-    margin-left: 20px;
-  }
-
   .control {
     margin-top: 30px;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-  }
-
-  .result-panel {
-    margin-top: 20px;
-  }
-
-  .result-image {
-    display: block;
-    width: 220px;
-    height: 220px;
-    object-fit: contain;
-    border: 1px solid #e5e6eb;
-    background: #fff;
-    margin-top: 8px;
   }
 </style>

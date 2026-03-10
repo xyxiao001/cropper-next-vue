@@ -2,8 +2,8 @@
 
 ![license](https://img.shields.io/badge/license-ISC-blue.svg)
 ![node](https://img.shields.io/badge/node-22.x-339933.svg)
-![coverage](https://img.shields.io/badge/coverage-%E2%89%A585%25-brightgreen.svg)
-![tests](https://img.shields.io/badge/tests-37%20passing-brightgreen.svg)
+![coverage](https://img.shields.io/badge/coverage-%E2%89%A570%25-brightgreen.svg)
+![tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
 
 [中文](#中文) | [English](#english)
 
@@ -23,6 +23,12 @@
 - [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
 
 ### 安装
+
+推荐使用 pnpm：
+
+```bash
+pnpm add cropper-next-vue
+```
 
 ```bash
 npm install cropper-next-vue
@@ -76,7 +82,11 @@ const img = ref('https://example.com/demo.jpg')
 
 ### 本地开发
 
+如果你未启用 corepack（Node 16+），可以先执行 `corepack enable`。
+
 ```bash
+pnpm install
+
 # 文档站开发
 pnpm run dev
 
@@ -97,7 +107,9 @@ pnpm run build
 - `pnpm run build:lib`
 - `pnpm run check`
 
-覆盖率阈值定义在 [vitest.config.ts](/Users/bytedance/projects/cropper-next/vitest.config.ts)：
+其中 `pnpm run check` 会依次执行：typecheck → test:coverage → build:lib。
+
+覆盖率阈值定义在 [vitest.config.ts](./vitest.config.ts)：
 
 - `lines >= 70`
 - `functions >= 70`
@@ -139,8 +151,8 @@ pnpm run release:npm -- patch --tag next
 - 许可证：`ISC`
 - Node 版本要求：`22.x`
 - 提交前建议执行：`pnpm run check`
-- 贡献说明见 [CONTRIBUTING.md](/Users/bytedance/projects/cropper-next/CONTRIBUTING.md)
-- 行为约定见 [CODE_OF_CONDUCT.md](/Users/bytedance/projects/cropper-next/CODE_OF_CONDUCT.md)
+- 贡献说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)
+- 行为约定见 [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
 ## English
 
@@ -158,6 +170,12 @@ Live preview:
 - [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
 
 ### Install
+
+Recommended with pnpm:
+
+```bash
+pnpm add cropper-next-vue
+```
 
 ```bash
 npm install cropper-next-vue
@@ -211,7 +229,11 @@ const img = ref('https://example.com/demo.jpg')
 
 ### Local development
 
+If corepack is not enabled (Node 16+), run `corepack enable` first.
+
 ```bash
+pnpm install
+
 # docs dev server
 pnpm run dev
 
@@ -232,7 +254,9 @@ pnpm run build
 - `pnpm run build:lib`
 - `pnpm run check`
 
-Coverage thresholds are defined in [vitest.config.ts](/Users/bytedance/projects/cropper-next/vitest.config.ts):
+`pnpm run check` runs: typecheck → test:coverage → build:lib.
+
+Coverage thresholds are defined in [vitest.config.ts](./vitest.config.ts):
 
 - `lines >= 70`
 - `functions >= 70`
@@ -274,5 +298,5 @@ It requires a clean git working tree and a valid `npm login` session by default.
 - License: `ISC`
 - Required Node version: `22.x`
 - Recommended pre-commit check: `pnpm run check`
-- Contribution guide: [CONTRIBUTING.md](/Users/bytedance/projects/cropper-next/CONTRIBUTING.md)
-- Code of conduct: [CODE_OF_CONDUCT.md](/Users/bytedance/projects/cropper-next/CODE_OF_CONDUCT.md)
+- Contribution guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)

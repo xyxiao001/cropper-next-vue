@@ -18,11 +18,13 @@
 ```html
 <vue-cropper 
   ref="cropper"
+  :img="img"
   :crop-color="cropColor"
   :wrapper="wrapper"
   :crop-layout="cropLayout"
-  img="https://p3-pc.douyinpic.com/aweme/1080x1080/aweme-avatar/tos-cn-avt-0015_2f07496a52314c3e024eaafaba73dd35.jpeg">
+>
 </vue-cropper>
+<demo-image-switch v-model="img" />
 <section class="control">
   <p>{{ labels.cropColor }}</p>
   <input type="color" v-model="cropColor" />
@@ -35,11 +37,7 @@
   <p>{{ labels.cropLayout }}</p>
   <p>{{ cropLayout }}</p>
 </section>
-<el-button :loading="loading" @click="click">{{ labels.exportCrop }}</el-button>
-<section v-if="resultUrl" class="result-panel">
-  <p>{{ labels.resultTitle }}</p>
-  <img :src="resultUrl" class="result-image" alt="result" />
-</section>
+<crop-export-panel :cropper="cropper" :display-width="cropLayout.width" :display-height="cropLayout.height" />
 ```
 
 ```js
@@ -48,9 +46,8 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const cropColor = ref('#ffffff')
-  const resultUrl = ref('')
   const wrapper = reactive({ width: '400px', height: '400px' })
   const cropLayout = reactive({ width: 300, height: 300 })
   const { isEn } = useLocale()
@@ -58,24 +55,11 @@
     cropColor: 'Crop-box color',
     wrapper: 'Wrapper style',
     cropLayout: 'Crop-box style',
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
   } : {
     cropColor: '修改截图框颜色',
     wrapper: '容器样式',
     cropLayout: '截图框样式',
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
   })
-
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 </script>
 ```
 :::
@@ -85,9 +69,8 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
-  const loading = ref(false)
+  const img = ref('')
   const cropColor = ref('#ffffff')
-  const resultUrl = ref('')
   const wrapper = reactive({ width: '400px', height: '400px' })
   const cropLayout = reactive({ width: 300, height: 300 })
   const { isEn } = useLocale()
@@ -95,24 +78,11 @@
     cropColor: 'Crop-box color',
     wrapper: 'Wrapper style',
     cropLayout: 'Crop-box style',
-    exportCrop: 'Export crop',
-    resultTitle: 'Export result',
   } : {
     cropColor: '修改截图框颜色',
     wrapper: '容器样式',
     cropLayout: '截图框样式',
-    exportCrop: '获取截图',
-    resultTitle: '导出结果',
   })
-
-  const click = () => {
-    loading.value = true
-    cropper.value.getCropData().then((res) => {
-      resultUrl.value = res
-    }).finally(() => {
-      loading.value = false
-    })
-  }
 </script>
 
 <style lang="scss" scoped>
@@ -120,20 +90,6 @@
     display: flex;
     align-items: center;
     margin: 30px 0;
-  }
-
-  .result-panel {
-    margin-top: 20px;
-  }
-
-  .result-image {
-    display: block;
-    width: 300px;
-    height: 300px;
-    object-fit: contain;
-    border: 1px solid #e5e6eb;
-    background: #fff;
-    margin-top: 8px;
   }
 
   p {
