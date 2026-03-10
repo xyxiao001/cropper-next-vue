@@ -383,6 +383,17 @@ table {
 }
 
 @media screen and (max-width: 767px) {
+	.markdown-body {
+		max-width: none;
+		padding: 16px 16px 28px;
+		margin: 0;
+	}
+
+	.markdown-body img {
+		max-width: 100%;
+		height: auto;
+	}
+
 	.at-markdown {
 		padding: 0 24px 32px
 	}

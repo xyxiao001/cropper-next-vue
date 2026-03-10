@@ -1,14 +1,31 @@
 <template>
-  <nav class="side-bar">
-    <p>
+  <nav
+    class="side-bar"
+    :class="{
+      'is-mobile': mobile,
+      'is-open': open,
+    }"
+  >
+    <header class="side-bar__header">
       <span class="title">cropper-next-vue</span>
-    </p>
+      <button
+        v-if="mobile"
+        class="side-bar__close"
+        type="button"
+        aria-label="Close menu"
+        @click="emit('close')"
+      >
+        ×
+      </button>
+    </header>
     <section class="locale-row">
       <LocaleSwitch />
     </section>
     <section class="menu-list">
       <section class="menu-item" v-for="item in nav" :key="item.name">
-        <router-link class="item-link" :to="item.path">{{ item.name }}</router-link>
+        <router-link class="item-link" :to="item.path" @click="mobile && emit('close')">
+          {{ item.name }}
+        </router-link>
       </section>
     </section>
   </nav>
@@ -18,6 +35,18 @@
   import { computed } from 'vue'
   import LocaleSwitch from './LocaleSwitch.vue'
   import { useLocale } from '../composables/useLocale'
+
+  const props = defineProps<{
+    mobile?: boolean
+    open?: boolean
+  }>()
+
+  const emit = defineEmits<{
+    (e: 'close'): void
+  }>()
+
+  const mobile = computed(() => props.mobile ?? false)
+  const open = computed(() => props.open ?? false)
 
   const { isEn } = useLocale()
 
@@ -86,6 +115,45 @@
     flex-shrink: 0;
     padding: 24px 0 0;
     background-color: white;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .side-bar__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .side-bar__close {
+    border: 0;
+    background: transparent;
+    font-size: 24px;
+    line-height: 1;
+    color: $G100;
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+
+  .side-bar.is-mobile {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 280px;
+    max-width: 86vw;
+    padding: 16px 0 0;
+    padding-top: calc(16px + env(safe-area-inset-top));
+    transform: translateX(-100%);
+    transition: transform .2s ease-out;
+    z-index: 100;
+    box-shadow: 0 10px 60px 0 rgba(29,29,31,0.2);
+  }
+
+  .side-bar.is-mobile.is-open {
+    transform: translateX(0);
   }
 
   .title {
