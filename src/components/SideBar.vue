@@ -22,10 +22,19 @@
       <LocaleSwitch />
     </section>
     <section class="menu-list">
-      <section class="menu-item" v-for="item in nav" :key="item.name">
-        <router-link class="item-link" :to="item.path" @click="mobile && emit('close')">
-          {{ item.name }}
+      <section class="menu-item">
+        <router-link class="item-link" to="/" @click="mobile && emit('close')">
+          {{ homeLabel }}
         </router-link>
+      </section>
+
+      <section class="menu-group" v-for="group in navGroups" :key="group.title">
+        <div class="menu-group__title">{{ group.title }}</div>
+        <section class="menu-item" v-for="item in group.items" :key="item.path">
+          <router-link class="item-link item-link--child" :to="item.path" @click="mobile && emit('close')">
+            {{ item.name }}
+          </router-link>
+        </section>
       </section>
     </section>
   </nav>
@@ -50,63 +59,75 @@
 
   const { isEn } = useLocale()
 
-  const nav = computed(() => [
+  const homeLabel = computed(() => (isEn.value ? 'Home' : '首页'))
+
+  const navGroups = computed(() => [
     {
-      name: isEn.value ? 'Guide' : '快速开始',
-      path: '/guide'
+      title: isEn.value ? 'Docs' : '文档',
+      items: [
+        {
+          name: isEn.value ? 'Guide' : '快速开始',
+          path: '/guide'
+        },
+        {
+          name: isEn.value ? 'Props' : '参数',
+          path: '/props'
+        },
+        {
+          name: isEn.value ? 'Methods' : '方法',
+          path: '/methods'
+        },
+        {
+          name: isEn.value ? 'Events' : '事件',
+          path: '/event'
+        }
+      ]
     },
     {
-      name: isEn.value ? 'Props' : '参数',
-      path: '/props'
-    },
-    {
-      name: isEn.value ? 'Methods' : '方法',
-      path: '/methods'
-    },
-    {
-      name: isEn.value ? 'Events' : '事件',
-      path: '/event'
-    },
-    {
-      name: isEn.value ? 'Basic Demo' : '基础例子',
-      path: '/demo-basic'
-    },
-    {
-      name: isEn.value ? 'Export' : '导出能力',
-      path: '/demo-export'
-    },
-    {
-      name: isEn.value ? 'Full Config' : '全功能配置',
-      path: '/demo-all'
-    },
-    {
-      name: isEn.value ? 'Loading Slot' : '替换loading例子',
-      path: '/demo-loading'
-    },
-    {
-      name: isEn.value ? 'Upload & Drag' : '本地上传图片例子',
-      path: '/demo-drag'
-    },
-    {
-      name: isEn.value ? 'Crop Box' : '截图框操作',
-      path: '/demo-crop'
-    },
-    {
-      name: isEn.value ? 'Boundary' : '边界控制',
-      path: '/demo-img'
-    },
-    {
-      name: isEn.value ? 'Filter' : '图片滤镜',
-      path: '/demo-filter'
-    },
-    {
-      name: isEn.value ? 'Rotation' : '旋转控制',
-      path: '/demo-rotate'
-    },
-    {
-      name: isEn.value ? 'Realtime Preview' : '实时预览',
-      path: '/demo-realtime'
-    },
+      title: isEn.value ? 'Demos' : '示例',
+      items: [
+        {
+          name: isEn.value ? 'Basic Demo' : '基础例子',
+          path: '/demo-basic'
+        },
+        {
+          name: isEn.value ? 'Export' : '导出能力',
+          path: '/demo-export'
+        },
+        {
+          name: isEn.value ? 'Full Config' : '全功能配置',
+          path: '/demo-all'
+        },
+        {
+          name: isEn.value ? 'Loading Slot' : '替换loading例子',
+          path: '/demo-loading'
+        },
+        {
+          name: isEn.value ? 'Upload & Drag' : '本地上传图片例子',
+          path: '/demo-drag'
+        },
+        {
+          name: isEn.value ? 'Crop Box' : '截图框操作',
+          path: '/demo-crop'
+        },
+        {
+          name: isEn.value ? 'Boundary' : '边界控制',
+          path: '/demo-img'
+        },
+        {
+          name: isEn.value ? 'Filter' : '图片滤镜',
+          path: '/demo-filter'
+        },
+        {
+          name: isEn.value ? 'Rotation' : '旋转控制',
+          path: '/demo-rotate'
+        },
+        {
+          name: isEn.value ? 'Realtime Preview' : '实时预览',
+          path: '/demo-realtime'
+        }
+      ]
+    }
   ])
 </script>
 
@@ -197,6 +218,20 @@
     transition: background .3s cubic-bezier(.645,.045,.355,1),width .15s cubic-bezier(.645,.045,.355,1);
   }
 
+  .menu-group {
+    margin-top: 10px;
+  }
+
+  .menu-group__title {
+    padding-left: 24px;
+    font-size: 12px;
+    line-height: 28px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(0, 0, 0, 0.45);
+    text-transform: uppercase;
+  }
+
   .locale-row {
     display: flex;
     justify-content: center;
@@ -262,5 +297,9 @@
       cursor: pointer;
       color: $B50;
     }
+  }
+
+  .item-link--child {
+    padding-left: 34px;
   }
 </style>

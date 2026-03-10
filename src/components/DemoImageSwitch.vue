@@ -18,7 +18,8 @@ const images = computed(() => (props.images?.length ? props.images : imageList))
 watchEffect(() => {
   if (props.modelValue) return
   if (!images.value.length) return
-  emit('update:modelValue', images.value[0])
+  // 随机选择一张图片
+  emit('update:modelValue', images.value[Math.floor(Math.random() * images.value.length)])
 })
 
 const value = computed({

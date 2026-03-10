@@ -20,9 +20,9 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
-      name: '',
+      name: 'Home',
       path: '/',
-      redirect: '/guide'
+      component: () => import('./pages/Home.vue')
     },
     {
       name: 'Guide',
