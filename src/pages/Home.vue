@@ -147,7 +147,7 @@ const links = {
 }
 
 const cropper = ref<any>()
-const img = ref(imageList[0] ?? '')
+const img = ref('')
 const mode = ref<'cover' | 'contain' | 'original'>('cover')
 const centerBox = ref(true)
 const centerWrapper = ref(false)
