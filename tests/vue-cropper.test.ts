@@ -85,8 +85,8 @@ describe('vue-cropper component api', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => {
       callback(new Blob(['preview'], { type: 'image/png' }))
     })
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
-      callback(0)
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      ;(callback as FrameRequestCallback)(0)
       return 1
     })
     vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined)
@@ -173,6 +173,28 @@ describe('vue-cropper component api', () => {
         imgAxis: expect.objectContaining({
           rotate: 0,
         }),
+      }),
+    )
+  })
+
+  it('forwards original export options to the export helper', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        original: true,
+        maxSideLength: 1234,
+      },
+    })
+
+    await flush()
+    await flush()
+
+    await (wrapper.vm as unknown as { getCropData: () => Promise<string> }).getCropData()
+
+    expect(getCropImgData).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        original: true,
+        maxSideLength: 1234,
       }),
     )
   })

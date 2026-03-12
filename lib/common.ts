@@ -147,6 +147,8 @@ interface CropImageOptions {
   outputType: string
   outputSize?: number
   full?: boolean
+  original?: boolean
+  maxSideLength?: number
   url: string
   imgAxis: InterfaceImgAxis
   imgLayout: InterfaceLayoutStyle
@@ -261,6 +263,8 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
     outputType,
     outputSize = 1,
     full = true,
+    original = false,
+    maxSideLength,
     cropping,
   } = options
   const canvas = document.createElement('canvas')
@@ -275,36 +279,66 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
   }
   return new Promise((resolve, reject) => {
     try {
-      // 从这里开始对图片进行处理
-      const imgCanvas = getImgCanvas(img, imgLayout, imgAxis.rotate, imgAxis.scale)
-      // 计算绘制图片的偏移
-      let dx = imgAxis.x - cropAxis.x
-      // 图片y轴偏移
-      let dy = imgAxis.y - cropAxis.y
-      let width = cropLayout.width
-      let height = cropLayout.height
+      const enforceMaxSideLength = Number.isFinite(maxSideLength) ? maxSideLength! : 3000
+
+      const axisScale = Number.isFinite(imgAxis.scale) && imgAxis.scale > 0 ? imgAxis.scale : 1
+      const coordinateScale = original ? 1 / axisScale : 1
+      const canvasScale = original ? 1 : Math.max(1, axisScale)
+      const drawScale = original ? 1 : axisScale / canvasScale
+
+      const scaledCropAxis = {
+        x: cropAxis.x * coordinateScale,
+        y: cropAxis.y * coordinateScale,
+      }
+      const scaledCropLayout = {
+        width: cropLayout.width * coordinateScale,
+        height: cropLayout.height * coordinateScale,
+      }
+      const scaledImgAxis = {
+        ...imgAxis,
+        x: imgAxis.x * coordinateScale,
+        y: imgAxis.y * coordinateScale,
+      }
+
+      const imgCanvas = getImgCanvas(img, imgLayout, imgAxis.rotate, canvasScale)
+      let dx = scaledImgAxis.x - scaledCropAxis.x
+      let dy = scaledImgAxis.y - scaledCropAxis.y
+      let width = scaledCropLayout.width
+      let height = scaledCropLayout.height
 
       if (!cropping) {
-        // 没有截图框
-        width = imgCanvas.width
-        height = imgCanvas.height
+        width = imgCanvas.width * drawScale
+        height = imgCanvas.height * drawScale
         dx = 0
         dy = 0
       }
 
       if (imgAxis.rotate && cropping) {
-        // 表示有旋转 同时是截图, 因为 canvas 是放大了的 ，那么 x 轴和  y 轴需要偏移
-        dx -= (imgCanvas.width - imgLayout.width * imgAxis.scale) / 2
-        dy -= (imgCanvas.height - imgLayout.height * imgAxis.scale) / 2
+        const unrotatedWidth = imgLayout.width * (original ? 1 : axisScale)
+        const unrotatedHeight = imgLayout.height * (original ? 1 : axisScale)
+        dx -= (imgCanvas.width * drawScale - unrotatedWidth) / 2
+        dy -= (imgCanvas.height * drawScale - unrotatedHeight) / 2
       }
 
       const pixelRatio =
         full && typeof window !== 'undefined'
           ? Math.max(1, window.devicePixelRatio || 1)
           : 1
-      canvas.width = Math.round(width * pixelRatio)
-      canvas.height = Math.round(height * pixelRatio)
-      ctx.scale(pixelRatio, pixelRatio)
+      let renderRatio = pixelRatio
+      if (enforceMaxSideLength > 0) {
+        const maxEdge = Math.max(width * renderRatio, height * renderRatio)
+        if (maxEdge > enforceMaxSideLength) {
+          renderRatio *= enforceMaxSideLength / maxEdge
+        }
+      }
+      canvas.width = Math.max(1, Math.round(width * renderRatio))
+      canvas.height = Math.max(1, Math.round(height * renderRatio))
+      ctx.scale(renderRatio, renderRatio)
+
+      ctx.imageSmoothingEnabled = true
+      if ('imageSmoothingQuality' in ctx) {
+        ctx.imageSmoothingQuality = 'high'
+      }
 
       // 是否填充背景颜色 transparent
       // const fillColor = 'transparent'
@@ -312,7 +346,7 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
       // ctx.fillRect(0, 0, width, height)
 
       // 绘制图片
-      ctx.drawImage(imgCanvas, dx, dy, imgCanvas.width, imgCanvas.height)
+      ctx.drawImage(imgCanvas, dx, dy, imgCanvas.width * drawScale, imgCanvas.height * drawScale)
       ctx.restore()
       if (type === 'blob') {
         canvasToBlob(canvas, outputType, outputSize).then(resolve).catch(reject)

@@ -48,6 +48,8 @@ interface InterfaceVueCropperProps {
   outputSize?: number;
   // 高清导出
   full?: boolean;
+  original?: boolean;
+  maxSideLength?: number;
   // 布局方式
   mode?: keyof InterfaceModeHandle;
   // 截图框的颜色
@@ -79,6 +81,8 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   outputType: 'png',
   outputSize: 1,
   full: true,
+  original: false,
+  maxSideLength: 3000,
   mode: 'cover',
   cropColor: '#fff',
   defaultRotate: 0,
@@ -167,6 +171,8 @@ const {
   outputType,
   outputSize,
   full,
+  original,
+  maxSideLength,
   centerBox,
   cropLayout,
   centerWrapper,
@@ -849,6 +855,8 @@ const getCropData = (type: 'base64' | 'blob' = 'base64') => {
     outputType: outputType.value,
     outputSize: outputSize.value,
     full: full.value,
+    original: original.value,
+    maxSideLength: maxSideLength.value,
     url: imgs.value,
     imgAxis: { ...LayoutContainer.imgAxis },
     imgLayout: { ...LayoutContainer.imgLayout },
@@ -865,6 +873,8 @@ const getCropBlob = () => {
     outputType: outputType.value,
     outputSize: outputSize.value,
     full: full.value,
+    original: original.value,
+    maxSideLength: maxSideLength.value,
     url: imgs.value,
     imgAxis: { ...LayoutContainer.imgAxis },
     imgLayout: { ...LayoutContainer.imgLayout },

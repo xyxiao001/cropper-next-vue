@@ -40,6 +40,11 @@ const router = createRouter({
       component: () => import('./pages/Methods.md'),
     },
     {
+      name: 'Changelog',
+      path: '/changelog',
+      component: () => import('./pages/Changelog.md'),
+    },
+    {
       name: 'Event',
       path: '/event',
       component: () => import('./pages/Event.md'),

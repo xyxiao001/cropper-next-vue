@@ -78,6 +78,10 @@
           path: '/methods'
         },
         {
+          name: isEn.value ? 'Changelog' : '版本记录',
+          path: '/changelog'
+        },
+        {
           name: isEn.value ? 'Events' : '事件',
           path: '/event'
         }

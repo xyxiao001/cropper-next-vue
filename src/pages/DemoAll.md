@@ -28,6 +28,8 @@ This page groups commonly used props, rotation methods, and export results into 
       :output-type="outputType"
       :output-size="outputSize"
       :full="full"
+      :original="original"
+      :max-side-length="maxSideLength"
       :mode="mode"
       :crop-color="cropColor"
       :default-rotate="defaultRotate"
@@ -102,6 +104,15 @@ This page groups commonly used props, rotation methods, and export results into 
 
       <section class="row">
         <el-switch v-model="full" :active-text="labels.full" />
+      </section>
+
+      <section class="row">
+        <el-switch v-model="original" :active-text="labels.original" />
+      </section>
+
+      <section class="row">
+        <span class="row-label">{{ labels.maxSideLength }}</span>
+        <el-input-number v-model="maxSideLength" :min="0" :max="12000" :step="100" controls-position="right" />
       </section>
     </section>
 
@@ -180,6 +191,8 @@ This page groups commonly used props, rotation methods, and export results into 
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
+  const original = ref(false)
+  const maxSideLength = ref(3000)
 
   const mode = ref('cover')
   const defaultRotate = ref(0)
@@ -188,7 +201,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const centerBoxDelay = ref(100)
   const centerWrapperDelay = ref(100)
 
-  const filter = ref('grayscale')
+  const filter = ref('none')
   const { isEn } = useLocale()
 
   const labels = computed(() => isEn.value ? {
@@ -204,6 +217,8 @@ This page groups commonly used props, rotation methods, and export results into 
     outputType: 'Output type',
     outputSize: 'Output quality',
     full: 'High-DPI export',
+    original: 'Export with original ratio',
+    maxSideLength: 'Max side length',
     behavior: 'Behavior',
     mode: 'Mode',
     centerBox: 'centerBox',
@@ -230,6 +245,8 @@ This page groups commonly used props, rotation methods, and export results into 
     outputType: '输出格式',
     outputSize: '输出质量',
     full: '高分屏导出',
+    original: '按原图比例导出',
+    maxSideLength: '导出最长边',
     behavior: '行为',
     mode: '布局模式',
     centerBox: '图片限制截图框内',
@@ -255,6 +272,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const modeOptions = computed(() => [
     { label: 'cover', value: 'cover' },
     { label: 'contain', value: 'contain' },
+    { label: 'original', value: 'original' },
     { label: 'default', value: 'default' },
   ])
 
@@ -330,6 +348,8 @@ This page groups commonly used props, rotation methods, and export results into 
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
+  const original = ref(false)
+  const maxSideLength = ref(3000)
 
   const mode = ref('cover')
   const defaultRotate = ref(0)
@@ -338,7 +358,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const centerBoxDelay = ref(100)
   const centerWrapperDelay = ref(100)
 
-  const filter = ref('grayscale')
+  const filter = ref('none')
   const { isEn } = useLocale()
 
   const labels = computed(() => isEn.value ? {
@@ -354,6 +374,8 @@ This page groups commonly used props, rotation methods, and export results into 
     outputType: 'Output type',
     outputSize: 'Output quality',
     full: 'High-DPI export',
+    original: 'Export with original ratio',
+    maxSideLength: 'Max side length',
     behavior: 'Behavior',
     mode: 'Mode',
     centerBox: 'centerBox',
@@ -380,6 +402,8 @@ This page groups commonly used props, rotation methods, and export results into 
     outputType: '输出格式',
     outputSize: '输出质量',
     full: '高分屏导出',
+    original: '按原图比例导出',
+    maxSideLength: '导出最长边',
     behavior: '行为',
     mode: '布局模式',
     centerBox: '图片限制截图框内',
@@ -405,6 +429,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const modeOptions = computed(() => [
     { label: 'cover', value: 'cover' },
     { label: 'contain', value: 'contain' },
+    { label: 'original', value: 'original' },
     { label: 'default', value: 'default' },
   ])
 

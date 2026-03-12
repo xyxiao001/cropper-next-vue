@@ -47,6 +47,7 @@ class MockFileReader {
 describe('common runtime helpers', () => {
   const OriginalImage = globalThis.Image
   const OriginalFileReader = globalThis.FileReader
+  let drawImage: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     globalThis.Image = MockImage as never
@@ -56,10 +57,11 @@ describe('common runtime helpers', () => {
       configurable: true,
       value: 2,
     })
+    drawImage = vi.fn()
     vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url')
     vi.spyOn(window, 'alert').mockImplementation(() => undefined)
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
-      drawImage: vi.fn(),
+      drawImage,
       translate: vi.fn(),
       rotate: vi.fn(),
       restore: vi.fn(),
@@ -162,6 +164,67 @@ describe('common runtime helpers', () => {
         cropping: true,
       }),
     ).resolves.toBeInstanceOf(Blob)
+  })
+
+  it('scales export resolution from display scale when original is enabled', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function (this: HTMLCanvasElement) {
+      return `${this.width}x${this.height}`
+    })
+
+    await expect(
+      getCropImgData({
+        outputType: 'png',
+        outputSize: 1,
+        full: false,
+        original: true,
+        url: 'https://example.com/demo.jpg',
+        imgAxis: { x: 10, y: 20, scale: 0.5, rotate: 0 },
+        imgLayout: { width: 120, height: 80 },
+        cropLayout: { width: 60, height: 40 },
+        cropAxis: { x: 5, y: 5 },
+        cropping: true,
+      }),
+    ).resolves.toBe('120x80')
+  })
+
+  it('renders downscaled output from a full-resolution rotated canvas by default', async () => {
+    await getCropImgData({
+      outputType: 'png',
+      outputSize: 1,
+      full: false,
+      url: 'https://example.com/demo.jpg',
+      imgAxis: { x: 10, y: 20, scale: 0.5, rotate: 45 },
+      imgLayout: { width: 120, height: 80 },
+      cropLayout: { width: 60, height: 40 },
+      cropAxis: { x: 5, y: 5 },
+      cropping: true,
+    })
+
+    const args = drawImage.mock.calls[drawImage.mock.calls.length - 1]
+    expect(args[0]).toBeInstanceOf(HTMLCanvasElement)
+    expect(args[3]).toBe(72.5)
+    expect(args[4]).toBe(72.5)
+  })
+
+  it('clamps export canvas size with maxSideLength', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function (this: HTMLCanvasElement) {
+      return `${this.width}x${this.height}`
+    })
+
+    await expect(
+      getCropImgData({
+        outputType: 'png',
+        outputSize: 1,
+        full: true,
+        maxSideLength: 3000,
+        url: 'https://example.com/demo.jpg',
+        imgAxis: { x: 0, y: 0, scale: 1, rotate: 0 },
+        imgLayout: { width: 120, height: 80 },
+        cropLayout: { width: 4000, height: 4000 },
+        cropAxis: { x: 0, y: 0 },
+        cropping: true,
+      }),
+    ).resolves.toBe('3000x3000')
   })
 
   it('keeps null canvases untouched when resetting orientation', () => {

@@ -63,6 +63,8 @@ const t = computed(() => {
         limitBox: 'Inside crop box',
         limitWrapper: 'Inside wrapper',
         exportImage: 'Export image',
+        exportOriginal: 'Export with original ratio',
+        maxSideLength: 'Max side',
       },
       export: {
         title: 'Export',
@@ -129,6 +131,8 @@ const t = computed(() => {
       limitBox: '限制截图框内',
       limitWrapper: '限制容器内',
       exportImage: '导出图片',
+      exportOriginal: '按原图比例导出',
+      maxSideLength: '最长边',
     },
     export: {
       title: '导出',
@@ -163,6 +167,9 @@ const cropLayout = {
 const rotateLeft = () => cropper.value?.rotateLeft?.()
 const rotateRight = () => cropper.value?.rotateRight?.()
 const rotateClear = () => cropper.value?.rotateClear?.()
+
+const exportOriginal = ref(false)
+const maxSideLength = ref(3000)
 
 const exportOpen = ref(false)
 const exporting = ref(false)
@@ -303,6 +310,11 @@ import { VueCropper } from 'cropper-next-vue'`
               <el-option :label="`${t.actions.limit}: ${t.actions.limitBox}`" value="box" />
               <el-option :label="`${t.actions.limit}: ${t.actions.limitWrapper}`" value="wrapper" />
             </el-select>
+            <el-switch v-model="exportOriginal" :active-text="t.actions.exportOriginal" />
+            <section class="preview__max-side">
+              <span class="preview__max-side-label">{{ t.actions.maxSideLength }}</span>
+              <el-input-number v-model="maxSideLength" :min="0" :max="12000" :step="100" controls-position="right" />
+            </section>
           </section>
           <demo-image-switch v-model="img" />
         </section>
@@ -316,6 +328,8 @@ import { VueCropper } from 'cropper-next-vue'`
             :center-box="centerBox"
             :center-wrapper="centerWrapper"
             :mode="mode"
+            :original="exportOriginal"
+            :max-side-length="maxSideLength"
           />
         </section>
       </section>
@@ -456,6 +470,17 @@ import { VueCropper } from 'cropper-next-vue'`
 
 .preview__select {
   width: 220px;
+}
+
+.preview__max-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview__max-side-label {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 12px;
 }
 
 .preview__stage {
