@@ -3,8 +3,21 @@ import { defineComponent, h } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import VueCropper from '../lib/vue-cropper.vue'
 
-const { getCropImgData } = vi.hoisted(() => ({
+const { detectionBoundary, getCropImgData, loadImg } = vi.hoisted(() => ({
+  detectionBoundary: vi.fn(() => ({
+    landscape: '',
+    portrait: '',
+    scale: 1,
+    boundary: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      scale: 1,
+    },
+  })),
   getCropImgData: vi.fn(),
+  loadImg: vi.fn(async (url: string) => ({ width: 120, height: 80, src: url })),
 }))
 
 vi.mock('../lib/common', async () => {
@@ -12,7 +25,7 @@ vi.mock('../lib/common', async () => {
 
   return {
     ...actual,
-    loadImg: vi.fn(async (url: string) => ({ width: 120, height: 80, src: url })),
+    loadImg,
     getExif: vi.fn(async () => ({ orientation: 1 })),
     resetImg: vi.fn((_: HTMLImageElement, canvas: HTMLCanvasElement | null) => canvas),
     createImgStyle: vi.fn(() => 1),
@@ -35,18 +48,7 @@ vi.mock('../lib/common', async () => {
       }
     }),
     getCropImgData,
-    detectionBoundary: vi.fn(() => ({
-      landscape: '',
-      portrait: '',
-      scale: 1,
-      boundary: {
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        scale: 1,
-      },
-    })),
+    detectionBoundary,
     setAnimation: vi.fn((_: number, to: number, __: number, callback?: (value: number) => void) => {
       callback?.(to)
       return () => 0
@@ -77,8 +79,10 @@ const flush = async () => {
 
 describe('vue-cropper component api', () => {
   beforeEach(() => {
+    detectionBoundary.mockClear()
     getCropImgData.mockReset()
     getCropImgData.mockResolvedValue('data:image/png;base64,stub')
+    loadImg.mockClear()
 
     vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:preview-url')
     vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => undefined)
@@ -173,6 +177,72 @@ describe('vue-cropper component api', () => {
         imgAxis: expect.objectContaining({
           rotate: 0,
         }),
+      }),
+    )
+  })
+
+  it('reloads the current image through the public instance method', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+      },
+    })
+
+    await flush()
+    await flush()
+
+    expect(loadImg).toHaveBeenCalledTimes(2)
+
+    await (wrapper.vm as unknown as {
+      reload: () => Promise<boolean> | boolean
+    }).reload()
+    await flush()
+
+    expect(loadImg).toHaveBeenCalledTimes(4)
+    expect(loadImg).toHaveBeenNthCalledWith(3, 'https://example.com/demo.jpg')
+    expect(loadImg).toHaveBeenNthCalledWith(4, 'blob:preview-url')
+  })
+
+  it('supports setting rotate angle, crop layout and crop axis through the public api', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        wrapper: { width: 320, height: 240 },
+        centerBox: true,
+      },
+    })
+
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      setRotateAngle: (angle: number) => void
+      setCropLayout: (layout: { width: number | string, height: number | string }) => void
+      setCropAxis: (axis: { x: number, y: number }) => void
+      getCropData: () => Promise<string>
+    }
+
+    vm.setRotateAngle(450)
+    vm.setCropLayout({ width: '50%', height: '25%' })
+    vm.setCropAxis({ x: 999, y: -20 })
+    await flush()
+
+    await vm.getCropData()
+
+    expect(detectionBoundary).toHaveBeenCalled()
+    expect(getCropImgData).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        imgAxis: expect.objectContaining({
+          rotate: 90,
+        }),
+        cropLayout: {
+          width: 160,
+          height: 60,
+        },
+        cropAxis: {
+          x: 160,
+          y: 0,
+        },
       }),
     )
   })

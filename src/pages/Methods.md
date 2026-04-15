@@ -23,6 +23,10 @@ const cropper = ref()
 `cropper.value.rotateLeft()` | 向左旋转 `90deg`
 `cropper.value.rotateRight()` | 向右旋转 `90deg`
 `cropper.value.rotateClear()` | 清空旋转角度，恢复为 `0deg`
+`cropper.value.reload()` | 重新加载当前 `img`，并重新进入加载流程
+`cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
+`cropper.value.setCropLayout({ width, height })` | 手动设置截图框大小，支持数字、`px`、`%`
+`cropper.value.setCropAxis({ x, y })` | 手动设置截图框坐标，并按当前边界规则校验
 
 ## 参数说明
 
@@ -36,6 +40,21 @@ const cropper = ref()
 
 - 返回 `Blob`
 - 更适合直接上传到服务端或和 `FormData` 搭配使用
+
+`setRotateAngle(angle)`
+
+- 支持传入任意数字角度
+- 内部会归一化到 `0-360`
+
+`setCropLayout({ width, height })`
+
+- 支持 `number`、`'300px'`、`'60%'`
+- 设置后会重新布局截图框
+
+`setCropAxis({ x, y })`
+
+- 用于直接指定截图框坐标
+- 如果开启了 `centerBox` 或 `centerWrapper`，设置后会触发边界检测
 
 ## 示例
 
@@ -83,6 +102,10 @@ Method | Description
 `cropper.value.rotateLeft()` | Rotate left by `90deg`
 `cropper.value.rotateRight()` | Rotate right by `90deg`
 `cropper.value.rotateClear()` | Reset rotation back to `0deg`
+`cropper.value.reload()` | Reload the current `img` and run the loading flow again
+`cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
+`cropper.value.setCropLayout({ width, height })` | Set the crop-box size manually, supports numbers, `px`, and `%`
+`cropper.value.setCropAxis({ x, y })` | Set the crop-box position manually and re-check boundaries
 
 ## Details
 
@@ -96,6 +119,21 @@ Method | Description
 
 - returns a `Blob`
 - better suited for uploads and `FormData`
+
+`setRotateAngle(angle)`
+
+- accepts any numeric angle
+- normalizes it to `0-360`
+
+`setCropLayout({ width, height })`
+
+- supports `number`, `'300px'`, and `'60%'`
+- re-layouts the crop box after updating
+
+`setCropAxis({ x, y })`
+
+- sets the crop-box coordinates directly
+- triggers boundary checks when `centerBox` or `centerWrapper` is enabled
 
 ## Example
 

@@ -47,6 +47,21 @@
     background: rgba(0, 0, 0, 0.5);
   }
 
+  // Full-frame hint when crop box is clamped to wrapper size.
+  // Keep it subtle and do not block interactions (drag/zoom).
+  .cropper-full-mask {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.06);
+    outline: 1px solid rgba(255, 255, 255, 0.6);
+    outline-offset: -1px;
+  }
+
   .cropper-view-box {
     display: block;
     overflow: hidden;

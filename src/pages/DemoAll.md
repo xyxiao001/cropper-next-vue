@@ -45,6 +45,7 @@ This page groups commonly used props, rotation methods, and export results into 
     </vue-cropper>
     <demo-image-switch v-model="img" />
     <section class="actions">
+      <el-button @click="reload">{{ labels.reload }}</el-button>
       <el-button @click="rotateLeft">{{ labels.rotateLeft }}</el-button>
       <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
       <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
@@ -52,8 +53,8 @@ This page groups commonly used props, rotation methods, and export results into 
 
     <crop-export-panel
       :cropper="cropper"
-      :display-width="cropLayout.width"
-      :display-height="cropLayout.height"
+      :display-width="displayCropLayout.width"
+      :display-height="displayCropLayout.height"
     />
   </section>
 
@@ -168,6 +169,33 @@ This page groups commonly used props, rotation methods, and export results into 
         <el-slider v-model="defaultRotate" :min="0" :max="360" :step="1" />
       </section>
     </section>
+
+    <section class="group">
+      <p class="group-title">{{ labels.methods }}</p>
+
+      <section class="row">
+        <span class="row-label">{{ labels.setRotateAngle }}</span>
+        <el-input-number v-model="methodRotate" :min="0" :max="720" :step="1" controls-position="right" />
+        <el-button @click="applyRotateAngle">{{ labels.apply }}</el-button>
+      </section>
+
+      <section class="row">
+        <span class="row-label">{{ labels.setCropLayout }}</span>
+        <input v-model="methodCropLayout.width" class="inline-input" :placeholder="labels.widthPlaceholder" />
+        <input v-model="methodCropLayout.height" class="inline-input" :placeholder="labels.heightPlaceholder" />
+        <el-button @click="applyCropLayout">{{ labels.apply }}</el-button>
+      </section>
+      <section class="row">
+        <span class="hint">{{ labels.cropLayoutHint }}</span>
+      </section>
+
+      <section class="row">
+        <span class="row-label">{{ labels.setCropAxis }}</span>
+        <el-input-number v-model="methodCropAxis.x" :min="-9999" :max="9999" :step="1" controls-position="right" />
+        <el-input-number v-model="methodCropAxis.y" :min="-9999" :max="9999" :step="1" controls-position="right" />
+        <el-button @click="applyCropAxis">{{ labels.apply }}</el-button>
+      </section>
+    </section>
   </section>
 </section>
 ```
@@ -184,6 +212,10 @@ This page groups commonly used props, rotation methods, and export results into 
 
   const wrapper = ref({ width: 420, height: 420 })
   const cropLayout = ref({ width: 220, height: 220 })
+  const currentCropLayoutInput = ref({ width: 220, height: 220 })
+  const methodRotate = ref(180)
+  const methodCropLayout = ref({ width: '220', height: '220' })
+  const methodCropAxis = ref({ x: 100, y: 100 })
 
   const color = ref('#ffffff')
   const cropColor = ref('#ffffff')
@@ -229,9 +261,18 @@ This page groups commonly used props, rotation methods, and export results into 
     cropColor: 'Crop-box color',
     filter: 'Filter',
     rotation: 'Rotation',
+    methods: 'Methods',
+    reload: 'Reload',
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
+    setRotateAngle: 'Set rotate angle',
+    setCropLayout: 'Set crop layout',
+    setCropAxis: 'Set crop axis',
+    apply: 'Apply',
+    widthPlaceholder: 'width',
+    heightPlaceholder: 'height',
+    cropLayoutHint: 'Supports 220, 220px, and 60%',
   } : {
     loading: '加载中...',
     image: '图片',
@@ -257,9 +298,18 @@ This page groups commonly used props, rotation methods, and export results into 
     cropColor: '截图框颜色',
     filter: '滤镜',
     rotation: '旋转角度',
+    methods: '方法调用',
+    reload: '重新加载',
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
+    setRotateAngle: '设置旋转角度',
+    setCropLayout: '设置截图框大小',
+    setCropAxis: '设置截图框坐标',
+    apply: '应用',
+    widthPlaceholder: '宽度',
+    heightPlaceholder: '高度',
+    cropLayoutHint: '支持 220、220px、60%',
   })
 
   const outputTypeOptions = computed(() => [
@@ -303,9 +353,42 @@ This page groups commonly used props, rotation methods, and export results into 
     if (val) centerBox.value = false
   })
 
+  watch(cropLayout, (val) => {
+    currentCropLayoutInput.value = { ...val }
+    methodCropLayout.value = {
+      width: String(val.width),
+      height: String(val.height),
+    }
+  }, { deep: true })
+
+  const parseLength = (value, base = 0) => {
+    if (typeof value === 'number') return value
+    const normalized = String(value).trim()
+    if (normalized.endsWith('%')) {
+      const percent = Number.parseFloat(normalized)
+      if (!Number.isFinite(percent) || base <= 0) return 0
+      return (base * percent) / 100
+    }
+    const parsed = Number.parseFloat(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  const displayCropLayout = computed(() => {
+    const width = parseLength(currentCropLayoutInput.value.width, wrapper.value.width)
+    const height = parseLength(currentCropLayoutInput.value.height, wrapper.value.height)
+    return {
+      width: wrapper.value.width > 0 ? Math.min(width, wrapper.value.width) : width,
+      height: wrapper.value.height > 0 ? Math.min(height, wrapper.value.height) : height,
+    }
+  })
+
   const normalizeRotate = (val) => {
     const r = ((val % 360) + 360) % 360
     return r
+  }
+
+  const reload = () => {
+    cropper.value?.reload?.()
   }
 
   const rotateLeft = () => {
@@ -321,6 +404,29 @@ This page groups commonly used props, rotation methods, and export results into 
   const rotateClear = () => {
     cropper.value.rotateClear()
     defaultRotate.value = 0
+  }
+
+  const applyRotateAngle = () => {
+    const angle = normalizeRotate(methodRotate.value)
+    cropper.value?.setRotateAngle?.(angle)
+    defaultRotate.value = angle
+    methodRotate.value = angle
+  }
+
+  const applyCropLayout = () => {
+    const layout = {
+      width: methodCropLayout.value.width,
+      height: methodCropLayout.value.height,
+    }
+    cropper.value?.setCropLayout?.(layout)
+    currentCropLayoutInput.value = { ...layout }
+  }
+
+  const applyCropAxis = () => {
+    cropper.value?.setCropAxis?.({
+      x: methodCropAxis.value.x,
+      y: methodCropAxis.value.y,
+    })
   }
 
   const handleImgLoad = (payload) => {
@@ -341,6 +447,10 @@ This page groups commonly used props, rotation methods, and export results into 
 
   const wrapper = ref({ width: 420, height: 420 })
   const cropLayout = ref({ width: 220, height: 220 })
+  const currentCropLayoutInput = ref({ width: 220, height: 220 })
+  const methodRotate = ref(180)
+  const methodCropLayout = ref({ width: '220', height: '220' })
+  const methodCropAxis = ref({ x: 100, y: 100 })
 
   const color = ref('#fff')
   const cropColor = ref('#ffffff')
@@ -386,9 +496,18 @@ This page groups commonly used props, rotation methods, and export results into 
     cropColor: 'Crop-box color',
     filter: 'Filter',
     rotation: 'Rotation',
+    methods: 'Methods',
+    reload: 'Reload',
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
+    setRotateAngle: 'Set rotate angle',
+    setCropLayout: 'Set crop layout',
+    setCropAxis: 'Set crop axis',
+    apply: 'Apply',
+    widthPlaceholder: 'width',
+    heightPlaceholder: 'height',
+    cropLayoutHint: 'Supports 220, 220px, and 60%',
   } : {
     loading: '加载中...',
     image: '图片',
@@ -414,9 +533,18 @@ This page groups commonly used props, rotation methods, and export results into 
     cropColor: '截图框颜色',
     filter: '滤镜',
     rotation: '旋转角度',
+    methods: '方法调用',
+    reload: '重新加载',
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
+    setRotateAngle: '设置旋转角度',
+    setCropLayout: '设置截图框大小',
+    setCropAxis: '设置截图框坐标',
+    apply: '应用',
+    widthPlaceholder: '宽度',
+    heightPlaceholder: '高度',
+    cropLayoutHint: '支持 220、220px、60%',
   })
 
   const outputTypeOptions = computed(() => [
@@ -460,9 +588,42 @@ This page groups commonly used props, rotation methods, and export results into 
     if (val) centerBox.value = false
   })
 
+  watch(cropLayout, (val) => {
+    currentCropLayoutInput.value = { ...val }
+    methodCropLayout.value = {
+      width: String(val.width),
+      height: String(val.height),
+    }
+  }, { deep: true })
+
+  const parseLength = (value, base = 0) => {
+    if (typeof value === 'number') return value
+    const normalized = String(value).trim()
+    if (normalized.endsWith('%')) {
+      const percent = Number.parseFloat(normalized)
+      if (!Number.isFinite(percent) || base <= 0) return 0
+      return (base * percent) / 100
+    }
+    const parsed = Number.parseFloat(normalized)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  const displayCropLayout = computed(() => {
+    const width = parseLength(currentCropLayoutInput.value.width, wrapper.value.width)
+    const height = parseLength(currentCropLayoutInput.value.height, wrapper.value.height)
+    return {
+      width: wrapper.value.width > 0 ? Math.min(width, wrapper.value.width) : width,
+      height: wrapper.value.height > 0 ? Math.min(height, wrapper.value.height) : height,
+    }
+  })
+
   const normalizeRotate = (val) => {
     const r = ((val % 360) + 360) % 360
     return r
+  }
+
+  const reload = () => {
+    cropper.value?.reload?.()
   }
 
   const rotateLeft = () => {
@@ -480,6 +641,29 @@ This page groups commonly used props, rotation methods, and export results into 
     defaultRotate.value = 0
   }
 
+  const applyRotateAngle = () => {
+    const angle = normalizeRotate(methodRotate.value)
+    cropper.value?.setRotateAngle?.(angle)
+    defaultRotate.value = angle
+    methodRotate.value = angle
+  }
+
+  const applyCropLayout = () => {
+    const layout = {
+      width: methodCropLayout.value.width,
+      height: methodCropLayout.value.height,
+    }
+    cropper.value?.setCropLayout?.(layout)
+    currentCropLayoutInput.value = { ...layout }
+  }
+
+  const applyCropAxis = () => {
+    cropper.value?.setCropAxis?.({
+      x: methodCropAxis.value.x,
+      y: methodCropAxis.value.y,
+    })
+  }
+
   const handleImgLoad = (payload) => {
     imgLoadMessage.value = `${payload.type}: ${payload.message}`
   }
@@ -489,8 +673,13 @@ This page groups commonly used props, rotation methods, and export results into 
   .full-demo {
     display: grid;
     gap: 20px;
-    grid-template-columns: minmax(260px, 520px) minmax(260px, 1fr);
+    grid-template-columns: minmax(360px, 560px) minmax(420px, 1fr);
     align-items: start;
+  }
+
+  .left {
+    position: sticky;
+    top: 16px;
   }
 
   .actions {
@@ -501,19 +690,17 @@ This page groups commonly used props, rotation methods, and export results into 
   }
 
   .controls {
-    border: 1px solid #e5e6eb;
-    border-radius: 12px;
-    padding: 16px;
-    background: #fafafa;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 16px;
+    align-items: start;
   }
 
   .group {
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e6eb;
-  }
-
-  .group:last-child {
-    border-bottom: 0;
+    padding: 16px;
+    border: 1px solid #e5e6eb;
+    border-radius: 12px;
+    background: #fafafa;
   }
 
   .group-title {
@@ -531,7 +718,7 @@ This page groups commonly used props, rotation methods, and export results into 
   }
 
   .row-label {
-    min-width: 110px;
+    min-width: 96px;
     color: #1d2129;
   }
 
@@ -541,7 +728,16 @@ This page groups commonly used props, rotation methods, and export results into 
   }
 
   .select {
-    width: 220px;
+    width: 180px;
+  }
+
+  .inline-input {
+    width: 84px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #c9cdd4;
+    border-radius: 6px;
+    box-sizing: border-box;
   }
 
   .sep {
@@ -553,9 +749,43 @@ This page groups commonly used props, rotation methods, and export results into 
     color: #86909c;
   }
 
+  :deep(.el-input-number) {
+    width: 140px;
+  }
+
+  :deep(.el-slider) {
+    width: min(220px, 100%);
+  }
+
+  :deep(.el-switch) {
+    max-width: 100%;
+  }
+
+  @media (max-width: 1160px) {
+    .full-demo {
+      grid-template-columns: minmax(300px, 520px) minmax(320px, 1fr);
+    }
+
+    .controls {
+      grid-template-columns: 1fr;
+    }
+
+    .left {
+      position: static;
+    }
+  }
+
   @media (max-width: 860px) {
     .full-demo {
       grid-template-columns: 1fr;
+    }
+
+    .controls {
+      grid-template-columns: 1fr;
+    }
+
+    .left {
+      position: static;
     }
   }
 </style>

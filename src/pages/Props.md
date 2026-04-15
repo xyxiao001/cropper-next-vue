@@ -38,6 +38,8 @@ centerWrapperDelay | 图片限制容器内时的回弹时长 | `100` | `number`
 - `original` 影响导出像素：开启后，会把导出分辨率按当前缩放倍数放大，以尽量贴近原图分辨率（仍会受 `maxSideLength` 限制）。
 - `maxSideLength` 用于保护导出性能，默认把最长边压到 `3000` 以内；传 `0` 可关闭该限制。
 - `wrapper` 和 `cropLayout` 现在都支持传 `number` 或 `string`，例如 `300`、`'300px'`、`'60%'`。
+- `cropLayout` 使用百分比时，是基于当前 `wrapper` 宽高进行换算。
+- 当 `cropLayout` 大于等于 `wrapper` 时，会进入“全屏截图模式”：裁剪区域等于容器大小，截图框不显示，并展示一个淡淡的边框/蒙层提示。
 - 当前版本没有旧版 `autoCrop`、`fixed`、`canMoveBox`、`enlarge`、`maxImgSize` 等参数，这些属于旧实现，不再适用。
 
 </LangBlock>
@@ -82,6 +84,8 @@ centerWrapperDelay | Rebound duration for `centerWrapper` | `100` | `number`
 - `original` affects export pixel size: when enabled, export resolution scales up by the current zoom level (still clamped by `maxSideLength`).
 - `maxSideLength` protects export performance by clamping the longest edge to `3000` by default; pass `0` to disable.
 - `wrapper` and `cropLayout` now both accept `number` or `string`, such as `300`, `'300px'`, or `'60%'`.
+- Percentage-based `cropLayout` values are calculated based on the current `wrapper` size.
+- When `cropLayout` is greater than or equal to `wrapper`, it enters a "full-frame crop mode": the crop area is clamped to the wrapper size, the crop box is hidden, and a subtle frame/mask hint is shown.
 - The current version does not include old props such as `autoCrop`, `fixed`, `canMoveBox`, `enlarge`, or `maxImgSize`.
 
 </LangBlock>

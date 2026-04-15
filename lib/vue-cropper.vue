@@ -182,16 +182,32 @@ const {
 
 let realTimeFrame = 0
 
-const parseLength = (value: InterfaceLength): number => {
+const parseLength = (value: InterfaceLength, base: number = 0): number => {
   if (typeof value === 'number') {
     return value
   }
-  const parsed = Number.parseFloat(value)
+  const normalized = value.trim()
+  if (normalized.endsWith('%')) {
+    const parsedPercent = Number.parseFloat(normalized)
+    if (!Number.isFinite(parsedPercent) || base <= 0) {
+      return 0
+    }
+    return (base * parsedPercent) / 100
+  }
+  const parsed = Number.parseFloat(normalized)
   return Number.isFinite(parsed) ? parsed : 0
 }
 
 const normalizeLengthStyle = (value: InterfaceLength): string => {
   return typeof value === 'number' ? `${value}px` : value
+}
+
+const normalizeRotate = (rotate: number): number => {
+  if (!Number.isFinite(rotate)) {
+    return 0
+  }
+  const normalized = ((rotate % 360) + 360) % 360
+  return Object.is(normalized, -0) ? 0 : normalized
 }
 
 const wrapperStyle = computed(() => ({
@@ -200,9 +216,11 @@ const wrapperStyle = computed(() => ({
   height: normalizeLengthStyle(props.wrapper.height),
 }))
 
+const innerCropLayout = ref<InterfaceLayoutInput>({ ...props.cropLayout })
+
 const cropLayoutStyle = computed(() => ({
-  width: parseLength(props.cropLayout.width),
-  height: parseLength(props.cropLayout.height),
+  width: parseLength(innerCropLayout.value.width, LayoutContainer.wrapLayout.width),
+  height: parseLength(innerCropLayout.value.height, LayoutContainer.wrapLayout.height),
 }))
 
 const updateWrapLayoutFromDom = () => {
@@ -238,6 +256,12 @@ const shouldShowCropBox = computed(() => {
     effectiveCropLayoutStyle.value.width < wrapWidth ||
     effectiveCropLayoutStyle.value.height < wrapHeight
   )
+})
+
+// When the requested crop box is >= wrapper, we clamp to wrapper size and hide the crop box.
+// In that case, we render a subtle full-frame hint overlay (see template/styles).
+const isFullCropMode = computed(() => {
+  return Boolean(imgs.value) && cropping.value && !shouldShowCropBox.value
 })
 
 const getBoundaryDuration = () => {
@@ -291,8 +315,16 @@ watch(mode, () => {
 })
 
 watch(defaultRotate, (val) => {
-  setRotate(val)
+  setRotate(normalizeRotate(val))
 })
+
+watch(
+  cropLayout,
+  (val) => {
+    innerCropLayout.value = { ...val }
+  },
+  { deep: true },
+)
 
 watch(
   wrapperStyle,
@@ -507,7 +539,7 @@ const createImg = () => {
             scale,
             imgStyle: { ...LayoutContainer.imgLayout },
             layoutStyle: { ...LayoutContainer.wrapLayout },
-            rotate: defaultRotate.value,
+            rotate: normalizeRotate(defaultRotate.value),
           })
           LayoutContainer.imgExhibitionStyle = style.imgExhibitionStyle
           LayoutContainer.imgAxis = style.imgAxis
@@ -616,6 +648,8 @@ onUnmounted(() => {
   cropperRef.value?.removeEventListener('drop', drop, false)
   cropperRef.value?.removeEventListener('dragover', dragover, false)
   cropperRef.value?.removeEventListener('dragend', dragend, false)
+  // 释放滚轮事件绑定
+  window.removeEventListener(supportWheel, mouseScroll)
   unbindMoveImg()
   unbindMoveCrop()
 })
@@ -974,10 +1008,42 @@ const rotateClear = () => {
   setRotate(0)
 }
 
+const reload = () => {
+  if (!img.value) {
+    imgs.value = ''
+    imgLoading.value = false
+    return false
+  }
+  return checkedImg(img.value)
+}
+
+const setRotateAngle = (rotate: number) => {
+  setRotate(normalizeRotate(rotate))
+}
+
+const setCropLayout = (layout: InterfaceLayoutInput) => {
+  innerCropLayout.value = { ...layout }
+  if (!imgs.value) {
+    return
+  }
+  updateWrapLayoutFromDom()
+  renderCrop()
+  reboundImg()
+}
+
+const setCropAxis = (axis: InterfaceAxis) => {
+  if (!imgs.value) {
+    return
+  }
+  updateWrapLayoutFromDom()
+  checkedCrop({ ...axis })
+  reboundImg()
+}
+
 // 计算拖拽的 class 名
 const computedClassDrag = (): string => {
   const className = ['cropper-drag-box']
-  if (cropping.value) {
+  if (cropping.value && shouldShowCropBox.value) {
     className.push('cropper-modal')
   }
   return className.join(' ')
@@ -1020,6 +1086,10 @@ defineExpose({
   rotateLeft,
   rotateRight,
   rotateClear,
+  reload,
+  setRotateAngle,
+  setCropLayout,
+  setCropAxis,
 })
 </script>
 
@@ -1051,6 +1121,7 @@ defineExpose({
       </span>
       <span class="cropper-face cropper-move" ref="cropperBox" />
     </section>
+    <section v-if="isFullCropMode" class="cropper-full-mask cropper-fade-in" />
     <section v-if="isDrag" class="drag">
       <slot name="drag">
         <p>拖动图片到此</p>

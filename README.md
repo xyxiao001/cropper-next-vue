@@ -80,6 +80,23 @@ const img = ref('https://example.com/demo.jpg')
 </script>
 ```
 
+### 实例方法
+
+通过组件 `ref` 可以调用少量实例方法（导出/旋转/重载/布局控制）：
+
+```ts
+const cropper = ref()
+
+cropper.value?.reload?.()
+cropper.value?.setRotateAngle?.(180)
+cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
+cropper.value?.setCropAxis?.({ x: 0, y: 0 })
+```
+
+说明：
+
+- 当 `cropLayout` 大于等于 `wrapper` 时，会进入“全屏截图模式”：裁剪区域等于容器大小，截图框不显示，并展示一个淡淡的边框/蒙层提示。
+
 ### 本地开发
 
 如果你未启用 corepack（Node 16+），可以先执行 `corepack enable`。
@@ -226,6 +243,23 @@ import 'cropper-next-vue/style.css'
 const img = ref('https://example.com/demo.jpg')
 </script>
 ```
+
+### Instance Methods
+
+A small set of instance methods are exposed through the component `ref` (export/rotation/reload/layout control):
+
+```ts
+const cropper = ref()
+
+cropper.value?.reload?.()
+cropper.value?.setRotateAngle?.(180)
+cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
+cropper.value?.setCropAxis?.({ x: 0, y: 0 })
+```
+
+Notes:
+
+- When `cropLayout` is greater than or equal to `wrapper`, it enters a "full-frame crop mode": the crop area is clamped to the wrapper size, the crop box is hidden, and a subtle frame/mask hint is shown.
 
 ### Local development
 
