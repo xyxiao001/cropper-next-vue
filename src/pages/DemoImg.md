@@ -36,12 +36,13 @@ Try dragging and zooming both demos to compare the behavior.
   :center-box-delay="150"
   ref="cropper1"
   :img="img"
-  :crop-layout="{ width: 220, height: 220 }"
+  :wrapper="{ width: 480, height: 480 }"
+  :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <demo-image-switch v-model="img" />
 <p class="desc">{{ labels.centerBoxDesc }}</p>
-<crop-export-panel :cropper="cropper1" :display-width="220" :display-height="220" />
+<crop-export-panel :cropper="cropper1" :display-width="320" :display-height="320" />
 
 <p class="title">{{ labels.centerWrapperTitle }}</p>
 <vue-cropper 
@@ -49,11 +50,12 @@ Try dragging and zooming both demos to compare the behavior.
   :center-wrapper-delay="150"
   ref="cropper2"
   :img="img"
-  :crop-layout="{ width: 220, height: 220 }"
+  :wrapper="{ width: 480, height: 480 }"
+  :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <p class="desc">{{ labels.centerWrapperDesc }}</p>
-<crop-export-panel :cropper="cropper2" :display-width="220" :display-height="220" />
+<crop-export-panel :cropper="cropper2" :display-width="320" :display-height="320" />
 ```
 
 ```js

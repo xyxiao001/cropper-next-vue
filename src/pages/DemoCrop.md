@@ -48,8 +48,8 @@
   const cropper = ref()
   const img = ref('')
   const cropColor = ref('#ffffff')
-  const wrapper = reactive({ width: '400px', height: '400px' })
-  const cropLayout = reactive({ width: 300, height: 300 })
+  const wrapper = reactive({ width: '480px', height: '480px' })
+  const cropLayout = reactive({ width: 320, height: 320 })
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     cropColor: 'Crop-box color',
@@ -71,8 +71,8 @@
   const cropper = ref()
   const img = ref('')
   const cropColor = ref('#ffffff')
-  const wrapper = reactive({ width: '400px', height: '400px' })
-  const cropLayout = reactive({ width: 300, height: 300 })
+  const wrapper = reactive({ width: '480px', height: '480px' })
+  const cropLayout = reactive({ width: 320, height: 320 })
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     cropColor: 'Crop-box color',

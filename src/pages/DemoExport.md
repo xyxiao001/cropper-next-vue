@@ -36,7 +36,8 @@ This page focuses on the export APIs. Pay attention to:
   :output-type="outputType"
   :output-size="outputSize"
   :full="full"
-  :crop-layout="{ width: 220, height: 220 }"
+  :wrapper="{ width: 480, height: 480 }"
+  :crop-layout="{ width: 320, height: 320 }"
 ></vue-cropper>
 
 <demo-image-switch v-model="img" />
@@ -73,7 +74,7 @@ This page focuses on the export APIs. Pay attention to:
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
-  const cropSize = { width: 220, height: 220 }
+  const cropSize = { width: 320, height: 320 }
   const { isEn } = useLocale()
   const formatOptions = computed(() => [
     { label: 'png', value: 'png' },
@@ -107,7 +108,7 @@ This page focuses on the export APIs. Pay attention to:
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
-  const cropSize = { width: 220, height: 220 }
+  const cropSize = { width: 320, height: 320 }
   const { isEn } = useLocale()
   const formatOptions = computed(() => [
     { label: 'png', value: 'png' },

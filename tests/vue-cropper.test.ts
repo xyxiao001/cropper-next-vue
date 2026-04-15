@@ -20,6 +20,19 @@ const { detectionBoundary, getCropImgData, loadImg } = vi.hoisted(() => ({
   loadImg: vi.fn(async (url: string) => ({ width: 120, height: 80, src: url })),
 }))
 
+// JSDOM does not reliably load/decode `blob:` URLs, which can cause the preview pipeline
+// (`createPreviewUrlFromCanvas` -> `decodeImgUrl`) to hang and prevent downstream emits.
+vi.mock('../lib/composables/preview', () => ({
+  revokeBlobUrl: (url: string) => {
+    if (typeof url === 'string' && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url)
+    }
+  },
+  decodeImgUrl: vi.fn(async () => undefined),
+  nextFrame: vi.fn(async () => undefined),
+  createPreviewUrlFromCanvas: vi.fn(async () => 'blob:preview-url'),
+}))
+
 vi.mock('../lib/common', async () => {
   const actual = await vi.importActual<typeof import('../lib/common')>('../lib/common')
 
@@ -106,7 +119,7 @@ describe('vue-cropper component api', () => {
     await flush()
     await flush()
 
-    const emitted = wrapper.emitted('real-time')
+    const emitted = wrapper.emitted('real-time') ?? wrapper.emitted('realTime')
 
     expect(emitted).toBeTruthy()
     expect(emitted?.[0]?.[0]).toMatchObject({
@@ -191,16 +204,16 @@ describe('vue-cropper component api', () => {
     await flush()
     await flush()
 
-    expect(loadImg).toHaveBeenCalledTimes(2)
+    expect(loadImg).toHaveBeenCalledTimes(1)
+    expect(loadImg).toHaveBeenCalledWith('https://example.com/demo.jpg')
 
     await (wrapper.vm as unknown as {
       reload: () => Promise<boolean> | boolean
     }).reload()
     await flush()
 
-    expect(loadImg).toHaveBeenCalledTimes(4)
-    expect(loadImg).toHaveBeenNthCalledWith(3, 'https://example.com/demo.jpg')
-    expect(loadImg).toHaveBeenNthCalledWith(4, 'blob:preview-url')
+    expect(loadImg).toHaveBeenCalledTimes(2)
+    expect(loadImg).toHaveBeenLastCalledWith('https://example.com/demo.jpg')
   })
 
   it('supports setting rotate angle, crop layout and crop axis through the public api', async () => {
@@ -229,6 +242,8 @@ describe('vue-cropper component api', () => {
 
     await vm.getCropData()
 
+    // `detectionBoundary` is used during `reboundImg()` (boundary enforcement),
+    // which is triggered by public methods and/or internal watchers.
     expect(detectionBoundary).toHaveBeenCalled()
     expect(getCropImgData).toHaveBeenLastCalledWith(
       expect.objectContaining({

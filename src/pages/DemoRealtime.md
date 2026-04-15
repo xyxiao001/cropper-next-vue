@@ -34,7 +34,9 @@ This page demonstrates the APIs that work best for live business integration:
       ref="cropper"
       :img="img"
       :default-rotate="rotate"
-      :crop-layout="{ width: 220, height: 220 }"
+      :wrapper="{ width: 480, height: 480 }"
+      :crop-layout="{ width: 320, height: 320 }"
+      center-box
       @real-time="handlePreview"
     ></vue-cropper>
 
@@ -46,25 +48,67 @@ This page demonstrates the APIs that work best for live business integration:
       <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
     </section>
 
-    <crop-export-panel :cropper="cropper" :display-width="preview.w || 220" :display-height="preview.h || 220" />
+    <crop-export-panel :cropper="cropper" :display-width="previews.w || 320" :display-height="previews.h || 320" />
   </section>
 
   <section class="preview">
     <p>{{ labels.currentRotation }}：{{ rotate }}°</p>
-    <p>{{ labels.previewSize }}：{{ preview.w }} x {{ preview.h }}</p>
+    <p>{{ labels.previewSize }}：{{ previews.w }} x {{ previews.h }}</p>
     <p>{{ labels.previewHint }}</p>
-    <img
-      v-if="previewImage"
-      class="result-image"
-      :src="previewImage"
-      :style="{ width: `${preview.w}px`, height: `${preview.h}px` }"
-      alt="preview result"
-    />
-    <section v-if="previewInfo" class="result-meta">
-      <p>{{ labels.displaySize }}：{{ preview.w }} x {{ preview.h }}</p>
-      <p>{{ labels.exportPixels }}：{{ previewInfo.width }} x {{ previewInfo.height }}</p>
-      <p>{{ labels.fileSize }}：{{ previewInfo.sizeText }}</p>
-      <p>{{ labels.pixelRatio }}：{{ previewInfo.pixelRatioText }}</p>
+    <section class="preview-box">
+      <section class="preview-grid">
+        <section class="preview-item">
+          <p class="preview-item-title">{{ labels.previewStyle1 }}</p>
+          <section class="realtime-preview" :style="previewStyle1">
+            <img
+              v-if="previews.url"
+              :src="previews.url"
+              class="realtime-image"
+              :style="previews.img"
+              alt="realtime preview 1"
+            />
+          </section>
+        </section>
+
+        <section class="preview-item">
+          <p class="preview-item-title">{{ labels.previewStyle2 }}</p>
+          <section class="realtime-preview" :style="previewStyle2">
+            <img
+              v-if="previews.url"
+              :src="previews.url"
+              class="realtime-image"
+              :style="previews.img"
+              alt="realtime preview 2"
+            />
+          </section>
+        </section>
+
+        <section class="preview-item">
+          <p class="preview-item-title">{{ labels.previewStyle3 }}</p>
+          <section class="realtime-preview" :style="previewStyle3">
+            <img
+              v-if="previews.url"
+              :src="previews.url"
+              class="realtime-image"
+              :style="previews.img"
+              alt="realtime preview 3"
+            />
+          </section>
+        </section>
+
+        <section class="preview-item">
+          <p class="preview-item-title">{{ labels.previewStyle4 }}</p>
+          <section class="realtime-preview" :style="previewStyle4">
+            <img
+              v-if="previews.url"
+              :src="previews.url"
+              class="realtime-image"
+              :style="previews.img"
+              alt="realtime preview 4"
+            />
+          </section>
+        </section>
+      </section>
     </section>
   </section>
 </section>
@@ -72,89 +116,72 @@ This page demonstrates the APIs that work best for live business integration:
 
 ```js
 <script setup>
-  import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+  import { computed, reactive, ref } from 'vue'
   import { useLocale } from '../composables/useLocale'
+
 
   const cropper = ref()
   const img = ref('')
   const { isEn } = useLocale()
   const rotate = ref(0)
-  const preview = reactive({
+  const previews = reactive({
     w: 0,
     h: 0,
-    html: ''
+    url: '',
+    img: {
+      width: '0px',
+      height: '0px',
+      transform: '',
+    },
   })
-  const previewImage = ref('')
-  const previewInfo = ref(null)
-  let previewTimer = null
   const labels = computed(() => isEn.value ? {
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
     currentRotation: 'Current rotation',
     previewSize: 'Preview size',
-    previewHint: 'The block above is the lightweight real-time preview. The image below is the throttled real crop result.',
-    realtimeImage: 'Realtime crop preview',
-    displaySize: 'Display size',
-    exportPixels: 'Export pixels',
-    fileSize: 'File size',
-    pixelRatio: 'Pixel ratio',
+    previewHint: 'The preview blocks below are rendered from real-time payload (CSS). No getCropData() is used for live preview.',
+    previewStyle1: 'Preview style 1: zoom = 0.5 (50%)',
+    previewStyle2: 'Preview style 2: zoom = 0.2 (20%)',
+    previewStyle3: 'Preview style 3: fixed width = 100px',
+    previewStyle4: 'Preview style 4: fixed height = 100px',
   } : {
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
     currentRotation: '当前角度',
     previewSize: '预览尺寸',
-    previewHint: '上面是 real-time 返回的轻量预览，下面是节流后的实际截图结果。',
-    realtimeImage: '实时截图预览',
-    displaySize: '展示尺寸',
-    exportPixels: '导出像素',
-    fileSize: '文件大小',
-    pixelRatio: '像素倍率',
+    previewHint: '下面的预览块完全由 real-time payload 通过 CSS 渲染，不使用 getCropData() 做实时预览。',
+    previewStyle1: '预览样式 1：zoom = 0.5（50%）',
+    previewStyle2: '预览样式 2：zoom = 0.2（20%）',
+    previewStyle3: '预览样式 3：固定宽度 100px',
+    previewStyle4: '预览样式 4：固定高度 100px',
   })
 
-  const formatBytes = (size) => {
-    if (!size) return '0 B'
-    if (size < 1024) return `${size} B`
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-    return `${(size / 1024 / 1024).toFixed(2)} MB`
-  }
+  const getBasePreviewStyle = () => ({
+    width: `${previews.w}px`,
+    height: `${previews.h}px`,
+    overflow: 'hidden',
+    margin: '0',
+  })
 
-  const readImageInfo = (url, displayWidth, size = 0) => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        resolve({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-          sizeText: formatBytes(size),
-          pixelRatioText: displayWidth ? `${(img.naturalWidth / displayWidth).toFixed(2)}x` : '-',
-        })
-      }
-      img.onerror = () => resolve(null)
-      img.src = url
-    })
-  }
+  // Keep the legacy `zoom` behavior for demo parity (works well in Chromium-based browsers).
+  const previewStyle1 = computed(() => ({ ...getBasePreviewStyle(), zoom: 0.5 }))
+  const previewStyle2 = computed(() => ({ ...getBasePreviewStyle(), zoom: 0.2 }))
+  const previewStyle3 = computed(() => ({
+    ...getBasePreviewStyle(),
+    zoom: previews.w ? 100 / previews.w : 1,
+  }))
+  const previewStyle4 = computed(() => ({
+    ...getBasePreviewStyle(),
+    zoom: previews.h ? 100 / previews.h : 1,
+  }))
 
   const handlePreview = (payload) => {
-    preview.w = payload.w
-    preview.h = payload.h
-    preview.html = payload.html
-    schedulePreviewImage()
-  }
-
-  const schedulePreviewImage = () => {
-    if (previewTimer) {
-      clearTimeout(previewTimer)
-    }
-    previewTimer = setTimeout(() => {
-      cropper.value.getCropData().then((res) => {
-        previewImage.value = res
-        readImageInfo(res, preview.w, Math.round((res.length * 3) / 4)).then(info => {
-          previewInfo.value = info
-        })
-      })
-    }, 120)
+    previews.w = payload.w
+    previews.h = payload.h
+    previews.url = payload.url
+    previews.img = payload.img
   }
 
   const rotateLeft = () => {
@@ -172,99 +199,75 @@ This page demonstrates the APIs that work best for live business integration:
     rotate.value = 0
   }
 
-  onBeforeUnmount(() => {
-    if (previewTimer) {
-      clearTimeout(previewTimer)
-    }
-  })
 </script>
 ```
 :::
 
 <script setup>
-  import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+  import { computed, reactive, ref } from 'vue'
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
   const img = ref('')
   const { isEn } = useLocale()
   const rotate = ref(0)
-  const preview = reactive({
+  const previews = reactive({
     w: 0,
     h: 0,
-    html: ''
+    url: '',
+    img: {
+      width: '0px',
+      height: '0px',
+      transform: '',
+    },
   })
-  const previewImage = ref('')
-  const previewInfo = ref(null)
-  let previewTimer = null
   const labels = computed(() => isEn.value ? {
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
     currentRotation: 'Current rotation',
     previewSize: 'Preview size',
-    previewHint: 'The block above is the lightweight real-time preview. The image below is the throttled real crop result.',
-    realtimeImage: 'Realtime crop preview',
-    displaySize: 'Display size',
-    exportPixels: 'Export pixels',
-    fileSize: 'File size',
-    pixelRatio: 'Pixel ratio',
+    previewHint: 'The preview blocks below are rendered from real-time payload (CSS). No getCropData() is used for live preview.',
+    previewStyle1: 'Preview style 1: zoom = 0.5 (50%)',
+    previewStyle2: 'Preview style 2: zoom = 0.2 (20%)',
+    previewStyle3: 'Preview style 3: fixed width = 100px',
+    previewStyle4: 'Preview style 4: fixed height = 100px',
   } : {
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
     currentRotation: '当前角度',
     previewSize: '预览尺寸',
-    previewHint: '上面是 real-time 返回的轻量预览，下面是节流后的实际截图结果。',
-    realtimeImage: '实时截图预览',
-    displaySize: '展示尺寸',
-    exportPixels: '导出像素',
-    fileSize: '文件大小',
-    pixelRatio: '像素倍率',
+    previewHint: '下面的预览块完全由 real-time payload 通过 CSS 渲染，不使用 getCropData() 做实时预览。',
+    previewStyle1: '预览样式 1：zoom = 0.5（50%）',
+    previewStyle2: '预览样式 2：zoom = 0.2（20%）',
+    previewStyle3: '预览样式 3：固定宽度 100px',
+    previewStyle4: '预览样式 4：固定高度 100px',
   })
 
-  const formatBytes = (size) => {
-    if (!size) return '0 B'
-    if (size < 1024) return `${size} B`
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-    return `${(size / 1024 / 1024).toFixed(2)} MB`
-  }
+  const getBasePreviewStyle = () => ({
+    width: `${previews.w}px`,
+    height: `${previews.h}px`,
+    overflow: 'hidden',
+    margin: '0',
+  })
 
-  const readImageInfo = (url, displayWidth, size = 0) => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        resolve({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-          sizeText: formatBytes(size),
-          pixelRatioText: displayWidth ? `${(img.naturalWidth / displayWidth).toFixed(2)}x` : '-',
-        })
-      }
-      img.onerror = () => resolve(null)
-      img.src = url
-    })
-  }
+  const previewStyle1 = computed(() => ({ ...getBasePreviewStyle(), zoom: 0.5 }))
+  const previewStyle2 = computed(() => ({ ...getBasePreviewStyle(), zoom: 0.2 }))
+  const previewStyle3 = computed(() => ({
+    ...getBasePreviewStyle(),
+    zoom: previews.w ? 100 / previews.w : 1,
+  }))
+  const previewStyle4 = computed(() => ({
+    ...getBasePreviewStyle(),
+    zoom: previews.h ? 100 / previews.h : 1,
+  }))
 
   const handlePreview = (payload) => {
-    preview.w = payload.w
-    preview.h = payload.h
-    preview.html = payload.html
-    schedulePreviewImage()
-  }
-
-  const schedulePreviewImage = () => {
-    if (previewTimer) {
-      clearTimeout(previewTimer)
-    }
-    previewTimer = window.setTimeout(() => {
-      cropper.value.getCropData().then((res) => {
-        previewImage.value = res
-        readImageInfo(res, preview.w, Math.round((res.length * 3) / 4)).then(info => {
-          previewInfo.value = info
-        })
-      })
-    }, 16)
+    previews.w = payload.w
+    previews.h = payload.h
+    previews.url = payload.url
+    previews.img = payload.img
   }
 
   const rotateLeft = () => {
@@ -282,12 +285,6 @@ This page demonstrates the APIs that work best for live business integration:
     rotate.value = 0
   }
 
-  onBeforeUnmount(() => {
-    if (previewTimer) {
-      clearTimeout(previewTimer)
-      previewTimer = null
-    }
-  })
 </script>
 
 <style lang="scss" scoped>
@@ -316,20 +313,26 @@ This page demonstrates the APIs that work best for live business integration:
     margin-top: 12px;
   }
 
-  .result-image {
-    display: block;
-    margin-top: 16px;
+  .preview-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .preview-item-title {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #4e5969;
+  }
+
+  .realtime-preview {
+    overflow: hidden;
     border: 1px solid #e5e6eb;
-    object-fit: contain;
     background: #fff;
   }
 
-  .result-meta {
-    margin-top: 10px;
-    display: grid;
-    gap: 6px;
-    color: #4e5969;
-    font-size: 13px;
+  .realtime-image {
+    display: block;
   }
 
   p {

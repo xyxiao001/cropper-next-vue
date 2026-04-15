@@ -4,6 +4,13 @@
 
 这个页面用来记录每个版本的改动，方便回溯功能与 API 变化。
 
+## 0.2.0
+
+- 重构核心实现，拆分 composables，便于维护与扩展（对外 API 基本保持不变）
+- 预览链路优化：基于 `wrapper + dpr` 生成预览并支持 `previewMaxSide` 限制，提升大图性能与稳定性
+- 更新文档与示例页（Props / Event / Demo 等）
+- 补充并修复测试用例（新增 preview 单测，组件用例适配 jsdom）
+
 ## 0.1.3
 
 - 新增实例方法：`reload`、`setRotateAngle`、`setCropLayout`、`setCropAxis`
@@ -22,6 +29,13 @@
 # Changelog
 
 This page tracks version changes and API updates.
+
+## 0.2.0
+
+- Refactored the core implementation by splitting logic into composables (public API stays mostly the same)
+- Improved preview pipeline: generates preview with `wrapper + dpr` and adds a `previewMaxSide` cap for large images
+- Updated docs and demo pages (Props / Event / Demos)
+- Improved tests (added preview unit tests and stabilized component tests in jsdom)
 
 ## 0.1.3
 

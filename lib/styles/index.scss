@@ -31,6 +31,10 @@
     transform: none;
     max-width: none;
     max-height: none;
+    // Preview image may be downscaled; stretch to the logical layout size to keep transforms correct.
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
   .cropper-drag-box {
@@ -127,6 +131,10 @@
   & + .vue-cropper {
     margin-left: 20px;
   }
+}
+
+.realtime-preview img {
+  max-width: none !important;
 }
 
 // 旋转动画

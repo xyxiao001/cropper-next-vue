@@ -30,6 +30,7 @@ This page groups commonly used props, rotation methods, and export results into 
       :full="full"
       :original="original"
       :max-side-length="maxSideLength"
+      :preview-max-side="previewMaxSide"
       :mode="mode"
       :crop-color="cropColor"
       :default-rotate="defaultRotate"
@@ -114,6 +115,11 @@ This page groups commonly used props, rotation methods, and export results into 
       <section class="row">
         <span class="row-label">{{ labels.maxSideLength }}</span>
         <el-input-number v-model="maxSideLength" :min="0" :max="12000" :step="100" controls-position="right" />
+      </section>
+
+      <section class="row">
+        <span class="row-label">{{ labels.previewMaxSide }}</span>
+        <el-input-number v-model="previewMaxSide" :min="0" :max="12000" :step="100" controls-position="right" />
       </section>
     </section>
 
@@ -203,28 +209,29 @@ This page groups commonly used props, rotation methods, and export results into 
 ```js
 <script setup>
   import { computed, ref, watch } from 'vue'
-  import { grayscale, blackAndWhite, oldPhoto } from '../../lib/filter/index.ts'
+  import { grayscale, blackAndWhite, oldPhoto } from '../../lib/filters/index.ts'
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
   const img = ref('')
   const imgLoadMessage = ref('-')
 
-  const wrapper = ref({ width: 420, height: 420 })
-  const cropLayout = ref({ width: 220, height: 220 })
-  const currentCropLayoutInput = ref({ width: 220, height: 220 })
-  const methodRotate = ref(180)
-  const methodCropLayout = ref({ width: '220', height: '220' })
+  const wrapper = ref({ width: 560, height: 560 })
+  const cropLayout = ref({ width: 320, height: 320 })
+  const currentCropLayoutInput = ref({ width: 320, height: 320 })
+  const methodRotate = ref(90)
+  const methodCropLayout = ref({ width: '320', height: '320' })
   const methodCropAxis = ref({ x: 100, y: 100 })
 
   const color = ref('#ffffff')
   const cropColor = ref('#ffffff')
 
-  const outputType = ref('png')
-  const outputSize = ref(1)
+  const outputType = ref('webp')
+  const outputSize = ref(0.9)
   const full = ref(true)
   const original = ref(false)
   const maxSideLength = ref(3000)
+  const previewMaxSide = ref(2048)
 
   const mode = ref('cover')
   const defaultRotate = ref(0)
@@ -251,6 +258,7 @@ This page groups commonly used props, rotation methods, and export results into 
     full: 'High-DPI export',
     original: 'Export with original ratio',
     maxSideLength: 'Max side length',
+    previewMaxSide: 'Preview max side',
     behavior: 'Behavior',
     mode: 'Mode',
     centerBox: 'centerBox',
@@ -272,7 +280,7 @@ This page groups commonly used props, rotation methods, and export results into 
     apply: 'Apply',
     widthPlaceholder: 'width',
     heightPlaceholder: 'height',
-    cropLayoutHint: 'Supports 220, 220px, and 60%',
+    cropLayoutHint: 'Supports 320, 320px, and 60%',
   } : {
     loading: '加载中...',
     image: '图片',
@@ -288,6 +296,7 @@ This page groups commonly used props, rotation methods, and export results into 
     full: '高分屏导出',
     original: '按原图比例导出',
     maxSideLength: '导出最长边',
+    previewMaxSide: '预览最长边',
     behavior: '行为',
     mode: '布局模式',
     centerBox: '图片限制截图框内',
@@ -309,7 +318,7 @@ This page groups commonly used props, rotation methods, and export results into 
     apply: '应用',
     widthPlaceholder: '宽度',
     heightPlaceholder: '高度',
-    cropLayoutHint: '支持 220、220px、60%',
+    cropLayoutHint: '支持 320、320px、60%',
   })
 
   const outputTypeOptions = computed(() => [
@@ -438,28 +447,29 @@ This page groups commonly used props, rotation methods, and export results into 
 
 <script setup>
   import { computed, ref, watch } from 'vue'
-  import { grayscale, blackAndWhite, oldPhoto } from '../../lib/filter/index.ts'
+  import { grayscale, blackAndWhite, oldPhoto } from '../../lib/filters/index.ts'
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
   const img = ref('')
   const imgLoadMessage = ref('-')
 
-  const wrapper = ref({ width: 420, height: 420 })
-  const cropLayout = ref({ width: 220, height: 220 })
-  const currentCropLayoutInput = ref({ width: 220, height: 220 })
-  const methodRotate = ref(180)
-  const methodCropLayout = ref({ width: '220', height: '220' })
+  const wrapper = ref({ width: 560, height: 560 })
+  const cropLayout = ref({ width: 320, height: 320 })
+  const currentCropLayoutInput = ref({ width: 320, height: 320 })
+  const methodRotate = ref(90)
+  const methodCropLayout = ref({ width: '320', height: '320' })
   const methodCropAxis = ref({ x: 100, y: 100 })
 
   const color = ref('#fff')
   const cropColor = ref('#ffffff')
 
-  const outputType = ref('png')
-  const outputSize = ref(1)
+  const outputType = ref('webp')
+  const outputSize = ref(0.9)
   const full = ref(true)
   const original = ref(false)
   const maxSideLength = ref(3000)
+  const previewMaxSide = ref(2048)
 
   const mode = ref('cover')
   const defaultRotate = ref(0)
@@ -486,6 +496,7 @@ This page groups commonly used props, rotation methods, and export results into 
     full: 'High-DPI export',
     original: 'Export with original ratio',
     maxSideLength: 'Max side length',
+    previewMaxSide: 'Preview max side',
     behavior: 'Behavior',
     mode: 'Mode',
     centerBox: 'centerBox',
@@ -507,7 +518,7 @@ This page groups commonly used props, rotation methods, and export results into 
     apply: 'Apply',
     widthPlaceholder: 'width',
     heightPlaceholder: 'height',
-    cropLayoutHint: 'Supports 220, 220px, and 60%',
+    cropLayoutHint: 'Supports 320, 320px, and 60%',
   } : {
     loading: '加载中...',
     image: '图片',
@@ -523,6 +534,7 @@ This page groups commonly used props, rotation methods, and export results into 
     full: '高分屏导出',
     original: '按原图比例导出',
     maxSideLength: '导出最长边',
+    previewMaxSide: '预览最长边',
     behavior: '行为',
     mode: '布局模式',
     centerBox: '图片限制截图框内',
@@ -544,7 +556,7 @@ This page groups commonly used props, rotation methods, and export results into 
     apply: '应用',
     widthPlaceholder: '宽度',
     heightPlaceholder: '高度',
-    cropLayoutHint: '支持 220、220px、60%',
+    cropLayoutHint: '支持 320、320px、60%',
   })
 
   const outputTypeOptions = computed(() => [

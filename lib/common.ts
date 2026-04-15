@@ -149,7 +149,10 @@ interface CropImageOptions {
   full?: boolean
   original?: boolean
   maxSideLength?: number
-  url: string
+  // Prefer in-memory source to avoid an extra blob url + decode pass during export.
+  // If not provided, `url` is used as fallback for backward compatibility.
+  sourceCanvas?: HTMLCanvasElement
+  url?: string
   imgAxis: InterfaceImgAxis
   imgLayout: InterfaceLayoutStyle
   cropLayout: InterfaceLayoutStyle
@@ -256,6 +259,7 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
   const {
     type = 'base64',
     url,
+    sourceCanvas,
     imgLayout,
     imgAxis,
     cropAxis,
@@ -269,13 +273,18 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
   } = options
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-  // 加载图片
-  let img: HTMLImageElement
-  try {
-    img = await loadImg(url)
-  } catch (e) {
-    console.log(e)
-    img = new Image()
+  // Load source image only when a canvas source is not provided.
+  let img: HTMLImageElement | null = null
+  if (!sourceCanvas) {
+    if (!url) {
+      throw new Error('getCropImgData: either `sourceCanvas` or `url` must be provided')
+    }
+    try {
+      img = await loadImg(url)
+    } catch (e) {
+      console.log(e)
+      img = new Image()
+    }
   }
   return new Promise((resolve, reject) => {
     try {
@@ -300,7 +309,18 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
         y: imgAxis.y * coordinateScale,
       }
 
-      const imgCanvas = getImgCanvas(img, imgLayout, imgAxis.rotate, canvasScale)
+      let imgCanvas: HTMLCanvasElement
+      if (sourceCanvas) {
+        // Fast path: if no rotation and no intermediate scaling is needed, reuse the source canvas
+        // to avoid an extra full-size copy allocation.
+        if (!imgAxis.rotate && canvasScale === 1) {
+          imgCanvas = sourceCanvas
+        } else {
+          imgCanvas = getImgCanvasFromCanvas(sourceCanvas, imgLayout, imgAxis.rotate, canvasScale)
+        }
+      } else {
+        imgCanvas = getImgCanvas(img as HTMLImageElement, imgLayout, imgAxis.rotate, canvasScale)
+      }
       let dx = scaledImgAxis.x - scaledCropAxis.x
       let dy = scaledImgAxis.y - scaledCropAxis.y
       let width = scaledCropLayout.width
@@ -359,6 +379,45 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
       reject(e)
     }
   })
+}
+
+/**
+ * Same behavior as `getImgCanvas`, but uses an in-memory canvas as the source.
+ * This avoids `blob:` url generation + decode during export.
+ */
+const getImgCanvasFromCanvas = (
+  src: HTMLCanvasElement,
+  imgLayout: InterfaceLayoutStyle,
+  rotate: number = 0,
+  scale: number = 1,
+): HTMLCanvasElement => {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
+  let { width, height } = imgLayout
+  let dx = 0
+  let dy = 0
+  let max = 0
+
+  width = width * scale
+  height = height * scale
+
+  canvas.width = width
+  canvas.height = height
+
+  if (rotate) {
+    max = Math.ceil(Math.sqrt(width * width + height * height))
+    canvas.width = max
+    canvas.height = max
+    ctx.translate(max / 2, max / 2)
+    ctx.rotate((rotate * Math.PI) / 180)
+    dx = -max / 2 + (max - width) / 2
+    dy = -max / 2 + (max - height) / 2
+  }
+
+  ctx.drawImage(src, dx, dy, width, height)
+  ctx.restore()
+  return canvas
 }
 
 /**

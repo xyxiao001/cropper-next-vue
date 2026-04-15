@@ -2,7 +2,7 @@
 
 # 参数
 
-当前版本暴露的组件参数以 [lib/vue-cropper.vue](/Users/bytedance/projects/cropper-next/lib/vue-cropper.vue) 为准。
+当前版本暴露的组件参数以 `lib/vue-cropper.vue` 为准。
 
 名称 | 功能 | 默认值 | 类型 / 可选值
 --- | --- | --- | ---
@@ -16,6 +16,7 @@ outputSize | 输出图片质量 | `1` | `number`，建议 `0-1`
 full | 是否按高分屏方式导出 | `true` | `boolean`
 original | 按原图比例导出（跟随当前缩放倍数放大导出像素） | `false` | `boolean`
 maxSideLength | 限制导出图片最长边像素（`0` 表示不限制） | `3000` | `number`
+previewMaxSide | 预览用最大边长像素（仅影响预览渲染，不影响导出结果） | `2048` | `number`
 mode | 图片初始布局方式 | `'cover'` | `contain`、`cover`、`original`、`100px`、`100%`、`auto 100px` 等
 cropColor | 截图框描边颜色 | `'#fff'` | `string`
 defaultRotate | 默认旋转角度 | `0` | `number`
@@ -37,6 +38,7 @@ centerWrapperDelay | 图片限制容器内时的回弹时长 | `100` | `number`
 - `full` 默认开启，导出时会按当前设备像素比生成更适合高分屏的结果。
 - `original` 影响导出像素：开启后，会把导出分辨率按当前缩放倍数放大，以尽量贴近原图分辨率（仍会受 `maxSideLength` 限制）。
 - `maxSideLength` 用于保护导出性能，默认把最长边压到 `3000` 以内；传 `0` 可关闭该限制。
+- `previewMaxSide` 用于保护预览渲染性能：当原图边长过大时，内部会对“预览用图片”做下采样；不影响导出结果清晰度。
 - `wrapper` 和 `cropLayout` 现在都支持传 `number` 或 `string`，例如 `300`、`'300px'`、`'60%'`。
 - `cropLayout` 使用百分比时，是基于当前 `wrapper` 宽高进行换算。
 - 当 `cropLayout` 大于等于 `wrapper` 时，会进入“全屏截图模式”：裁剪区域等于容器大小，截图框不显示，并展示一个淡淡的边框/蒙层提示。
@@ -48,7 +50,7 @@ centerWrapperDelay | 图片限制容器内时的回弹时长 | `100` | `number`
 
 # Props
 
-The current public props are defined by [lib/vue-cropper.vue](/Users/bytedance/projects/cropper-next/lib/vue-cropper.vue).
+The current public props are defined by `lib/vue-cropper.vue`
 
 Name | Purpose | Default | Type / Allowed values
 --- | --- | --- | ---
@@ -62,6 +64,7 @@ outputSize | Export quality | `1` | `number`, recommended `0-1`
 full | Export for high-DPI output | `true` | `boolean`
 original | Export using the original pixel ratio (scale export pixels up by the current zoom) | `false` | `boolean`
 maxSideLength | Clamp export max edge size (`0` disables clamping) | `3000` | `number`
+previewMaxSide | Max edge size used for preview rendering only (does not affect export) | `2048` | `number`
 mode | Initial image layout mode | `'cover'` | `contain`, `cover`, `original`, `100px`, `100%`, `auto 100px`, etc.
 cropColor | Crop-box outline color | `'#fff'` | `string`
 defaultRotate | Initial rotation angle | `0` | `number`
@@ -83,6 +86,7 @@ centerWrapperDelay | Rebound duration for `centerWrapper` | `100` | `number`
 - `full` is enabled by default, so exports use the current device pixel ratio for sharper high-DPI output.
 - `original` affects export pixel size: when enabled, export resolution scales up by the current zoom level (still clamped by `maxSideLength`).
 - `maxSideLength` protects export performance by clamping the longest edge to `3000` by default; pass `0` to disable.
+- `previewMaxSide` protects preview performance by downscaling the internal preview image when the source is huge; it does not affect export quality.
 - `wrapper` and `cropLayout` now both accept `number` or `string`, such as `300`, `'300px'`, or `'60%'`.
 - Percentage-based `cropLayout` values are calculated based on the current `wrapper` size.
 - When `cropLayout` is greater than or equal to `wrapper`, it enters a "full-frame crop mode": the crop area is clamped to the wrapper size, the crop box is hidden, and a subtle frame/mask hint is shown.

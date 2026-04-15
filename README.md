@@ -92,10 +92,48 @@ cropper.value?.setRotateAngle?.(180)
 cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
 cropper.value?.setCropAxis?.({ x: 0, y: 0 })
 ```
+### 实时预览（推荐用法）
+
+业务联动场景建议监听 `@real-time`，并使用回调的 `payload.url + payload.img` 通过 CSS 渲染轻量实时预览（不需要在交互过程中频繁调用 `getCropData()`）：
+
+```vue
+<template>
+  <VueCropper :img="img" @real-time="handlePreview" />
+
+  <section class="realtime-preview" :style="{ width: w + 'px', height: h + 'px', overflow: 'hidden' }">
+    <img v-if="url" :src="url" :style="imgStyle" alt="realtime preview" />
+  </section>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const w = ref(0)
+const h = ref(0)
+const url = ref('')
+const imgStyle = ref<{ width: string; height: string; transform: string }>({
+  width: '0px',
+  height: '0px',
+  transform: '',
+})
+
+const handlePreview = (payload: any) => {
+  w.value = payload.w
+  h.value = payload.h
+  url.value = payload.url
+  imgStyle.value = payload.img
+}
+</script>
+```
 
 说明：
 
-- 当 `cropLayout` 大于等于 `wrapper` 时，会进入“全屏截图模式”：裁剪区域等于容器大小，截图框不显示，并展示一个淡淡的边框/蒙层提示。
+- `realTime` 是 `real-time` 的兼容别名，推荐优先用 `real-time`。
+- `payload.html` 字段主要用于兼容/快速调试，不建议业务依赖其结构；如需 `v-html` 渲染请注意注入风险。
+
+
+说明：
+
 
 ### 本地开发
 
@@ -256,10 +294,48 @@ cropper.value?.setRotateAngle?.(180)
 cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
 cropper.value?.setCropAxis?.({ x: 0, y: 0 })
 ```
+### Realtime Preview (Recommended)
+
+For realtime UI integration, listen to `@real-time` and render a lightweight live preview with `payload.url + payload.img` (CSS only). This avoids calling `getCropData()` frequently during interactions:
+
+```vue
+<template>
+  <VueCropper :img="img" @real-time="handlePreview" />
+
+  <section class="realtime-preview" :style="{ width: w + 'px', height: h + 'px', overflow: 'hidden' }">
+    <img v-if="url" :src="url" :style="imgStyle" alt="realtime preview" />
+  </section>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const w = ref(0)
+const h = ref(0)
+const url = ref('')
+const imgStyle = ref<{ width: string; height: string; transform: string }>({
+  width: '0px',
+  height: '0px',
+  transform: '',
+})
+
+const handlePreview = (payload: any) => {
+  w.value = payload.w
+  h.value = payload.h
+  url.value = payload.url
+  imgStyle.value = payload.img
+}
+</script>
+```
 
 Notes:
 
-- When `cropLayout` is greater than or equal to `wrapper`, it enters a "full-frame crop mode": the crop area is clamped to the wrapper size, the crop box is hidden, and a subtle frame/mask hint is shown.
+- `realTime` is a compatibility alias of `real-time`. Prefer `real-time` in new code.
+- `payload.html` is mainly kept for compatibility / quick debugging. Avoid depending on its structure; if you render it via `v-html`, be aware of injection risks.
+
+
+Notes:
+
 
 ### Local development
 

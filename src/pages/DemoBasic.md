@@ -31,7 +31,8 @@ Try these three actions first:
 <vue-cropper
   ref="cropper"
   :img="img"
-  :crop-layout="{ width: 220, height: 220 }"
+  :wrapper="{ width: 480, height: 480 }"
+  :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <demo-image-switch v-model="img" />
@@ -39,7 +40,7 @@ Try these three actions first:
   <p>{{ labels.tipFlow }}</p>
   <p>{{ labels.tipRetina }}</p>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="220" :display-height="220" />
+<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
 ```
 
 ```js

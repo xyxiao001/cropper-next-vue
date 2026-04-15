@@ -35,7 +35,7 @@ This demo highlights two things:
   :wrapper="wrapper"
   ref="cropper"
   :img="img"
-  :crop-layout="{ width: 220, height: 220 }"
+  :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <demo-image-switch v-model="img" />
@@ -59,7 +59,7 @@ This demo highlights two things:
   <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
   <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="220" :display-height="220" />
+<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
 ```
 
 ```js
@@ -74,7 +74,7 @@ This demo highlights two things:
   const centerWrapper = ref(false)
   const centerWrapperDelay = ref(100)
   const rotate = ref(30)
-  const wrapper = { width: '500px', height: '500px' }
+  const wrapper = { width: '560px', height: '560px' }
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     centerBox: 'centerBox',
@@ -123,7 +123,7 @@ This demo highlights two things:
   const centerWrapper = ref(false)
   const centerWrapperDelay = ref(100)
   const rotate = ref(30)
-  const wrapper = { width: '500px', height: '500px' }
+  const wrapper = { width: '560px', height: '560px' }
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     centerBox: 'centerBox',
