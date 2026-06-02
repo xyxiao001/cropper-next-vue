@@ -54,7 +54,7 @@
     "serve": "vite preview"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
