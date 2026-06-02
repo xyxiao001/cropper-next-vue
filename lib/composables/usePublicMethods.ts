@@ -22,6 +22,7 @@ export const usePublicMethods = (options: {
   renderCrop: (axis?: InterfaceAxis) => void
   checkedCrop: (axis: InterfaceAxis) => void
   reboundImg: () => void
+  setScale: (scale: number) => void
   queueRealTimeEmit: () => void
 }) => {
   const {
@@ -35,8 +36,17 @@ export const usePublicMethods = (options: {
     renderCrop,
     checkedCrop,
     reboundImg,
+    setScale,
     queueRealTimeEmit,
   } = options
+
+  const MIN_SCALE = 0.01
+  const DEFAULT_ZOOM_STEP = 0.1
+
+  const getValidZoomStep = (step: number = DEFAULT_ZOOM_STEP) => {
+    const value = Math.abs(Number(step))
+    return Number.isFinite(value) && value > 0 ? value : DEFAULT_ZOOM_STEP
+  }
 
   const setRotate = (rotate: number, shouldRebound: boolean = true) => {
     const { x, y, scale } = layout.imgAxis
@@ -104,6 +114,23 @@ export const usePublicMethods = (options: {
     reboundImg()
   }
 
+  const changeScale = (value: number = DEFAULT_ZOOM_STEP) => {
+    if (!imgs.value) {
+      return
+    }
+    updateWrapLayoutFromDom()
+    const nextScale = Math.max(MIN_SCALE, layout.imgAxis.scale + Number(value))
+    setScale(Number.isFinite(nextScale) ? nextScale : layout.imgAxis.scale)
+  }
+
+  const zoomIn = (step: number = DEFAULT_ZOOM_STEP) => {
+    changeScale(layout.imgAxis.scale * getValidZoomStep(step))
+  }
+
+  const zoomOut = (step: number = DEFAULT_ZOOM_STEP) => {
+    changeScale(-layout.imgAxis.scale * getValidZoomStep(step))
+  }
+
   return {
     setRotate,
     rotateLeft,
@@ -113,5 +140,8 @@ export const usePublicMethods = (options: {
     setRotateAngle,
     setCropLayout,
     setCropAxis,
+    changeScale,
+    zoomIn,
+    zoomOut,
   }
 }

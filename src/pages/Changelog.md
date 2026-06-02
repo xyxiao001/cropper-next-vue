@@ -4,6 +4,13 @@
 
 这个页面用来记录每个版本的改动，方便回溯功能与 API 变化。
 
+## 0.3.0
+
+- 新增实例缩放方法：`zoomIn`、`zoomOut`、`changeScale`
+- 首页补充缩放按钮示例，文档补齐缩放方法说明
+- 修复连续滚轮缩放后加速状态未复位导致缩放幅度异常的问题
+- 优化大图按钮缩放体验，`zoomIn` / `zoomOut` 改为按当前缩放比例相对调整
+
 ## 0.2.0
 
 - 重构核心实现，拆分 composables，便于维护与扩展（对外 API 基本保持不变）
@@ -29,6 +36,13 @@
 # Changelog
 
 This page tracks version changes and API updates.
+
+## 0.3.0
+
+- Added public zoom instance methods: `zoomIn`, `zoomOut`, and `changeScale`
+- Added zoom button examples on the home page and updated method docs
+- Fixed abnormal zoom jumps after continuous mouse-wheel zooming by resetting wheel acceleration state
+- Improved large-image button zooming by making `zoomIn` / `zoomOut` relative to the current scale
 
 ## 0.2.0
 

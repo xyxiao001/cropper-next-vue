@@ -262,6 +262,41 @@ describe('vue-cropper component api', () => {
     )
   })
 
+  it('supports zooming through public instance methods', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+      },
+    })
+
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      zoomIn: (step?: number) => void
+      zoomOut: (step?: number) => void
+      changeScale: (value?: number) => void
+      getCropData: () => Promise<string>
+    }
+
+    await vm.getCropData()
+    const initialScale = getCropImgData.mock.lastCall?.[0].imgAxis.scale
+
+    vm.zoomIn(0.2)
+    await vm.getCropData()
+    const zoomedInScale = initialScale * 1.2
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBeCloseTo(zoomedInScale)
+
+    vm.zoomOut(0.05)
+    await vm.getCropData()
+    const zoomedOutScale = zoomedInScale * 0.95
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBeCloseTo(zoomedOutScale)
+
+    vm.changeScale(-0.1)
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBeCloseTo(zoomedOutScale - 0.1)
+  })
+
   it('forwards original export options to the export helper', async () => {
     const wrapper = mount(VueCropper, {
       props: {

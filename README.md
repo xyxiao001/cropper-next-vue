@@ -82,12 +82,15 @@ const img = ref('https://example.com/demo.jpg')
 
 ### 实例方法
 
-通过组件 `ref` 可以调用少量实例方法（导出/旋转/重载/布局控制）：
+通过组件 `ref` 可以调用少量实例方法（导出/旋转/缩放/重载/布局控制）：
 
 ```ts
 const cropper = ref()
 
 cropper.value?.reload?.()
+cropper.value?.zoomIn?.()
+cropper.value?.zoomOut?.()
+cropper.value?.changeScale?.(0.1)
 cropper.value?.setRotateAngle?.(180)
 cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
 cropper.value?.setCropAxis?.({ x: 0, y: 0 })
@@ -284,12 +287,15 @@ const img = ref('https://example.com/demo.jpg')
 
 ### Instance Methods
 
-A small set of instance methods are exposed through the component `ref` (export/rotation/reload/layout control):
+A small set of instance methods are exposed through the component `ref` (export/rotation/zoom/reload/layout control):
 
 ```ts
 const cropper = ref()
 
 cropper.value?.reload?.()
+cropper.value?.zoomIn?.()
+cropper.value?.zoomOut?.()
+cropper.value?.changeScale?.(0.1)
 cropper.value?.setRotateAngle?.(180)
 cropper.value?.setCropLayout?.({ width: '60%', height: 220 })
 cropper.value?.setCropAxis?.({ x: 0, y: 0 })

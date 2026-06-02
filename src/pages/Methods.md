@@ -27,6 +27,9 @@ const cropper = ref()
 `cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
 `cropper.value.setCropLayout({ width, height })` | 手动设置截图框大小，支持数字、`px`、`%`
 `cropper.value.setCropAxis({ x, y })` | 手动设置截图框坐标，并按当前边界规则校验
+`cropper.value.zoomIn(step?)` | 按当前缩放比例放大图片，默认步进为 `0.1`
+`cropper.value.zoomOut(step?)` | 按当前缩放比例缩小图片，默认步进为 `0.1`
+`cropper.value.changeScale(value?)` | 按传入值改变缩放比例，正数放大、负数缩小
 
 ## 参数说明
 
@@ -56,6 +59,17 @@ const cropper = ref()
 - 用于直接指定截图框坐标
 - 如果开启了 `centerBox` 或 `centerWrapper`，设置后会触发边界检测
 
+`zoomIn(step?)` / `zoomOut(step?)`
+
+- 默认每次基于当前缩放比例调整 `10%`
+- 可以传入自定义相对步进，例如 `zoomIn(0.2)` 表示放大 `20%`，`zoomOut(0.05)` 表示缩小 `5%`
+- 和鼠标滚轮缩放一致，缩放后会按当前边界规则触发回弹校验
+
+`changeScale(value?)`
+
+- 正数表示放大，负数表示缩小，例如 `changeScale(0.1)`、`changeScale(-0.1)`
+- 适合需要自己计算按钮步进或滑杆差值的场景
+
 ## 示例
 
 ```ts
@@ -71,9 +85,19 @@ cropper.value.getCropBlob().then((blob) => {
 })
 ```
 
+```ts
+const zoomIn = () => {
+  cropper.value?.zoomIn?.()
+}
+
+const zoomOut = () => {
+  cropper.value?.zoomOut?.()
+}
+```
+
 ## 说明
 
-当前版本仍然没有旧版的 `startCrop`、`stopCrop`、`clearCrop`、`changeScale`、`getImgAxis`、`getCropAxis`、`goAutoCrop`。这些属于旧版“可变裁剪框”路线，和当前实现不一致。
+当前版本仍然没有旧版的 `startCrop`、`stopCrop`、`clearCrop`、`getImgAxis`、`getCropAxis`、`goAutoCrop`。这些属于旧版“可变裁剪框”路线，和当前实现不一致。
 
 </LangBlock>
 
@@ -106,6 +130,9 @@ Method | Description
 `cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
 `cropper.value.setCropLayout({ width, height })` | Set the crop-box size manually, supports numbers, `px`, and `%`
 `cropper.value.setCropAxis({ x, y })` | Set the crop-box position manually and re-check boundaries
+`cropper.value.zoomIn(step?)` | Zoom in by the current scale ratio, default step is `0.1`
+`cropper.value.zoomOut(step?)` | Zoom out by the current scale ratio, default step is `0.1`
+`cropper.value.changeScale(value?)` | Change scale by the given delta. Positive zooms in, negative zooms out
 
 ## Details
 
@@ -135,6 +162,17 @@ Method | Description
 - sets the crop-box coordinates directly
 - triggers boundary checks when `centerBox` or `centerWrapper` is enabled
 
+`zoomIn(step?)` / `zoomOut(step?)`
+
+- adjusts by `10%` of the current scale by default
+- accepts a custom relative step, for example `zoomIn(0.2)` means zoom in by `20%`, and `zoomOut(0.05)` means zoom out by `5%`
+- follows the same boundary rebound behavior as mouse-wheel zoom
+
+`changeScale(value?)`
+
+- positive values zoom in and negative values zoom out, for example `changeScale(0.1)` and `changeScale(-0.1)`
+- useful when buttons or sliders calculate their own scale delta
+
 ## Example
 
 ```ts
@@ -150,8 +188,18 @@ cropper.value.getCropBlob().then((blob) => {
 })
 ```
 
+```ts
+const zoomIn = () => {
+  cropper.value?.zoomIn?.()
+}
+
+const zoomOut = () => {
+  cropper.value?.zoomOut?.()
+}
+```
+
 ## Notes
 
-The current version still does not include old APIs such as `startCrop`, `stopCrop`, `clearCrop`, `changeScale`, `getImgAxis`, `getCropAxis`, or `goAutoCrop`. Those belonged to the old resizable crop-box direction.
+The current version still does not include old APIs such as `startCrop`, `stopCrop`, `clearCrop`, `getImgAxis`, `getCropAxis`, or `goAutoCrop`. Those belonged to the old resizable crop-box direction.
 
 </LangBlock>

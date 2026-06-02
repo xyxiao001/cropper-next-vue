@@ -306,6 +306,9 @@ const {
   setRotateAngle,
   setCropLayout,
   setCropAxis,
+  changeScale,
+  zoomIn,
+  zoomOut,
 } = usePublicMethods({
   imgs,
   img,
@@ -317,6 +320,7 @@ const {
   renderCrop,
   checkedCrop,
   reboundImg,
+  setScale,
   queueRealTimeEmit,
 })
 onMounted(() => {
@@ -345,6 +349,9 @@ defineExpose({
   setRotateAngle,
   setCropLayout,
   setCropAxis,
+  changeScale,
+  zoomIn,
+  zoomOut,
 })
 </script>
 

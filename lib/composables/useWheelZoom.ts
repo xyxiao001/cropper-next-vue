@@ -1,5 +1,6 @@
 import { onUnmounted } from 'vue'
 import type { Ref } from 'vue'
+import { resetWheelZoomState } from '../changeImgSize'
 
 type ImgAxis = { scale: number }
 type ImgLayout = { width: number; height: number }
@@ -38,6 +39,7 @@ export const useWheelZoom = (options: {
   const mouseOutCropper = () => {
     if (typeof window === 'undefined') return
     window.removeEventListener(supportWheel, mouseScroll)
+    resetWheelZoomState()
   }
 
   onUnmounted(() => {
@@ -49,4 +51,3 @@ export const useWheelZoom = (options: {
     mouseOutCropper,
   }
 }
-

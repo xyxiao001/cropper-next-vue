@@ -54,6 +54,8 @@ const t = computed(() => {
         rotateLeft: 'Rotate left',
         rotateRight: 'Rotate right',
         rotateClear: 'Reset rotation',
+        zoomIn: 'Zoom in',
+        zoomOut: 'Zoom out',
         mode: 'Mode',
         modeCover: 'Cover',
         modeContain: 'Contain',
@@ -122,6 +124,8 @@ const t = computed(() => {
       rotateLeft: '向左旋转',
       rotateRight: '向右旋转',
       rotateClear: '复位旋转',
+      zoomIn: '放大',
+      zoomOut: '缩小',
       mode: '布局模式',
       modeCover: 'cover',
       modeContain: 'contain',
@@ -167,6 +171,8 @@ const cropLayout = {
 const rotateLeft = () => cropper.value?.rotateLeft?.()
 const rotateRight = () => cropper.value?.rotateRight?.()
 const rotateClear = () => cropper.value?.rotateClear?.()
+const zoomIn = () => cropper.value?.zoomIn?.()
+const zoomOut = () => cropper.value?.zoomOut?.()
 
 const exportOriginal = ref(false)
 const maxSideLength = ref(3000)
@@ -299,6 +305,10 @@ import { VueCropper } from 'cropper-next-vue'`
               <el-button @click="rotateLeft">{{ t.actions.rotateLeft }}</el-button>
               <el-button @click="rotateRight">{{ t.actions.rotateRight }}</el-button>
               <el-button @click="rotateClear">{{ t.actions.rotateClear }}</el-button>
+            </el-button-group>
+            <el-button-group>
+              <el-button @click="zoomIn">{{ t.actions.zoomIn }}</el-button>
+              <el-button @click="zoomOut">{{ t.actions.zoomOut }}</el-button>
             </el-button-group>
             <el-select v-model="mode" :teleported="false" class="preview__select">
               <el-option :label="`${t.actions.mode}: ${t.actions.modeCover}`" value="cover" />

@@ -5,8 +5,14 @@ let scaling = false
 
 // 图片放大还是缩小
 // 当前变化系数 1px像素大小对应 - 0.2
-let coe = 0.2
+const BASE_COE = 0.2
+const MAX_COE = 0.4
+const SCALE_IDLE_DELAY = 180
+
+let coe = BASE_COE
 let coeStatus = ''
+let scaleTimer: ReturnType<typeof window.setTimeout> | null = null
+let resetTimer: ReturnType<typeof window.setTimeout> | null = null
 
 // 火狐的变化量需要单独处理
 const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') > -1
@@ -14,6 +20,20 @@ const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.indexO
 // 取得浏览器的userAgent字符
 export const isIE =
   typeof window !== 'undefined' && (!!window.ActiveXObject || 'ActiveXObject' in window)
+
+export const resetWheelZoomState = () => {
+  scaling = false
+  coe = BASE_COE
+  coeStatus = ''
+  if (scaleTimer !== null) {
+    clearTimeout(scaleTimer)
+    scaleTimer = null
+  }
+  if (resetTimer !== null) {
+    clearTimeout(resetTimer)
+    resetTimer = null
+  }
+}
 
 export const changeImgSize = (e: any, scale: number, imgStyle: InterfaceLayoutStyle): number => {
   // 获取到变化量
@@ -25,6 +45,14 @@ export const changeImgSize = (e: any, scale: number, imgStyle: InterfaceLayoutSt
   if (isIE) {
     change = -change
   }
+
+  // 延迟0.1s 每次放大大或者缩小的范围
+  const status = change < 0 ? 'add' : 'reduce'
+  if (status !== coeStatus) {
+    coeStatus = status
+    coe = BASE_COE
+  }
+
   // 当前变化系数 1px像素大小对应 - 0.2
   const nowCoe = coe / imgStyle.width
   const num = nowCoe * change
@@ -37,20 +65,20 @@ export const changeImgSize = (e: any, scale: number, imgStyle: InterfaceLayoutSt
     nowScale -= Math.abs(num)
   }
 
-  // 延迟0.1s 每次放大大或者缩小的范围
-  const status = num < 0 ? 'add' : 'reduce'
-  if (status !== coeStatus) {
-    coeStatus = status
-    coe = 0.2
-  }
-
   if (!scaling) {
-    window.setTimeout(() => {
+    scaling = true
+    scaleTimer = window.setTimeout(() => {
       scaling = false
-      coe += 0.01
+      coe = Math.min(MAX_COE, coe + 0.01)
+      scaleTimer = null
     }, 100)
   }
-  scaling = true
+
+  if (resetTimer !== null) {
+    clearTimeout(resetTimer)
+  }
+  resetTimer = window.setTimeout(resetWheelZoomState, SCALE_IDLE_DELAY)
+
   return nowScale
 }
 
