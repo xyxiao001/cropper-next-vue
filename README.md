@@ -22,6 +22,10 @@
 
 - [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
 
+### 最近更新
+
+`0.3.1` 修复了图片缩小到截图框以下再回弹时的位置偏移，横图和竖图现在都会保持原有中心点。
+
 ### 安装
 
 推荐使用 pnpm：
@@ -191,7 +195,7 @@ pnpm pack --pack-destination /tmp
 ```bash
 pnpm run release:npm -- patch
 pnpm run release:npm -- minor
-pnpm run release:npm -- 0.2.0
+pnpm run release:npm -- 0.3.1
 pnpm run release:npm -- patch --tag next
 ```
 
@@ -226,6 +230,10 @@ pnpm run release:npm -- patch --tag next
 Live preview:
 
 - [https://cropper-next-vue.vercel.app/](https://cropper-next-vue.vercel.app/)
+
+### Latest Update
+
+`0.3.1` fixes image position drift after zooming below the crop-box size and rebounding. Landscape and portrait images now preserve their center point.
 
 ### Install
 
@@ -396,7 +404,7 @@ Release to npm:
 ```bash
 pnpm run release:npm -- patch
 pnpm run release:npm -- minor
-pnpm run release:npm -- 0.2.0
+pnpm run release:npm -- 0.3.1
 pnpm run release:npm -- patch --tag next
 ```
 

@@ -469,15 +469,19 @@ export const boundaryCalculation = (
   const imgHeight = imgLayout.height * scale
   const halfWidth = imgWidth / 2
   const halfHeight = imgHeight / 2
+  const currentHalfWidth = (imgLayout.width * imgAxis.scale) / 2
+  const currentHalfHeight = (imgLayout.height * imgAxis.scale) / 2
 
   const allowedCenterMinX = Math.max(...rotatedCropPoints.map(point => point.x - halfWidth))
   const allowedCenterMaxX = Math.min(...rotatedCropPoints.map(point => point.x + halfWidth))
   const allowedCenterMinY = Math.max(...rotatedCropPoints.map(point => point.y - halfHeight))
   const allowedCenterMaxY = Math.min(...rotatedCropPoints.map(point => point.y + halfHeight))
 
+  // Read the current center from the current scale; target dimensions are only
+  // used when converting the clamped center back to the rebound top-left axis.
   const currentCenter = {
-    x: imgAxis.x + halfWidth,
-    y: imgAxis.y + halfHeight,
+    x: imgAxis.x + currentHalfWidth,
+    y: imgAxis.y + currentHalfHeight,
   }
   const rotatedCenter = rotatePoint(currentCenter, -rotate)
   const targetCenter = rotatePoint(
