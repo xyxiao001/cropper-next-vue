@@ -4,6 +4,12 @@
 
 这个页面用来记录每个版本的改动，方便回溯功能与 API 变化。
 
+## 0.3.1
+
+- 修复图片缩小到截图框以下再回弹时出现的位置偏移
+- 修复横图回弹后向右移动、竖图回弹后向下移动的问题
+- 补充横图与竖图缩放回弹的边界回归测试
+
 ## 0.3.0
 
 - 新增实例缩放方法：`zoomIn`、`zoomOut`、`changeScale`
@@ -36,6 +42,12 @@
 # Changelog
 
 This page tracks version changes and API updates.
+
+## 0.3.1
+
+- Fixed image position drift when zooming below the crop-box size and rebounding
+- Fixed landscape images shifting right and portrait images shifting down after rebound
+- Added boundary regression tests for landscape and portrait zoom rebound
 
 ## 0.3.0
 

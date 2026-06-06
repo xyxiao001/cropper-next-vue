@@ -84,6 +84,36 @@ describe('common helpers', () => {
     expect(result.boundary.top).toBe(40)
   })
 
+  it('keeps a landscape image centered when zoom rebound increases its scale', () => {
+    const result = detectionBoundary(
+      { x: 50, y: 50 },
+      { width: 200, height: 200 },
+      { x: 50, y: 100, scale: 0.5, rotate: 0 },
+      { width: 400, height: 200 },
+    )
+
+    expect(result.scale).toBe(1)
+    expect(result.boundary.left).toBe(-50)
+    expect(result.boundary.top).toBe(50)
+    expect(result.landscape).toBe('left')
+    expect(result.portrait).toBe('top')
+  })
+
+  it('keeps a portrait image centered when zoom rebound increases its scale', () => {
+    const result = detectionBoundary(
+      { x: 50, y: 50 },
+      { width: 200, height: 200 },
+      { x: 100, y: 50, scale: 0.5, rotate: 0 },
+      { width: 200, height: 400 },
+    )
+
+    expect(result.scale).toBe(1)
+    expect(result.boundary.left).toBe(50)
+    expect(result.boundary.top).toBe(-50)
+    expect(result.landscape).toBe('left')
+    expect(result.portrait).toBe('top')
+  })
+
   it('recomputes rotated image bounds', () => {
     const result = detectionBoundary(
       { x: 100, y: 100 },
