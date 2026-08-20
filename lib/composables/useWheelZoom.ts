@@ -14,6 +14,7 @@ export const useWheelZoom = (options: {
   imgLayout: Ref<ImgLayout> | ImgLayout
   cropperRef: Ref<HTMLElement | undefined>
   zoomAnchor: Ref<InterfaceZoomAnchor>
+  zoomable: Ref<boolean>
   setScale: (scale: number, keep?: boolean, anchor?: InterfaceScaleAnchor) => void
 }) => {
   const { isIE, supportWheel, changeImgSize, setScale } = options
@@ -23,6 +24,7 @@ export const useWheelZoom = (options: {
   }
 
   const mouseScroll = (e: Event) => {
+    if (!options.zoomable.value) return
     e.preventDefault()
     const axis = getValue(options.imgAxis)
     const layout = getValue(options.imgLayout)

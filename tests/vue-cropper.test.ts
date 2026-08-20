@@ -129,6 +129,55 @@ describe('vue-cropper component api', () => {
     })
   })
 
+  it('emits structured state changes and keeps export isolated', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        wrapper: { width: 320, height: 240 },
+        cropLayout: { width: 160, height: 120 },
+      },
+    })
+
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      getCropData: () => Promise<string>
+      setRotateAngle: (angle: number) => void
+      setCropAxis: (axis: { x: number, y: number }) => void
+      zoomIn: (step?: number) => void
+      reset: () => void
+    }
+    const initial = structuredClone(wrapper.emitted('change')?.at(-1)?.[0])
+
+    expect(initial).toEqual({
+      image: { x: 0, y: 0, scale: 1, rotate: 0 },
+      crop: { x: 80, y: 60, width: 160, height: 120 },
+    })
+
+    const changeCountBeforeExport = wrapper.emitted('change')?.length
+    await vm.getCropData()
+    expect(wrapper.emitted('change')?.length).toBe(changeCountBeforeExport)
+
+    vm.setRotateAngle(90)
+    vm.setCropAxis({ x: 20, y: 30 })
+    vm.zoomIn(0.2)
+
+    const changed = wrapper.emitted('change')?.at(-1)?.[0] as {
+      image: { x: number, y: number, scale: number, rotate: number }
+      crop: { x: number, y: number, width: number, height: number }
+    }
+    expect(changed).toMatchObject({
+      image: { scale: 1.2, rotate: 90 },
+      crop: { x: 20, y: 30, width: 160, height: 120 },
+    })
+    expect(changed.image.x).toBeCloseTo(-30)
+    expect(changed.image.y).toBeCloseTo(-15)
+
+    vm.reset()
+    expect(wrapper.emitted('change')?.at(-1)?.[0]).toEqual(initial)
+  })
+
   it('exposes crop export and rotate helpers', async () => {
     const wrapper = mount(VueCropper, {
       props: {
@@ -216,6 +265,43 @@ describe('vue-cropper component api', () => {
     expect(loadImg).toHaveBeenLastCalledWith('https://example.com/demo.jpg')
   })
 
+  it('resets image and crop state without reloading the image', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        wrapper: { width: 320, height: 240 },
+        cropLayout: { width: 160, height: 120 },
+      },
+    })
+
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      getCropData: () => Promise<string>
+      setRotateAngle: (angle: number) => void
+      setCropAxis: (axis: { x: number, y: number }) => void
+      zoomIn: (step?: number) => void
+      reset: () => void
+    }
+
+    await vm.getCropData()
+    const initial = structuredClone(getCropImgData.mock.lastCall?.[0])
+
+    vm.setRotateAngle(90)
+    vm.setCropAxis({ x: 20, y: 30 })
+    vm.zoomIn(0.2)
+    vm.reset()
+    await vm.getCropData()
+
+    expect(loadImg).toHaveBeenCalledTimes(1)
+    expect(getCropImgData.mock.lastCall?.[0]).toMatchObject({
+      imgAxis: initial.imgAxis,
+      cropAxis: initial.cropAxis,
+      cropLayout: initial.cropLayout,
+    })
+  })
+
   it('supports setting rotate angle, crop layout and crop axis through the public api', async () => {
     const wrapper = mount(VueCropper, {
       props: {
@@ -295,6 +381,33 @@ describe('vue-cropper component api', () => {
     vm.changeScale(-0.1)
     await vm.getCropData()
     expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBeCloseTo(zoomedOutScale - 0.1)
+  })
+
+  it('keeps public movement and zoom methods available when interactions are disabled', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        movable: false,
+        zoomable: false,
+      },
+    })
+
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      setCropAxis: (axis: { x: number, y: number }) => void
+      zoomIn: (step?: number) => void
+      getCropData: () => Promise<string>
+    }
+    vm.setCropAxis({ x: 20, y: 30 })
+    vm.zoomIn(0.2)
+    await vm.getCropData()
+
+    expect(getCropImgData.mock.lastCall?.[0]).toMatchObject({
+      cropAxis: { x: 20, y: 30 },
+      imgAxis: { scale: 1.2 },
+    })
   })
 
   it('forwards original export options to the export helper', async () => {

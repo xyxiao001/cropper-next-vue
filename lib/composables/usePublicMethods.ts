@@ -16,6 +16,7 @@ export const usePublicMethods = (options: {
   img: Ref<string>
   imgLoading: Ref<boolean>
   layout: LayoutContainerLike
+  cropLayout: Ref<InterfaceLayoutInput>
   innerCropLayout: Ref<InterfaceLayoutInput>
   checkedImg: (url: string) => Promise<boolean> | boolean
   updateWrapLayoutFromDom: () => void
@@ -24,12 +25,15 @@ export const usePublicMethods = (options: {
   reboundImg: () => void
   setScale: (scale: number) => void
   queueRealTimeEmit: () => void
+  resetImageLayout: () => boolean
+  cancelPendingRebound: () => void
 }) => {
   const {
     imgs,
     img,
     imgLoading,
     layout,
+    cropLayout,
     innerCropLayout,
     checkedImg,
     updateWrapLayoutFromDom,
@@ -38,6 +42,8 @@ export const usePublicMethods = (options: {
     reboundImg,
     setScale,
     queueRealTimeEmit,
+    resetImageLayout,
+    cancelPendingRebound,
   } = options
 
   const MIN_SCALE = 0.01
@@ -91,6 +97,18 @@ export const usePublicMethods = (options: {
     return checkedImg(img.value)
   }
 
+  const reset = () => {
+    if (!imgs.value) {
+      return
+    }
+    cancelPendingRebound()
+    innerCropLayout.value = { ...cropLayout.value }
+    resetImageLayout()
+    renderCrop()
+    reboundImg()
+    queueRealTimeEmit()
+  }
+
   const setRotateAngle = (rotate: number) => {
     setRotate(normalizeRotate(rotate))
   }
@@ -137,6 +155,7 @@ export const usePublicMethods = (options: {
     rotateRight,
     rotateClear,
     reload,
+    reset,
     setRotateAngle,
     setCropLayout,
     setCropAxis,

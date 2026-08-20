@@ -82,6 +82,11 @@ export interface InterfaceImgAxis extends InterfaceAxis {
   rotate: number
 }
 
+export interface InterfaceCropperState {
+  image: InterfaceImgAxis
+  crop: InterfaceAxis & InterfaceLayoutStyle
+}
+
 export interface InterfaceTransformStyle extends CSSProperties {
   width: string
   height: string

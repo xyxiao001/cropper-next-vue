@@ -30,6 +30,7 @@ describe('useWheelZoom', () => {
           imgLayout: ref({ width: 100, height: 80 }),
           cropperRef: ref(cropper),
           zoomAnchor: ref('pointer'),
+          zoomable: ref(true),
           setScale,
         }))
         return () => h('div')
@@ -48,6 +49,37 @@ describe('useWheelZoom', () => {
       previous: { x: 100, y: 50 },
       current: { x: 100, y: 50 },
     })
+
+    wrapper.unmount()
+  })
+
+  it('ignores wheel input without preventing it when zoomable is false', () => {
+    const setScale = vi.fn()
+    let mouseInCropper!: () => void
+
+    const wrapper = mount(defineComponent({
+      setup() {
+        ;({ mouseInCropper } = useWheelZoom({
+          isIE: false,
+          supportWheel: 'wheel',
+          changeImgSize: vi.fn(() => 2),
+          imgAxis: ref({ scale: 1 }),
+          imgLayout: ref({ width: 100, height: 80 }),
+          cropperRef: ref(document.createElement('div')),
+          zoomAnchor: ref('center'),
+          zoomable: ref(false),
+          setScale,
+        }))
+        return () => h('div')
+      },
+    }))
+
+    mouseInCropper()
+    const event = new WheelEvent('wheel', { deltaY: -50, cancelable: true })
+    window.dispatchEvent(event)
+
+    expect(setScale).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
 
     wrapper.unmount()
   })

@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots } from 'vue'
 import type {
   InterfaceImgLoad,
+  InterfaceCropperState,
   InterfaceLayout,
   InterfaceLayoutInput,
   InterfaceModeHandle,
@@ -28,6 +29,7 @@ import { createLayoutContainer } from './composables/state'
 import { useBoundaryDuration } from './composables/useBoundaryDuration'
 import { usePreviewFactory } from './composables/usePreviewFactory'
 import { useCropperEmits } from './composables/useCropperEmits'
+import { useCropState } from './composables/useCropState'
 
 interface InterfaceVueCropperProps {
   // 图片地址
@@ -66,6 +68,10 @@ interface InterfaceVueCropperProps {
   centerWrapperDelay?: number;
   // 缩放锚点
   zoomAnchor?: InterfaceZoomAnchor;
+  // 是否允许用户拖拽图片和裁剪框
+  movable?: boolean;
+  // 是否允许用户通过滚轮或双指缩放
+  zoomable?: boolean;
 }
 const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   img: '',
@@ -94,6 +100,8 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   centerBoxDelay: BOUNDARY_DURATION,
   centerWrapperDelay: BOUNDARY_DURATION,
   zoomAnchor: 'center',
+  movable: true,
+  zoomable: true,
 })
 // 组件处理
 const cropperRef = ref()
@@ -104,6 +112,7 @@ const emit = defineEmits<{
   (e: 'img-upload', url: string): void
   (e: 'real-time', payload: InterfaceRealTimePreview): void
   (e: 'realTime', payload: InterfaceRealTimePreview): void
+  (e: 'change', payload: InterfaceCropperState): void
 }>()
 // 图片加载loading
 const imgLoading = ref(false)
@@ -141,6 +150,8 @@ const {
   centerBoxDelay,
   centerWrapperDelay,
   zoomAnchor,
+  movable,
+  zoomable,
 } = toRefs(props);
 
 const {
@@ -166,7 +177,7 @@ const { getBoundaryDuration } = useBoundaryDuration({
   centerWrapperDelay,
 })
 
-const { imgLoadEmit, imgUploadEmit, emitRealTime } = useCropperEmits(emit)
+const { imgLoadEmit, imgUploadEmit, emitRealTime, emitChange } = useCropperEmits(emit)
 
 const { queueRealTimeEmit } = useRealTime({
   imgs,
@@ -175,6 +186,18 @@ const { queueRealTimeEmit } = useRealTime({
   layout: LayoutContainer as any,
   emit: emitRealTime,
 })
+
+const { queueChangeEmit } = useCropState({
+  imgs,
+  effectiveCropLayoutStyle,
+  layout: LayoutContainer as any,
+  emit: emitChange,
+})
+
+const queueStateEmit = () => {
+  queueRealTimeEmit()
+  queueChangeEmit()
+}
 
 const {
   bindMoveImg,
@@ -185,6 +208,7 @@ const {
   setImgAxis,
   reboundImg,
   checkedCrop,
+  cancelPendingRebound,
 } = useInteractions({
   cropperImg,
   cropperBox,
@@ -193,10 +217,12 @@ const {
   cropping,
   centerBox,
   centerWrapper,
+  movable,
+  zoomable,
   zoomAnchor,
   effectiveCropLayoutStyle,
   getBoundaryDuration,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
 })
 
 useDragUpload({
@@ -218,7 +244,7 @@ const {
   effectiveCropLayoutStyle,
   shouldShowCropBox,
   checkedCrop,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
 })
 
 // These are replaced as whole objects during interactions; use refs to always read latest values.
@@ -249,7 +275,7 @@ const { createPreviewUrl } = usePreviewFactory({
   },
 })
 
-const { checkedImg } = useImagePipeline({
+const { checkedImg, resetImageLayout } = useImagePipeline({
   canvas,
   imgs,
   imgLoading,
@@ -264,7 +290,7 @@ const { checkedImg } = useImagePipeline({
   imgLoadEmit,
   renderCrop: () => renderCrop(),
   reboundImg,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
 })
 
 const { mouseInCropper, mouseOutCropper } = useWheelZoom({
@@ -275,6 +301,7 @@ const { mouseInCropper, mouseOutCropper } = useWheelZoom({
   imgLayout: imgLayoutRef,
   cropperRef,
   zoomAnchor,
+  zoomable,
   setScale,
 })
 
@@ -312,6 +339,7 @@ const {
   rotateRight,
   rotateClear,
   reload,
+  reset,
   setRotateAngle,
   setCropLayout,
   setCropAxis,
@@ -323,6 +351,7 @@ const {
   img,
   imgLoading,
   layout: LayoutContainer as any,
+  cropLayout,
   innerCropLayout,
   checkedImg,
   updateWrapLayoutFromDom,
@@ -330,7 +359,9 @@ const {
   checkedCrop,
   reboundImg,
   setScale,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
+  resetImageLayout,
+  cancelPendingRebound,
 })
 onMounted(() => {
   if (props.img) {
@@ -355,6 +386,7 @@ defineExpose({
   rotateRight,
   rotateClear,
   reload,
+  reset,
   setRotateAngle,
   setCropLayout,
   setCropAxis,

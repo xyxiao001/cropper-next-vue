@@ -24,6 +24,7 @@ const cropper = ref()
 `cropper.value.rotateRight()` | 向右旋转 `90deg`
 `cropper.value.rotateClear()` | 清空旋转角度，恢复为 `0deg`
 `cropper.value.reload()` | 重新加载当前 `img`，并重新进入加载流程
+`cropper.value.reset()` | 不重新加载图片，恢复当前 props 对应的初始图片与截图框状态
 `cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
 `cropper.value.setCropLayout({ width, height })` | 手动设置截图框大小，支持数字、`px`、`%`
 `cropper.value.setCropAxis({ x, y })` | 手动设置截图框坐标，并按当前边界规则校验
@@ -43,6 +44,12 @@ const cropper = ref()
 
 - 返回 `Blob`
 - 更适合直接上传到服务端或和 `FormData` 搭配使用
+
+`reset()`
+
+- 恢复图片位置、缩放、旋转、截图框位置和截图框大小
+- 使用调用时最新的 `mode`、`defaultRotate` 和 `cropLayout` props
+- 不重新请求、读取或解码图片；没有已加载图片时不改变状态
 
 `setRotateAngle(angle)`
 
@@ -127,6 +134,7 @@ Method | Description
 `cropper.value.rotateRight()` | Rotate right by `90deg`
 `cropper.value.rotateClear()` | Reset rotation back to `0deg`
 `cropper.value.reload()` | Reload the current `img` and run the loading flow again
+`cropper.value.reset()` | Restore the initial image and crop-box state for the current props without reloading the image
 `cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
 `cropper.value.setCropLayout({ width, height })` | Set the crop-box size manually, supports numbers, `px`, and `%`
 `cropper.value.setCropAxis({ x, y })` | Set the crop-box position manually and re-check boundaries
@@ -146,6 +154,12 @@ Method | Description
 
 - returns a `Blob`
 - better suited for uploads and `FormData`
+
+`reset()`
+
+- restores image position, scale, rotation, crop-box position, and crop-box size
+- uses the latest `mode`, `defaultRotate`, and `cropLayout` props at call time
+- does not request, read, or decode the image again; it has no effect before an image is loaded
 
 `setRotateAngle(angle)`
 

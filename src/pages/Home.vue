@@ -54,8 +54,11 @@ const t = computed(() => {
         rotateLeft: 'Rotate left',
         rotateRight: 'Rotate right',
         rotateClear: 'Reset rotation',
+        reset: 'Reset crop',
         zoomIn: 'Zoom in',
         zoomOut: 'Zoom out',
+        movable: 'Allow dragging',
+        zoomable: 'Allow interactive zoom',
         zoomAtPointer: 'Zoom at pointer / touch center',
         mode: 'Mode',
         modeCover: 'Cover',
@@ -125,8 +128,11 @@ const t = computed(() => {
       rotateLeft: '向左旋转',
       rotateRight: '向右旋转',
       rotateClear: '复位旋转',
+      reset: '重置裁剪',
       zoomIn: '放大',
       zoomOut: '缩小',
+      movable: '允许拖拽',
+      zoomable: '允许交互缩放',
       zoomAtPointer: '以鼠标/双指中心缩放',
       mode: '布局模式',
       modeCover: 'cover',
@@ -160,6 +166,8 @@ const cropper = ref<any>()
 const img = ref('')
 const mode = ref<'cover' | 'contain' | 'original'>('cover')
 const zoomAnchor = ref<'center' | 'pointer'>('center')
+const movable = ref(true)
+const zoomable = ref(true)
 const centerBox = ref(true)
 const centerWrapper = ref(false)
 const wrapper = {
@@ -174,6 +182,7 @@ const cropLayout = {
 const rotateLeft = () => cropper.value?.rotateLeft?.()
 const rotateRight = () => cropper.value?.rotateRight?.()
 const rotateClear = () => cropper.value?.rotateClear?.()
+const reset = () => cropper.value?.reset?.()
 const zoomIn = () => cropper.value?.zoomIn?.()
 const zoomOut = () => cropper.value?.zoomOut?.()
 
@@ -304,6 +313,7 @@ import { VueCropper } from 'cropper-next-vue'`
           <section class="preview__tools">
             <el-button @click="pickRandomImage">{{ t.actions.randomImage }}</el-button>
             <el-button type="primary" :loading="exporting" @click="openExport">{{ t.actions.exportImage }}</el-button>
+            <el-button @click="reset">{{ t.actions.reset }}</el-button>
             <el-button-group>
               <el-button @click="rotateLeft">{{ t.actions.rotateLeft }}</el-button>
               <el-button @click="rotateRight">{{ t.actions.rotateRight }}</el-button>
@@ -319,6 +329,8 @@ import { VueCropper } from 'cropper-next-vue'`
               inactive-value="center"
               :active-text="t.actions.zoomAtPointer"
             />
+            <el-switch v-model="movable" :active-text="t.actions.movable" />
+            <el-switch v-model="zoomable" :active-text="t.actions.zoomable" />
             <el-select v-model="mode" :teleported="false" class="preview__select">
               <el-option :label="`${t.actions.mode}: ${t.actions.modeCover}`" value="cover" />
               <el-option :label="`${t.actions.mode}: ${t.actions.modeContain}`" value="contain" />
@@ -347,6 +359,8 @@ import { VueCropper } from 'cropper-next-vue'`
             :center-box="centerBox"
             :center-wrapper="centerWrapper"
             :zoom-anchor="zoomAnchor"
+            :movable="movable"
+            :zoomable="zoomable"
             :mode="mode"
             :original="exportOriginal"
             :max-side-length="maxSideLength"

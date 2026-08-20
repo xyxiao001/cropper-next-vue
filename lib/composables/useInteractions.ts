@@ -29,6 +29,8 @@ export const useInteractions = (options: {
   cropping: Ref<boolean>
   centerBox: Ref<boolean>
   centerWrapper: Ref<boolean>
+  movable: Ref<boolean>
+  zoomable: Ref<boolean>
   zoomAnchor: Ref<InterfaceZoomAnchor>
   effectiveCropLayoutStyle: Ref<CropLayoutLike>
   getBoundaryDuration: () => number
@@ -42,6 +44,8 @@ export const useInteractions = (options: {
     cropping,
     centerBox,
     centerWrapper,
+    movable,
+    zoomable,
     zoomAnchor,
     effectiveCropLayoutStyle,
     getBoundaryDuration,
@@ -50,6 +54,7 @@ export const useInteractions = (options: {
 
   const setWaitFunc = ref<ReturnType<typeof window.setTimeout> | null>(null)
   const isImgTouchScale = ref(false)
+  let reboundGeneration = 0
 
   let cropImg: TouchEvent | null = null
   let cropBox: TouchEvent | null = null
@@ -69,7 +74,16 @@ export const useInteractions = (options: {
     queueRealTimeEmit()
   }
 
+  const cancelPendingRebound = () => {
+    reboundGeneration += 1
+    if (setWaitFunc.value !== null) {
+      clearTimeout(setWaitFunc.value)
+      setWaitFunc.value = null
+    }
+  }
+
   const reboundImg = (): void => {
+    const currentGeneration = ++reboundGeneration
     isImgTouchScale.value = false
     if (!centerBox.value && !centerWrapper.value) {
       return
@@ -94,12 +108,14 @@ export const useInteractions = (options: {
 
     if (layout.imgAxis.scale < crossing.scale) {
       setAnimation(layout.imgAxis.scale, crossing.scale, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setScale(value, true)
       })
     }
 
     if (crossing.landscape === 'left') {
       setAnimation(layout.imgAxis.x, crossing.boundary.left, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: value,
           y: layout.imgAxis.y,
@@ -109,6 +125,7 @@ export const useInteractions = (options: {
 
     if (crossing.landscape === 'right') {
       setAnimation(layout.imgAxis.x, crossing.boundary.right, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: value,
           y: layout.imgAxis.y,
@@ -118,6 +135,7 @@ export const useInteractions = (options: {
 
     if (crossing.portrait === 'top') {
       setAnimation(layout.imgAxis.y, crossing.boundary.top, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: layout.imgAxis.x,
           y: value,
@@ -127,6 +145,7 @@ export const useInteractions = (options: {
 
     if (crossing.portrait === 'bottom') {
       setAnimation(layout.imgAxis.y, crossing.boundary.bottom, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: layout.imgAxis.x,
           y: value,
@@ -173,6 +192,7 @@ export const useInteractions = (options: {
     }
     const boundaryDuration = getBoundaryDuration()
     setWaitFunc.value = setTimeout(() => {
+      setWaitFunc.value = null
       reboundImg()
     }, boundaryDuration)
   }
@@ -214,6 +234,7 @@ export const useInteractions = (options: {
   }
 
   const moveImg = (message: InterfaceMessageEvent) => {
+    if (!movable.value) return
     if (!message.change) return
 
     const axis = {
@@ -249,6 +270,7 @@ export const useInteractions = (options: {
   }
 
   const moveScale = (message: InterfaceMessageEvent) => {
+    if (!zoomable.value) return
     isImgTouchScale.value = true
     if (message.scale) {
       const scale = changeImgSizeByTouch(message.scale, layout.imgAxis.scale)
@@ -271,6 +293,7 @@ export const useInteractions = (options: {
   }
 
   const moveCrop = (message: InterfaceMessageEvent) => {
+    if (!movable.value) return
     if (isImgTouchScale.value) return
     if (message.change) {
       const axis = {
@@ -331,5 +354,9 @@ export const useInteractions = (options: {
     reboundImg,
     checkedCrop,
     clearCrop,
+    cancelPendingRebound,
+    moveImg,
+    moveScale,
+    moveCrop,
   }
 }

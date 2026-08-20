@@ -64,24 +64,31 @@ export const useImagePipeline = (options: {
     createImg(seq)
   }
 
+  const resetImageLayout = () => {
+    if (!canvas.value) {
+      return false
+    }
+    updateWrapLayoutFromDom()
+    layout.imgLayout = { width: canvas.value.width, height: canvas.value.height }
+    const scale = createImgStyle({ ...layout.imgLayout }, { ...layout.wrapLayout }, mode.value)
+
+    const style = translateStyle({
+      scale,
+      imgStyle: { ...layout.imgLayout },
+      layoutStyle: { ...layout.wrapLayout },
+      rotate: normalizeRotate(defaultRotate.value),
+    })
+    layout.imgExhibitionStyle = style.imgExhibitionStyle
+    layout.imgAxis = style.imgAxis
+    return true
+  }
+
   const createImg = (seq: number) => {
     if (!canvas.value) {
       return
     }
     try {
-      // Keep wrapper layout in sync before we compute initial scale/axis.
-      updateWrapLayoutFromDom()
-      layout.imgLayout = { width: canvas.value.width, height: canvas.value.height }
-      const scale = createImgStyle({ ...layout.imgLayout }, { ...layout.wrapLayout }, mode.value)
-
-      const style = translateStyle({
-        scale,
-        imgStyle: { ...layout.imgLayout },
-        layoutStyle: { ...layout.wrapLayout },
-        rotate: normalizeRotate(defaultRotate.value),
-      })
-      layout.imgExhibitionStyle = style.imgExhibitionStyle
-      layout.imgAxis = style.imgAxis
+      resetImageLayout()
 
       const prevUrl = imgs.value
       createPreviewUrl(canvas.value)
@@ -176,5 +183,6 @@ export const useImagePipeline = (options: {
   return {
     checkedImg,
     markUnmounted,
+    resetImageLayout,
   }
 }

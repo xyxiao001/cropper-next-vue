@@ -38,7 +38,10 @@ This page groups commonly used props, rotation methods, and export results into 
       :center-wrapper="centerWrapper"
       :center-box-delay="centerBoxDelay"
       :center-wrapper-delay="centerWrapperDelay"
+      :movable="movable"
+      :zoomable="zoomable"
       @img-load="handleImgLoad"
+      @change="handleChange"
     >
       <template #loading>
         <p class="loading">{{ labels.loading }}</p>
@@ -47,6 +50,7 @@ This page groups commonly used props, rotation methods, and export results into 
     <demo-image-switch v-model="img" />
     <section class="actions">
       <el-button @click="reload">{{ labels.reload }}</el-button>
+      <el-button @click="reset">{{ labels.reset }}</el-button>
       <el-button @click="rotateLeft">{{ labels.rotateLeft }}</el-button>
       <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
       <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
@@ -63,6 +67,8 @@ This page groups commonly used props, rotation methods, and export results into 
     <section class="group">
       <p class="group-title">{{ labels.image }}</p>
       <p class="row">{{ labels.imgLoadStatus }}: {{ imgLoadMessage }}</p>
+      <p class="row-label">{{ labels.changeState }}</p>
+      <pre class="state">{{ changeStateText }}</pre>
     </section>
 
     <section class="group">
@@ -131,6 +137,14 @@ This page groups commonly used props, rotation methods, and export results into 
         <el-select v-model="mode" :teleported="false" class="select">
           <el-option v-for="item in modeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
+      </section>
+
+      <section class="row">
+        <el-switch v-model="movable" :active-text="labels.movable" />
+      </section>
+
+      <section class="row">
+        <el-switch v-model="zoomable" :active-text="labels.zoomable" />
       </section>
 
       <section class="row">
@@ -215,6 +229,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const cropper = ref()
   const img = ref('')
   const imgLoadMessage = ref('-')
+  const changeState = ref(null)
 
   const wrapper = ref({ width: 560, height: 560 })
   const cropLayout = ref({ width: 320, height: 320 })
@@ -239,6 +254,8 @@ This page groups commonly used props, rotation methods, and export results into 
   const centerWrapper = ref(false)
   const centerBoxDelay = ref(100)
   const centerWrapperDelay = ref(100)
+  const movable = ref(true)
+  const zoomable = ref(true)
 
   const filter = ref('none')
   const { isEn } = useLocale()
@@ -247,6 +264,7 @@ This page groups commonly used props, rotation methods, and export results into 
     loading: 'Loading...',
     image: 'Image',
     imgLoadStatus: 'Load status',
+    changeState: 'Crop state',
     layout: 'Layout',
     wrapperWidth: 'Wrapper width',
     wrapperHeight: 'Wrapper height',
@@ -261,6 +279,8 @@ This page groups commonly used props, rotation methods, and export results into 
     previewMaxSide: 'Preview max side',
     behavior: 'Behavior',
     mode: 'Mode',
+    movable: 'Allow dragging',
+    zoomable: 'Allow interactive zoom',
     centerBox: 'centerBox',
     centerWrapper: 'centerWrapper',
     rebound: 'Rebound',
@@ -271,6 +291,7 @@ This page groups commonly used props, rotation methods, and export results into 
     rotation: 'Rotation',
     methods: 'Methods',
     reload: 'Reload',
+    reset: 'Reset crop',
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
@@ -285,6 +306,7 @@ This page groups commonly used props, rotation methods, and export results into 
     loading: '加载中...',
     image: '图片',
     imgLoadStatus: '加载状态',
+    changeState: '裁剪状态',
     layout: '布局',
     wrapperWidth: '容器宽度',
     wrapperHeight: '容器高度',
@@ -299,6 +321,8 @@ This page groups commonly used props, rotation methods, and export results into 
     previewMaxSide: '预览最长边',
     behavior: '行为',
     mode: '布局模式',
+    movable: '允许拖拽',
+    zoomable: '允许交互缩放',
     centerBox: '图片限制截图框内',
     centerWrapper: '图片限制容器内',
     rebound: '回弹时长',
@@ -309,6 +333,7 @@ This page groups commonly used props, rotation methods, and export results into 
     rotation: '旋转角度',
     methods: '方法调用',
     reload: '重新加载',
+    reset: '重置裁剪',
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
@@ -320,6 +345,10 @@ This page groups commonly used props, rotation methods, and export results into 
     heightPlaceholder: '高度',
     cropLayoutHint: '支持 320、320px、60%',
   })
+
+  const changeStateText = computed(() => changeState.value
+    ? JSON.stringify(changeState.value, null, 2)
+    : '-')
 
   const outputTypeOptions = computed(() => [
     { label: 'png', value: 'png' },
@@ -400,6 +429,10 @@ This page groups commonly used props, rotation methods, and export results into 
     cropper.value?.reload?.()
   }
 
+  const reset = () => {
+    cropper.value?.reset?.()
+  }
+
   const rotateLeft = () => {
     cropper.value.rotateLeft()
     defaultRotate.value = normalizeRotate(defaultRotate.value - 90)
@@ -441,6 +474,10 @@ This page groups commonly used props, rotation methods, and export results into 
   const handleImgLoad = (payload) => {
     imgLoadMessage.value = `${payload.type}: ${payload.message}`
   }
+
+  const handleChange = (payload) => {
+    changeState.value = payload
+  }
 </script>
 ```
 :::
@@ -453,6 +490,7 @@ This page groups commonly used props, rotation methods, and export results into 
   const cropper = ref()
   const img = ref('')
   const imgLoadMessage = ref('-')
+  const changeState = ref(null)
 
   const wrapper = ref({ width: 560, height: 560 })
   const cropLayout = ref({ width: 320, height: 320 })
@@ -477,6 +515,8 @@ This page groups commonly used props, rotation methods, and export results into 
   const centerWrapper = ref(false)
   const centerBoxDelay = ref(100)
   const centerWrapperDelay = ref(100)
+  const movable = ref(true)
+  const zoomable = ref(true)
 
   const filter = ref('none')
   const { isEn } = useLocale()
@@ -485,6 +525,7 @@ This page groups commonly used props, rotation methods, and export results into 
     loading: 'Loading...',
     image: 'Image',
     imgLoadStatus: 'Load status',
+    changeState: 'Crop state',
     layout: 'Layout',
     wrapperWidth: 'Wrapper width',
     wrapperHeight: 'Wrapper height',
@@ -499,6 +540,8 @@ This page groups commonly used props, rotation methods, and export results into 
     previewMaxSide: 'Preview max side',
     behavior: 'Behavior',
     mode: 'Mode',
+    movable: 'Allow dragging',
+    zoomable: 'Allow interactive zoom',
     centerBox: 'centerBox',
     centerWrapper: 'centerWrapper',
     rebound: 'Rebound',
@@ -509,6 +552,7 @@ This page groups commonly used props, rotation methods, and export results into 
     rotation: 'Rotation',
     methods: 'Methods',
     reload: 'Reload',
+    reset: 'Reset crop',
     rotateLeft: 'Rotate left 90°',
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
@@ -523,6 +567,7 @@ This page groups commonly used props, rotation methods, and export results into 
     loading: '加载中...',
     image: '图片',
     imgLoadStatus: '加载状态',
+    changeState: '裁剪状态',
     layout: '布局',
     wrapperWidth: '容器宽度',
     wrapperHeight: '容器高度',
@@ -537,6 +582,8 @@ This page groups commonly used props, rotation methods, and export results into 
     previewMaxSide: '预览最长边',
     behavior: '行为',
     mode: '布局模式',
+    movable: '允许拖拽',
+    zoomable: '允许交互缩放',
     centerBox: '图片限制截图框内',
     centerWrapper: '图片限制容器内',
     rebound: '回弹时长',
@@ -547,6 +594,7 @@ This page groups commonly used props, rotation methods, and export results into 
     rotation: '旋转角度',
     methods: '方法调用',
     reload: '重新加载',
+    reset: '重置裁剪',
     rotateLeft: '向左旋转 90°',
     rotateRight: '向右旋转 90°',
     rotateClear: '清空旋转',
@@ -558,6 +606,10 @@ This page groups commonly used props, rotation methods, and export results into 
     heightPlaceholder: '高度',
     cropLayoutHint: '支持 320、320px、60%',
   })
+
+  const changeStateText = computed(() => changeState.value
+    ? JSON.stringify(changeState.value, null, 2)
+    : '-')
 
   const outputTypeOptions = computed(() => [
     { label: 'png', value: 'png' },
@@ -638,6 +690,10 @@ This page groups commonly used props, rotation methods, and export results into 
     cropper.value?.reload?.()
   }
 
+  const reset = () => {
+    cropper.value?.reset?.()
+  }
+
   const rotateLeft = () => {
     cropper.value.rotateLeft()
     defaultRotate.value = normalizeRotate(defaultRotate.value - 90)
@@ -678,6 +734,10 @@ This page groups commonly used props, rotation methods, and export results into 
 
   const handleImgLoad = (payload) => {
     imgLoadMessage.value = `${payload.type}: ${payload.message}`
+  }
+
+  const handleChange = (payload) => {
+    changeState.value = payload
   }
 </script>
 
@@ -737,6 +797,18 @@ This page groups commonly used props, rotation methods, and export results into 
   .hint {
     color: #86909c;
     font-size: 12px;
+  }
+
+  .state {
+    max-height: 220px;
+    margin: 10px 0 0;
+    padding: 12px;
+    overflow: auto;
+    border-radius: 8px;
+    background: #f2f3f5;
+    color: #1d2129;
+    font-size: 12px;
+    line-height: 1.5;
   }
 
   .select {

@@ -1,10 +1,11 @@
-import type { InterfaceImgLoad, InterfaceRealTimePreview } from '../interface'
+import type { InterfaceCropperState, InterfaceImgLoad, InterfaceRealTimePreview } from '../interface'
 
 type CropperEmit = {
   (e: 'img-load', obj: InterfaceImgLoad): void
   (e: 'img-upload', url: string): void
   (e: 'real-time', payload: InterfaceRealTimePreview): void
   (e: 'realTime', payload: InterfaceRealTimePreview): void
+  (e: 'change', payload: InterfaceCropperState): void
 }
 
 export const useCropperEmits = (emit: CropperEmit) => {
@@ -25,10 +26,14 @@ export const useCropperEmits = (emit: CropperEmit) => {
     emit('realTime', payload)
   }
 
+  const emitChange = (payload: InterfaceCropperState) => {
+    emit('change', payload)
+  }
+
   return {
     imgLoadEmit,
     imgUploadEmit,
     emitRealTime,
+    emitChange,
   }
 }
-
