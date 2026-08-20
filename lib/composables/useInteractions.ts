@@ -1,6 +1,11 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceAxis, InterfaceMessageEvent } from '../interface'
+import type {
+  InterfaceAxis,
+  InterfaceMessageEvent,
+  InterfaceScaleAnchor,
+  InterfaceZoomAnchor,
+} from '../interface'
 import { translateStyle, detectionBoundary, setAnimation } from '../common'
 import { changeImgSizeByTouch } from '../changeImgSize'
 import { RESISTANCE } from '../config'
@@ -19,10 +24,12 @@ type CropLayoutLike = { width: number; height: number }
 export const useInteractions = (options: {
   cropperImg: Ref<HTMLElement | undefined>
   cropperBox: Ref<HTMLElement | undefined>
+  cropperRef: Ref<HTMLElement | undefined>
   layout: LayoutContainerLike
   cropping: Ref<boolean>
   centerBox: Ref<boolean>
   centerWrapper: Ref<boolean>
+  zoomAnchor: Ref<InterfaceZoomAnchor>
   effectiveCropLayoutStyle: Ref<CropLayoutLike>
   getBoundaryDuration: () => number
   queueRealTimeEmit: () => void
@@ -30,10 +37,12 @@ export const useInteractions = (options: {
   const {
     cropperImg,
     cropperBox,
+    cropperRef,
     layout,
     cropping,
     centerBox,
     centerWrapper,
+    zoomAnchor,
     effectiveCropLayoutStyle,
     getBoundaryDuration,
     queueRealTimeEmit,
@@ -128,12 +137,20 @@ export const useInteractions = (options: {
     queueRealTimeEmit()
   }
 
-  const setScale = (scale: number, keep: boolean = false) => {
+  const setScale = (
+    scale: number,
+    keep: boolean = false,
+    anchor?: InterfaceScaleAnchor,
+  ) => {
     const axis = {
       x: layout.imgAxis.x,
       y: layout.imgAxis.y,
     }
-    if (!keep) {
+    if (anchor) {
+      const ratio = scale / layout.imgAxis.scale
+      axis.x = anchor.current.x - (anchor.previous.x - layout.imgAxis.x) * ratio
+      axis.y = anchor.current.y - (anchor.previous.y - layout.imgAxis.y) * ratio
+    } else if (!keep) {
       axis.x -= (layout.imgLayout.width * (scale - layout.imgAxis.scale)) / 2
       axis.y -= (layout.imgLayout.height * (scale - layout.imgAxis.scale)) / 2
     }
@@ -235,6 +252,20 @@ export const useInteractions = (options: {
     isImgTouchScale.value = true
     if (message.scale) {
       const scale = changeImgSizeByTouch(message.scale, layout.imgAxis.scale)
+      if (zoomAnchor.value === 'pointer') {
+        const rect = cropperRef.value!.getBoundingClientRect()
+        setScale(scale, false, {
+          previous: {
+            x: message.previousCenter!.x - rect.left,
+            y: message.previousCenter!.y - rect.top,
+          },
+          current: {
+            x: message.center!.x - rect.left,
+            y: message.center!.y - rect.top,
+          },
+        })
+        return
+      }
       setScale(scale)
     }
   }

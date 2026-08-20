@@ -18,6 +18,7 @@ original | 按原图比例导出（跟随当前缩放倍数放大导出像素）
 maxSideLength | 限制导出图片最长边像素（`0` 表示不限制） | `3000` | `number`
 previewMaxSide | 预览用最大边长像素（仅影响预览渲染，不影响导出结果） | `2048` | `number`
 mode | 图片初始布局方式 | `'cover'` | `contain`、`cover`、`original`、`100px`、`100%`、`auto 100px` 等
+zoomAnchor | 缩放锚点 | `'center'` | `center`、`pointer`
 cropColor | 截图框描边颜色 | `'#fff'` | `string`
 defaultRotate | 默认旋转角度 | `0` | `number`
 centerBox | 图片是否限制在截图框内 | `false` | `boolean`
@@ -28,6 +29,7 @@ centerWrapperDelay | 图片限制容器内时的回弹时长 | `100` | `number`
 ## 说明
 
 - `centerBox` 和 `centerWrapper` 可以分别控制两种边界限制策略。
+- `zoomAnchor` 为 `center` 时保持图片中心缩放；设为 `pointer` 时，鼠标滚轮以光标位置缩放，双指缩放以两指中心点缩放。实例方法 `zoomIn`、`zoomOut` 和 `changeScale` 仍以图片中心缩放。
 - 当图片发生旋转后，边界限制会重新校验。
 - `filter` 接收一个 `HTMLCanvasElement`，返回处理后的 `HTMLCanvasElement`。
 - `outputSize` 会影响 `jpeg / webp` 等格式的压缩质量（取值范围 `0-1`，默认 `1`）。
@@ -66,6 +68,7 @@ original | Export using the original pixel ratio (scale export pixels up by the 
 maxSideLength | Clamp export max edge size (`0` disables clamping) | `3000` | `number`
 previewMaxSide | Max edge size used for preview rendering only (does not affect export) | `2048` | `number`
 mode | Initial image layout mode | `'cover'` | `contain`, `cover`, `original`, `100px`, `100%`, `auto 100px`, etc.
+zoomAnchor | Zoom anchor | `'center'` | `center`, `pointer`
 cropColor | Crop-box outline color | `'#fff'` | `string`
 defaultRotate | Initial rotation angle | `0` | `number`
 centerBox | Keep image covering the crop box | `false` | `boolean`
@@ -76,6 +79,7 @@ centerWrapperDelay | Rebound duration for `centerWrapper` | `100` | `number`
 ## Notes
 
 - `centerBox` and `centerWrapper` control two different boundary strategies.
+- With `zoomAnchor="center"`, zooming keeps the current image-center behavior. With `zoomAnchor="pointer"`, mouse-wheel zoom uses the cursor position and pinch zoom uses the midpoint between both touches. The `zoomIn`, `zoomOut`, and `changeScale` instance methods still zoom from the image center.
 - Boundary checks are recalculated after rotation.
 - `filter` receives an `HTMLCanvasElement` and should return a processed `HTMLCanvasElement`.
 - `outputSize` affects compressed formats such as `jpeg` and `webp` (range `0-1`, default `1`).

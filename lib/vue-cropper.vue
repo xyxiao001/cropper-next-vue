@@ -6,6 +6,7 @@ import type {
   InterfaceLayoutInput,
   InterfaceModeHandle,
   InterfaceRealTimePreview,
+  InterfaceZoomAnchor,
 } from './interface'
 import { supportWheel, changeImgSize, isIE } from './changeImgSize'
 import { BOUNDARY_DURATION } from './config'
@@ -63,6 +64,8 @@ interface InterfaceVueCropperProps {
   centerBoxDelay?: number;
   // 图片限制在容器内时的回弹时长
   centerWrapperDelay?: number;
+  // 缩放锚点
+  zoomAnchor?: InterfaceZoomAnchor;
 }
 const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   img: '',
@@ -90,6 +93,7 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   centerWrapper: false,
   centerBoxDelay: BOUNDARY_DURATION,
   centerWrapperDelay: BOUNDARY_DURATION,
+  zoomAnchor: 'center',
 })
 // 组件处理
 const cropperRef = ref()
@@ -136,6 +140,7 @@ const {
   centerWrapper,
   centerBoxDelay,
   centerWrapperDelay,
+  zoomAnchor,
 } = toRefs(props);
 
 const {
@@ -183,10 +188,12 @@ const {
 } = useInteractions({
   cropperImg,
   cropperBox,
+  cropperRef,
   layout: LayoutContainer as any,
   cropping,
   centerBox,
   centerWrapper,
+  zoomAnchor,
   effectiveCropLayoutStyle,
   getBoundaryDuration,
   queueRealTimeEmit,
@@ -266,6 +273,8 @@ const { mouseInCropper, mouseOutCropper } = useWheelZoom({
   changeImgSize,
   imgAxis: imgAxisRef,
   imgLayout: imgLayoutRef,
+  cropperRef,
+  zoomAnchor,
   setScale,
 })
 

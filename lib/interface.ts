@@ -61,11 +61,20 @@ export interface InterfaceMessageEvent {
   event?: Event
   change?: InterfaceAxis,
   scale?: number,
+  previousCenter?: InterfaceAxis,
+  center?: InterfaceAxis,
 }
 
 export interface InterfaceAxis {
   x: number
   y: number
+}
+
+export type InterfaceZoomAnchor = 'center' | 'pointer'
+
+export interface InterfaceScaleAnchor {
+  previous: InterfaceAxis
+  current: InterfaceAxis
 }
 
 export interface InterfaceImgAxis extends InterfaceAxis {

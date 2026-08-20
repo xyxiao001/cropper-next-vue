@@ -56,6 +56,7 @@ const t = computed(() => {
         rotateClear: 'Reset rotation',
         zoomIn: 'Zoom in',
         zoomOut: 'Zoom out',
+        zoomAtPointer: 'Zoom at pointer / touch center',
         mode: 'Mode',
         modeCover: 'Cover',
         modeContain: 'Contain',
@@ -126,6 +127,7 @@ const t = computed(() => {
       rotateClear: '复位旋转',
       zoomIn: '放大',
       zoomOut: '缩小',
+      zoomAtPointer: '以鼠标/双指中心缩放',
       mode: '布局模式',
       modeCover: 'cover',
       modeContain: 'contain',
@@ -157,6 +159,7 @@ const links = {
 const cropper = ref<any>()
 const img = ref('')
 const mode = ref<'cover' | 'contain' | 'original'>('cover')
+const zoomAnchor = ref<'center' | 'pointer'>('center')
 const centerBox = ref(true)
 const centerWrapper = ref(false)
 const wrapper = {
@@ -310,6 +313,12 @@ import { VueCropper } from 'cropper-next-vue'`
               <el-button @click="zoomIn">{{ t.actions.zoomIn }}</el-button>
               <el-button @click="zoomOut">{{ t.actions.zoomOut }}</el-button>
             </el-button-group>
+            <el-switch
+              v-model="zoomAnchor"
+              active-value="pointer"
+              inactive-value="center"
+              :active-text="t.actions.zoomAtPointer"
+            />
             <el-select v-model="mode" :teleported="false" class="preview__select">
               <el-option :label="`${t.actions.mode}: ${t.actions.modeCover}`" value="cover" />
               <el-option :label="`${t.actions.mode}: ${t.actions.modeContain}`" value="contain" />
@@ -337,6 +346,7 @@ import { VueCropper } from 'cropper-next-vue'`
             :crop-layout="cropLayout"
             :center-box="centerBox"
             :center-wrapper="centerWrapper"
+            :zoom-anchor="zoomAnchor"
             :mode="mode"
             :original="exportOriginal"
             :max-side-length="maxSideLength"
