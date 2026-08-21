@@ -103,6 +103,10 @@
           path: '/demo-all'
         },
         {
+          name: isEn.value ? 'Geometry Editing' : '几何编辑',
+          path: '/demo-geometry'
+        },
+        {
           name: isEn.value ? 'Loading Slot' : '替换loading例子',
           path: '/demo-loading'
         },

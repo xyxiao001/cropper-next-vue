@@ -1,12 +1,12 @@
 import type { Ref } from 'vue'
-import type { InterfaceLayoutInput, InterfaceAxis } from '../interface'
+import type { InterfaceLayoutInput, InterfaceAxis, InterfaceImgAxis } from '../interface'
 import { translateStyle } from '../common'
 import { normalizeRotate } from './utils'
 
 type LayoutContainerLike = {
   imgLayout: { width: number; height: number }
   wrapLayout: { width: number; height: number }
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   imgExhibitionStyle: any
   cropAxis: InterfaceAxis
 }
@@ -16,6 +16,7 @@ export const usePublicMethods = (options: {
   img: Ref<string>
   imgLoading: Ref<boolean>
   layout: LayoutContainerLike
+  cropLayout: Ref<InterfaceLayoutInput>
   innerCropLayout: Ref<InterfaceLayoutInput>
   checkedImg: (url: string) => Promise<boolean> | boolean
   updateWrapLayoutFromDom: () => void
@@ -24,12 +25,15 @@ export const usePublicMethods = (options: {
   reboundImg: () => void
   setScale: (scale: number) => void
   queueRealTimeEmit: () => void
+  resetImageLayout: () => boolean
+  cancelPendingRebound: () => void
 }) => {
   const {
     imgs,
     img,
     imgLoading,
     layout,
+    cropLayout,
     innerCropLayout,
     checkedImg,
     updateWrapLayoutFromDom,
@@ -38,9 +42,10 @@ export const usePublicMethods = (options: {
     reboundImg,
     setScale,
     queueRealTimeEmit,
+    resetImageLayout,
+    cancelPendingRebound,
   } = options
 
-  const MIN_SCALE = 0.01
   const DEFAULT_ZOOM_STEP = 0.1
 
   const getValidZoomStep = (step: number = DEFAULT_ZOOM_STEP) => {
@@ -49,7 +54,7 @@ export const usePublicMethods = (options: {
   }
 
   const setRotate = (rotate: number, shouldRebound: boolean = true) => {
-    const { x, y, scale } = layout.imgAxis
+    const { x, y, scale, flipX, flipY } = layout.imgAxis
     const axis = { x, y }
     const style = translateStyle(
       {
@@ -57,6 +62,8 @@ export const usePublicMethods = (options: {
         imgStyle: { ...layout.imgLayout },
         layoutStyle: { ...layout.wrapLayout },
         rotate,
+        flipX,
+        flipY,
       },
       axis,
     )
@@ -82,6 +89,34 @@ export const usePublicMethods = (options: {
     setRotate(0)
   }
 
+  const setFlip = (flipX: boolean, flipY: boolean) => {
+    if (!imgs.value) {
+      return
+    }
+    const style = translateStyle(
+      {
+        scale: layout.imgAxis.scale,
+        imgStyle: { ...layout.imgLayout },
+        layoutStyle: { ...layout.wrapLayout },
+        rotate: layout.imgAxis.rotate,
+        flipX,
+        flipY,
+      },
+      { x: layout.imgAxis.x, y: layout.imgAxis.y },
+    )
+    layout.imgExhibitionStyle = style.imgExhibitionStyle
+    layout.imgAxis = style.imgAxis
+    queueRealTimeEmit()
+  }
+
+  const flipHorizontal = () => {
+    setFlip(!layout.imgAxis.flipX, layout.imgAxis.flipY)
+  }
+
+  const flipVertical = () => {
+    setFlip(layout.imgAxis.flipX, !layout.imgAxis.flipY)
+  }
+
   const reload = () => {
     if (!img.value) {
       imgs.value = ''
@@ -89,6 +124,18 @@ export const usePublicMethods = (options: {
       return false
     }
     return checkedImg(img.value)
+  }
+
+  const reset = () => {
+    if (!imgs.value) {
+      return
+    }
+    cancelPendingRebound()
+    innerCropLayout.value = { ...cropLayout.value }
+    resetImageLayout()
+    renderCrop()
+    reboundImg()
+    queueRealTimeEmit()
   }
 
   const setRotateAngle = (rotate: number) => {
@@ -119,7 +166,7 @@ export const usePublicMethods = (options: {
       return
     }
     updateWrapLayoutFromDom()
-    const nextScale = Math.max(MIN_SCALE, layout.imgAxis.scale + Number(value))
+    const nextScale = layout.imgAxis.scale + Number(value)
     setScale(Number.isFinite(nextScale) ? nextScale : layout.imgAxis.scale)
   }
 
@@ -136,7 +183,10 @@ export const usePublicMethods = (options: {
     rotateLeft,
     rotateRight,
     rotateClear,
+    flipHorizontal,
+    flipVertical,
     reload,
+    reset,
     setRotateAngle,
     setCropLayout,
     setCropAxis,

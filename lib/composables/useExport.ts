@@ -1,8 +1,7 @@
 import type { Ref } from 'vue'
-import type { InterfaceAxis } from '../interface'
+import type { InterfaceAxis, InterfaceImgAxis } from '../interface'
 import { getCropImgData } from '../common'
 
-type ImgAxis = { x: number; y: number; scale: number; rotate: number }
 type ImgLayout = { width: number; height: number }
 
 export const useExport = (options: {
@@ -12,7 +11,7 @@ export const useExport = (options: {
   full: Ref<boolean>
   original: Ref<boolean>
   maxSideLength: Ref<number>
-  imgAxis: Ref<ImgAxis> | ImgAxis
+  imgAxis: Ref<InterfaceImgAxis> | InterfaceImgAxis
   imgLayout: Ref<ImgLayout> | ImgLayout
   cropAxis: Ref<InterfaceAxis> | InterfaceAxis
   cropLayout: Ref<{ width: number; height: number }>
@@ -71,4 +70,3 @@ export const useExport = (options: {
     getCropBlob,
   }
 }
-

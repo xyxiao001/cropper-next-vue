@@ -97,7 +97,12 @@ const router = createRouter({
     {
       name: 'DemoAll',
       path: '/demo-all',
-      component: () => import('./pages/DemoAll.md'),
+      component: () => import('./pages/DemoAll.vue'),
+    },
+    {
+      name: 'DemoGeometry',
+      path: '/demo-geometry',
+      component: () => import('./pages/DemoGeometry.vue'),
     },
   ], // `routes: routes` 的缩写
 })

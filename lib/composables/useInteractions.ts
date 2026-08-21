@@ -1,6 +1,12 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceAxis, InterfaceMessageEvent } from '../interface'
+import type {
+  InterfaceAxis,
+  InterfaceImgAxis,
+  InterfaceMessageEvent,
+  InterfaceScaleAnchor,
+  InterfaceZoomAnchor,
+} from '../interface'
 import { translateStyle, detectionBoundary, setAnimation } from '../common'
 import { changeImgSizeByTouch } from '../changeImgSize'
 import { RESISTANCE } from '../config'
@@ -9,7 +15,7 @@ import TouchEvent from '../touch'
 type LayoutContainerLike = {
   imgLayout: { width: number; height: number }
   wrapLayout: { width: number; height: number }
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   imgExhibitionStyle: any
   cropAxis: InterfaceAxis
 }
@@ -19,28 +25,39 @@ type CropLayoutLike = { width: number; height: number }
 export const useInteractions = (options: {
   cropperImg: Ref<HTMLElement | undefined>
   cropperBox: Ref<HTMLElement | undefined>
+  cropperRef: Ref<HTMLElement | undefined>
   layout: LayoutContainerLike
   cropping: Ref<boolean>
   centerBox: Ref<boolean>
   centerWrapper: Ref<boolean>
+  movable: Ref<boolean>
+  zoomable: Ref<boolean>
+  zoomAnchor: Ref<InterfaceZoomAnchor>
   effectiveCropLayoutStyle: Ref<CropLayoutLike>
   getBoundaryDuration: () => number
   queueRealTimeEmit: () => void
+  clampScale: (scale: number) => number
 }) => {
   const {
     cropperImg,
     cropperBox,
+    cropperRef,
     layout,
     cropping,
     centerBox,
     centerWrapper,
+    movable,
+    zoomable,
+    zoomAnchor,
     effectiveCropLayoutStyle,
     getBoundaryDuration,
     queueRealTimeEmit,
+    clampScale,
   } = options
 
   const setWaitFunc = ref<ReturnType<typeof window.setTimeout> | null>(null)
   const isImgTouchScale = ref(false)
+  let reboundGeneration = 0
 
   let cropImg: TouchEvent | null = null
   let cropBox: TouchEvent | null = null
@@ -52,6 +69,8 @@ export const useInteractions = (options: {
         imgStyle: { ...layout.imgLayout },
         layoutStyle: { ...layout.wrapLayout },
         rotate: layout.imgAxis.rotate,
+        flipX: layout.imgAxis.flipX,
+        flipY: layout.imgAxis.flipY,
       },
       axis,
     )
@@ -60,7 +79,16 @@ export const useInteractions = (options: {
     queueRealTimeEmit()
   }
 
+  const cancelPendingRebound = () => {
+    reboundGeneration += 1
+    if (setWaitFunc.value !== null) {
+      clearTimeout(setWaitFunc.value)
+      setWaitFunc.value = null
+    }
+  }
+
   const reboundImg = (): void => {
+    const currentGeneration = ++reboundGeneration
     isImgTouchScale.value = false
     if (!centerBox.value && !centerWrapper.value) {
       return
@@ -85,12 +113,14 @@ export const useInteractions = (options: {
 
     if (layout.imgAxis.scale < crossing.scale) {
       setAnimation(layout.imgAxis.scale, crossing.scale, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setScale(value, true)
       })
     }
 
     if (crossing.landscape === 'left') {
       setAnimation(layout.imgAxis.x, crossing.boundary.left, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: value,
           y: layout.imgAxis.y,
@@ -100,6 +130,7 @@ export const useInteractions = (options: {
 
     if (crossing.landscape === 'right') {
       setAnimation(layout.imgAxis.x, crossing.boundary.right, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: value,
           y: layout.imgAxis.y,
@@ -109,6 +140,7 @@ export const useInteractions = (options: {
 
     if (crossing.portrait === 'top') {
       setAnimation(layout.imgAxis.y, crossing.boundary.top, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: layout.imgAxis.x,
           y: value,
@@ -118,6 +150,7 @@ export const useInteractions = (options: {
 
     if (crossing.portrait === 'bottom') {
       setAnimation(layout.imgAxis.y, crossing.boundary.bottom, boundaryDuration, value => {
+        if (currentGeneration !== reboundGeneration) return
         setImgAxis({
           x: layout.imgAxis.x,
           y: value,
@@ -128,12 +161,24 @@ export const useInteractions = (options: {
     queueRealTimeEmit()
   }
 
-  const setScale = (scale: number, keep: boolean = false) => {
+  const setScale = (
+    scale: number,
+    keep: boolean = false,
+    anchor?: InterfaceScaleAnchor,
+  ) => {
+    scale = clampScale(scale)
+    if (scale === layout.imgAxis.scale) {
+      return
+    }
     const axis = {
       x: layout.imgAxis.x,
       y: layout.imgAxis.y,
     }
-    if (!keep) {
+    if (anchor) {
+      const ratio = scale / layout.imgAxis.scale
+      axis.x = anchor.current.x - (anchor.previous.x - layout.imgAxis.x) * ratio
+      axis.y = anchor.current.y - (anchor.previous.y - layout.imgAxis.y) * ratio
+    } else if (!keep) {
       axis.x -= (layout.imgLayout.width * (scale - layout.imgAxis.scale)) / 2
       axis.y -= (layout.imgLayout.height * (scale - layout.imgAxis.scale)) / 2
     }
@@ -144,6 +189,8 @@ export const useInteractions = (options: {
         imgStyle: { ...layout.imgLayout },
         layoutStyle: { ...layout.wrapLayout },
         rotate: layout.imgAxis.rotate,
+        flipX: layout.imgAxis.flipX,
+        flipY: layout.imgAxis.flipY,
       },
       axis,
     )
@@ -156,6 +203,7 @@ export const useInteractions = (options: {
     }
     const boundaryDuration = getBoundaryDuration()
     setWaitFunc.value = setTimeout(() => {
+      setWaitFunc.value = null
       reboundImg()
     }, boundaryDuration)
   }
@@ -197,6 +245,7 @@ export const useInteractions = (options: {
   }
 
   const moveImg = (message: InterfaceMessageEvent) => {
+    if (!movable.value) return
     if (!message.change) return
 
     const axis = {
@@ -232,14 +281,30 @@ export const useInteractions = (options: {
   }
 
   const moveScale = (message: InterfaceMessageEvent) => {
+    if (!zoomable.value) return
     isImgTouchScale.value = true
     if (message.scale) {
       const scale = changeImgSizeByTouch(message.scale, layout.imgAxis.scale)
+      if (zoomAnchor.value === 'pointer') {
+        const rect = cropperRef.value!.getBoundingClientRect()
+        setScale(scale, false, {
+          previous: {
+            x: message.previousCenter!.x - rect.left,
+            y: message.previousCenter!.y - rect.top,
+          },
+          current: {
+            x: message.center!.x - rect.left,
+            y: message.center!.y - rect.top,
+          },
+        })
+        return
+      }
       setScale(scale)
     }
   }
 
   const moveCrop = (message: InterfaceMessageEvent) => {
+    if (!movable.value) return
     if (isImgTouchScale.value) return
     if (message.change) {
       const axis = {
@@ -300,5 +365,9 @@ export const useInteractions = (options: {
     reboundImg,
     checkedCrop,
     clearCrop,
+    cancelPendingRebound,
+    moveImg,
+    moveScale,
+    moveCrop,
   }
 }

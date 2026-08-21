@@ -7,7 +7,8 @@
 1. `outputType`
 2. `outputSize`
 3. `full`
-4. `getCropData()` 和 `getCropBlob()`
+4. `original` 和 `maxSideLength`
+5. `getCropData()` 和 `getCropBlob()`
 
 ### base64 / Blob / 高分屏导出
 
@@ -22,7 +23,8 @@ This page focuses on the export APIs. Pay attention to:
 1. `outputType`
 2. `outputSize`
 3. `full`
-4. `getCropData()` and `getCropBlob()`
+4. `original` and `maxSideLength`
+5. `getCropData()` and `getCropBlob()`
 
 ### base64 / Blob / high-DPI export
 
@@ -36,6 +38,8 @@ This page focuses on the export APIs. Pay attention to:
   :output-type="outputType"
   :output-size="outputSize"
   :full="full"
+  :original="original"
+  :max-side-length="maxSideLength"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
 ></vue-cropper>
@@ -59,6 +63,10 @@ This page focuses on the export APIs. Pay attention to:
   <el-slider v-model="outputSize" :min="0.1" :max="1" :step="0.1" />
 
   <el-switch v-model="full" :active-text="labels.highDpi" />
+  <el-switch v-model="original" :active-text="labels.original" />
+
+  <label>{{ labels.maxSideLength }}</label>
+  <el-input-number v-model="maxSideLength" :min="0" :max="12000" :step="100" />
 </section>
 
 <crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
@@ -74,6 +82,8 @@ This page focuses on the export APIs. Pay attention to:
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
+  const original = ref(false)
+  const maxSideLength = ref(3000)
   const cropSize = { width: 320, height: 320 }
   const { isEn } = useLocale()
   const formatOptions = computed(() => [
@@ -88,12 +98,16 @@ This page focuses on the export APIs. Pay attention to:
     outputQuality: 'Output quality',
     formatTip: 'Available export formats in this demo: png, jpeg, jpg, webp. Actual browser support still depends on Canvas support.',
     highDpi: 'High-DPI export',
+    original: 'Export with original ratio',
+    maxSideLength: 'Max side length',
   } : {
     hint: '先拖拽或缩放图片，再分别点击下面两个导出按钮观察差异。',
     outputType: '输出格式',
     outputQuality: '输出质量',
     formatTip: '当前 demo 可选导出格式：png、jpeg、jpg、webp。实际可用格式仍取决于浏览器对 Canvas 的支持。',
     highDpi: '高分屏导出',
+    original: '按原图比例导出',
+    maxSideLength: '导出最长边',
   })
 </script>
 ```
@@ -108,6 +122,8 @@ This page focuses on the export APIs. Pay attention to:
   const outputType = ref('png')
   const outputSize = ref(1)
   const full = ref(true)
+  const original = ref(false)
+  const maxSideLength = ref(3000)
   const cropSize = { width: 320, height: 320 }
   const { isEn } = useLocale()
   const formatOptions = computed(() => [
@@ -122,12 +138,16 @@ This page focuses on the export APIs. Pay attention to:
     outputQuality: 'Output quality',
     formatTip: 'Available export formats in this demo: png, jpeg, jpg, webp. Actual browser support still depends on Canvas support.',
     highDpi: 'High-DPI export',
+    original: 'Export with original ratio',
+    maxSideLength: 'Max side length',
   } : {
     hint: '先拖拽或缩放图片，再分别点击下面两个导出按钮观察差异。',
     outputType: '输出格式',
     outputQuality: '输出质量',
     formatTip: '当前 demo 可选导出格式：png、jpeg、jpg、webp。实际可用格式仍取决于浏览器对 Canvas 的支持。',
     highDpi: '高分屏导出',
+    original: '按原图比例导出',
+    maxSideLength: '导出最长边',
   })
 </script>
 

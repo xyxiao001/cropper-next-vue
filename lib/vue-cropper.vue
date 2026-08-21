@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots, watch } from 'vue'
 import type {
   InterfaceImgLoad,
+  InterfaceCropperState,
   InterfaceLayout,
   InterfaceLayoutInput,
   InterfaceModeHandle,
   InterfaceRealTimePreview,
+  InterfaceZoomAnchor,
 } from './interface'
 import { supportWheel, changeImgSize, isIE } from './changeImgSize'
+import { getRequiredBoundaryScale } from './common'
 import { BOUNDARY_DURATION } from './config'
 
 import cropperLoading from './loading'
@@ -27,6 +30,14 @@ import { createLayoutContainer } from './composables/state'
 import { useBoundaryDuration } from './composables/useBoundaryDuration'
 import { usePreviewFactory } from './composables/usePreviewFactory'
 import { useCropperEmits } from './composables/useCropperEmits'
+import { useCropState } from './composables/useCropState'
+import { useScaleLimits } from './composables/useScaleLimits'
+import { useCropCoordinates } from './composables/useCropCoordinates'
+import {
+  CROP_BOX_MIN_SIZE,
+  DEFAULT_CROP_RESIZE_CONSTRAINTS,
+  useCropResize,
+} from './composables/useCropResize'
 
 interface InterfaceVueCropperProps {
   // 图片地址
@@ -63,6 +74,26 @@ interface InterfaceVueCropperProps {
   centerBoxDelay?: number;
   // 图片限制在容器内时的回弹时长
   centerWrapperDelay?: number;
+  // 缩放锚点
+  zoomAnchor?: InterfaceZoomAnchor;
+  // 是否允许用户拖拽图片和裁剪框
+  movable?: boolean;
+  // 是否允许用户通过滚轮或双指缩放
+  zoomable?: boolean;
+  // 图片缩放范围
+  minScale?: number;
+  maxScale?: number;
+  // 是否允许用户缩放裁剪框
+  cropBoxResizable?: boolean;
+  // 是否启用裁剪框比例与尺寸限制
+  cropBoxConstraintsEnabled?: boolean;
+  // 裁剪框保持的宽高比
+  cropAspectRatio?: number;
+  // 裁剪框允许的宽高范围
+  minCropWidth?: number;
+  minCropHeight?: number;
+  maxCropWidth?: number;
+  maxCropHeight?: number;
 }
 const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   img: '',
@@ -90,6 +121,17 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   centerWrapper: false,
   centerBoxDelay: BOUNDARY_DURATION,
   centerWrapperDelay: BOUNDARY_DURATION,
+  zoomAnchor: 'pointer',
+  movable: true,
+  zoomable: true,
+  minScale: 0.01,
+  maxScale: Infinity,
+  cropBoxResizable: false,
+  cropBoxConstraintsEnabled: false,
+  minCropWidth: CROP_BOX_MIN_SIZE,
+  minCropHeight: CROP_BOX_MIN_SIZE,
+  maxCropWidth: Infinity,
+  maxCropHeight: Infinity,
 })
 // 组件处理
 const cropperRef = ref()
@@ -100,6 +142,7 @@ const emit = defineEmits<{
   (e: 'img-upload', url: string): void
   (e: 'real-time', payload: InterfaceRealTimePreview): void
   (e: 'realTime', payload: InterfaceRealTimePreview): void
+  (e: 'change', payload: InterfaceCropperState): void
 }>()
 // 图片加载loading
 const imgLoading = ref(false)
@@ -118,6 +161,7 @@ const isDrag = ref(false)
 // 裁剪过程中的一些状态
 // 处于生成了截图的状态
 const cropping = ref(true)
+const cropResizing = ref(false)
 
 // 处理 props
 const {
@@ -136,7 +180,32 @@ const {
   centerWrapper,
   centerBoxDelay,
   centerWrapperDelay,
+  zoomAnchor,
+  movable,
+  zoomable,
+  minScale,
+  maxScale,
+  cropBoxResizable,
+  cropBoxConstraintsEnabled,
+  cropAspectRatio,
+  minCropWidth,
+  minCropHeight,
+  maxCropWidth,
+  maxCropHeight,
 } = toRefs(props);
+
+const cropResizeConstraints = computed(() => {
+  if (!cropBoxConstraintsEnabled.value) {
+    return { ...DEFAULT_CROP_RESIZE_CONSTRAINTS }
+  }
+  return {
+    aspectRatio: cropAspectRatio.value,
+    minWidth: minCropWidth.value,
+    minHeight: minCropHeight.value,
+    maxWidth: maxCropWidth.value,
+    maxHeight: maxCropHeight.value,
+  }
+})
 
 const {
   wrapperStyle,
@@ -152,6 +221,9 @@ const {
   layoutContainer: LayoutContainer as any,
   imgs,
   cropping,
+  cropResizing,
+  constraintsEnabled: cropBoxConstraintsEnabled,
+  constraints: cropResizeConstraints,
 })
 
 const { getBoundaryDuration } = useBoundaryDuration({
@@ -161,7 +233,25 @@ const { getBoundaryDuration } = useBoundaryDuration({
   centerWrapperDelay,
 })
 
-const { imgLoadEmit, imgUploadEmit, emitRealTime } = useCropperEmits(emit)
+const { imgLoadEmit, imgUploadEmit, emitRealTime, emitChange } = useCropperEmits(emit)
+
+const { clampScale } = useScaleLimits({
+  minScale,
+  maxScale,
+  getBoundaryMin: () => {
+    if (!centerBox.value && !centerWrapper.value) {
+      return 0
+    }
+    const boundaryLayout = centerBox.value
+      ? effectiveCropLayoutStyle.value
+      : LayoutContainer.wrapLayout
+    return getRequiredBoundaryScale(
+      boundaryLayout,
+      LayoutContainer.imgAxis.rotate,
+      LayoutContainer.imgLayout,
+    )
+  },
+})
 
 const { queueRealTimeEmit } = useRealTime({
   imgs,
@@ -170,6 +260,21 @@ const { queueRealTimeEmit } = useRealTime({
   layout: LayoutContainer as any,
   emit: emitRealTime,
 })
+
+const { queueChangeEmit } = useCropState({
+  imgs,
+  effectiveCropLayoutStyle,
+  layout: LayoutContainer as any,
+  emit: emitChange,
+})
+
+const queueStateEmit = () => {
+  queueRealTimeEmit()
+  queueChangeEmit()
+}
+
+const cropResizeDirections = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se'] as const
+const cropGridLines = ['vertical-start', 'vertical-end', 'horizontal-start', 'horizontal-end'] as const
 
 const {
   bindMoveImg,
@@ -180,16 +285,37 @@ const {
   setImgAxis,
   reboundImg,
   checkedCrop,
+  cancelPendingRebound,
 } = useInteractions({
   cropperImg,
   cropperBox,
+  cropperRef,
   layout: LayoutContainer as any,
   cropping,
   centerBox,
   centerWrapper,
+  movable,
+  zoomable,
+  zoomAnchor,
   effectiveCropLayoutStyle,
   getBoundaryDuration,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
+  clampScale,
+})
+
+const {
+  startCropResize,
+  destroyCropResize,
+} = useCropResize({
+  layout: LayoutContainer,
+  innerCropLayout,
+  effectiveCropLayoutStyle,
+  constraints: cropResizeConstraints,
+  constraintsEnabled: cropBoxConstraintsEnabled,
+  cropResizing,
+  onStart: cancelPendingRebound,
+  onResize: queueStateEmit,
+  onEnd: reboundImg,
 })
 
 useDragUpload({
@@ -207,17 +333,28 @@ const {
   layout: LayoutContainer as any,
   imgs,
   cropping,
-  cropLayoutStyle,
   effectiveCropLayoutStyle,
   shouldShowCropBox,
   checkedCrop,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
+})
+
+watch([minScale, maxScale], () => {
+  if (imgs.value) {
+    setScale(LayoutContainer.imgAxis.scale)
+  }
 })
 
 // These are replaced as whole objects during interactions; use refs to always read latest values.
 const imgAxisRef = toRef(LayoutContainer, 'imgAxis')
 const imgLayoutRef = toRef(LayoutContainer, 'imgLayout')
 const cropAxisRef = toRef(LayoutContainer, 'cropAxis')
+
+const { getCropCoordinates } = useCropCoordinates({
+  imgs,
+  layout: LayoutContainer,
+  cropLayout: effectiveCropLayoutStyle,
+})
 
 const { getCropData, getCropBlob } = useExport({
   canvas,
@@ -242,7 +379,7 @@ const { createPreviewUrl } = usePreviewFactory({
   },
 })
 
-const { checkedImg } = useImagePipeline({
+const { checkedImg, resetImageLayout } = useImagePipeline({
   canvas,
   imgs,
   imgLoading,
@@ -257,7 +394,8 @@ const { checkedImg } = useImagePipeline({
   imgLoadEmit,
   renderCrop: () => renderCrop(),
   reboundImg,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
+  clampScale,
 })
 
 const { mouseInCropper, mouseOutCropper } = useWheelZoom({
@@ -266,6 +404,9 @@ const { mouseInCropper, mouseOutCropper } = useWheelZoom({
   changeImgSize,
   imgAxis: imgAxisRef,
   imgLayout: imgLayoutRef,
+  cropperRef,
+  zoomAnchor,
+  zoomable,
   setScale,
 })
 
@@ -279,10 +420,12 @@ useCropperWatchers({
   defaultRotate,
   cropLayout,
   wrapperStyle,
-  cropLayoutStyle,
+  effectiveCropLayoutStyle,
+  cropBoxConstraintsEnabled,
   shouldShowCropBox,
   centerBox,
   centerWrapper,
+  cropResizing,
   innerCropLayout,
   layout: LayoutContainer as any,
   checkedImg,
@@ -302,7 +445,10 @@ const {
   rotateLeft,
   rotateRight,
   rotateClear,
+  flipHorizontal,
+  flipVertical,
   reload,
+  reset,
   setRotateAngle,
   setCropLayout,
   setCropAxis,
@@ -314,6 +460,7 @@ const {
   img,
   imgLoading,
   layout: LayoutContainer as any,
+  cropLayout,
   innerCropLayout,
   checkedImg,
   updateWrapLayoutFromDom,
@@ -321,7 +468,9 @@ const {
   checkedCrop,
   reboundImg,
   setScale,
-  queueRealTimeEmit,
+  queueRealTimeEmit: queueStateEmit,
+  resetImageLayout,
+  cancelPendingRebound,
 })
 onMounted(() => {
   if (props.img) {
@@ -335,6 +484,7 @@ onUnmounted(() => {
   // 释放滚轮事件绑定
   unbindMoveImg()
   unbindMoveCrop()
+  destroyCropResize()
 })
 
 const slots = useSlots()
@@ -342,10 +492,14 @@ const slots = useSlots()
 defineExpose({
   getCropData,
   getCropBlob,
+  getCropCoordinates,
   rotateLeft,
   rotateRight,
   rotateClear,
+  flipHorizontal,
+  flipVertical,
   reload,
+  reset,
   setRotateAngle,
   setCropLayout,
   setCropAxis,
@@ -382,6 +536,32 @@ defineExpose({
         <img v-if="img" :src="imgs" :style="getCropImgStyle()" alt="cropper-img" />
       </span>
       <span class="cropper-face cropper-move" ref="cropperBox" />
+      <span class="cropper-frame" :style="{ color: cropColor }" aria-hidden="true" />
+      <template v-if="cropBoxResizable">
+        <span
+          class="cropper-grid"
+          :class="{ 'cropper-grid--active': cropResizing }"
+          :style="{ color: cropColor }"
+          :aria-hidden="!cropResizing"
+        >
+          <span
+            v-for="line in cropGridLines"
+            :key="line"
+            class="cropper-grid-line"
+            :class="`cropper-grid-line--${line}`"
+          />
+        </span>
+        <span
+          v-for="direction in cropResizeDirections"
+          :key="direction"
+          class="cropper-resize-handle"
+          :class="`cropper-resize-handle--${direction}`"
+          :style="{ color: cropColor }"
+          :data-direction="direction"
+          @mousedown="startCropResize(direction, $event)"
+          @touchstart="startCropResize(direction, $event)"
+        />
+      </template>
     </section>
     <section v-if="isFullCropMode" class="cropper-full-mask cropper-fade-in" />
     <section v-if="isDrag" class="drag">

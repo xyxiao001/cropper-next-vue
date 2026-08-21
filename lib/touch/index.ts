@@ -134,6 +134,13 @@ class CropperTouchEvent {
     return this.getLen(curCenter) / this.getLen(preCenter)
   }
 
+  private getCenter(touches: TouchPointPair): InterfaceAxis {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2,
+    }
+  }
+
   scaleTouch(event: globalThis.TouchEvent) {
     event.preventDefault()
     const nextTouches = this.getTouchPair(event.touches)
@@ -145,6 +152,8 @@ class CropperTouchEvent {
       type: 'down-to-scale',
       event,
       scale: this.getScale(nextTouches, this.touches),
+      previousCenter: this.getCenter(this.touches),
+      center: this.getCenter(nextTouches),
     })
     this.touches = nextTouches
   }

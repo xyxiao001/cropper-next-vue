@@ -27,5 +27,11 @@ export const globalCropper: VueCropperGlobal = {
 }
 
 export { VueCropper }
+export type {
+  InterfaceAxis,
+  InterfaceCropCoordinates,
+  InterfaceCropperState,
+  OriginalCropCoordinates,
+} from './interface'
 
 export default globalCropper

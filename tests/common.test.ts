@@ -6,6 +6,7 @@ import {
   getVersion,
   setAnimation,
   translateStyle,
+  createTransform,
 } from '../lib/common'
 
 describe('common helpers', () => {
@@ -60,8 +61,19 @@ describe('common helpers', () => {
       y: 100,
       scale: 2,
       rotate: 30,
+      flipX: false,
+      flipY: false,
     })
     expect(result.imgExhibitionStyle.transform).toContain('rotateZ(30deg)')
+  })
+
+  it('keeps the default transform unchanged and applies screen-axis flips before rotation', () => {
+    expect(createTransform(2, 10, 20, 90)).toBe(
+      'scale(2, 2) translate3d(10px, 20px, 0px) rotateZ(90deg)',
+    )
+    expect(createTransform(2, 10, 20, 90, true, false)).toBe(
+      'scale(2, 2) translate3d(10px, 20px, 0px) scale(-1, 1) rotateZ(90deg)',
+    )
   })
 
   it('delegates image layout mode calculation', () => {

@@ -52,6 +52,8 @@ export interface InterfaceModeHandle {
 export interface InterfaceRenderImgLayout {
   scale: number
   rotate: number
+  flipX?: boolean
+  flipY?: boolean
   imgStyle: InterfaceLayoutStyle
   layoutStyle: InterfaceLayoutStyle
 }
@@ -61,6 +63,8 @@ export interface InterfaceMessageEvent {
   event?: Event
   change?: InterfaceAxis,
   scale?: number,
+  previousCenter?: InterfaceAxis,
+  center?: InterfaceAxis,
 }
 
 export interface InterfaceAxis {
@@ -68,9 +72,56 @@ export interface InterfaceAxis {
   y: number
 }
 
+export type InterfaceCropResizeDirection = 'n' | 's' | 'w' | 'e' | 'nw' | 'ne' | 'sw' | 'se'
+
+export interface InterfaceCropGeometry extends InterfaceAxis, InterfaceLayoutStyle {}
+
+export interface InterfaceCropResizeConstraints {
+  aspectRatio?: number
+  minWidth: number
+  minHeight: number
+  maxWidth: number
+  maxHeight: number
+}
+
+export interface InterfaceCropResizeSession {
+  direction: InterfaceCropResizeDirection
+  startPointer: InterfaceAxis
+  startCrop: InterfaceCropGeometry
+  constraints: InterfaceCropResizeConstraints
+  active: boolean
+}
+
+export type InterfaceZoomAnchor = 'center' | 'pointer'
+
+export interface InterfaceScaleAnchor {
+  previous: InterfaceAxis
+  current: InterfaceAxis
+}
+
 export interface InterfaceImgAxis extends InterfaceAxis {
   scale: number
   rotate: number
+  flipX: boolean
+  flipY: boolean
+}
+
+export interface InterfaceCropCoordinates {
+  points: [InterfaceAxis, InterfaceAxis, InterfaceAxis, InterfaceAxis]
+  boundingBox: InterfaceAxis & InterfaceLayoutStyle
+  source: InterfaceLayoutStyle
+  transform: {
+    rotate: number
+    flipX: boolean
+    flipY: boolean
+  }
+}
+
+export type OriginalCropCoordinates = InterfaceCropCoordinates
+
+export interface InterfaceCropperState {
+  image: InterfaceImgAxis
+  crop: InterfaceAxis & InterfaceLayoutStyle
 }
 
 export interface InterfaceTransformStyle extends CSSProperties {

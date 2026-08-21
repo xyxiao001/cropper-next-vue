@@ -28,6 +28,10 @@ const t = computed(() => {
           desc: 'Constrain the image within the crop box or the wrapper.'
         },
         {
+          title: 'Resizable crop box',
+          desc: 'Optional eight-direction resizing with a grid shown while adjusting.'
+        },
+        {
           title: 'High‑DPI export',
           desc: 'Better output quality on retina screens.'
         },
@@ -54,8 +58,13 @@ const t = computed(() => {
         rotateLeft: 'Rotate left',
         rotateRight: 'Rotate right',
         rotateClear: 'Reset rotation',
+        reset: 'Reset crop',
         zoomIn: 'Zoom in',
         zoomOut: 'Zoom out',
+        movable: 'Allow dragging',
+        zoomable: 'Allow interactive zoom',
+        cropBoxResizable: 'Resize crop box',
+        zoomAtPointer: 'Zoom at pointer / touch center',
         mode: 'Mode',
         modeCover: 'Cover',
         modeContain: 'Contain',
@@ -98,6 +107,10 @@ const t = computed(() => {
         desc: '支持将图片限制在截图框或容器内，避免拖出可视范围。'
       },
       {
+        title: '可缩放裁剪框',
+        desc: '按需开启八方向缩放，调整时显示九宫格构图参考。'
+      },
+      {
         title: '高分屏导出',
         desc: '提升导出质量，适配高 DPI 屏幕。'
       },
@@ -124,8 +137,13 @@ const t = computed(() => {
       rotateLeft: '向左旋转',
       rotateRight: '向右旋转',
       rotateClear: '复位旋转',
+      reset: '重置裁剪',
       zoomIn: '放大',
       zoomOut: '缩小',
+      movable: '允许拖拽',
+      zoomable: '允许交互缩放',
+      cropBoxResizable: '允许缩放裁剪框',
+      zoomAtPointer: '以鼠标/双指中心缩放',
       mode: '布局模式',
       modeCover: 'cover',
       modeContain: 'contain',
@@ -157,6 +175,10 @@ const links = {
 const cropper = ref<any>()
 const img = ref('')
 const mode = ref<'cover' | 'contain' | 'original'>('cover')
+const zoomAnchor = ref<'center' | 'pointer'>('pointer')
+const movable = ref(true)
+const zoomable = ref(true)
+const cropBoxResizable = ref(true)
 const centerBox = ref(true)
 const centerWrapper = ref(false)
 const wrapper = {
@@ -171,6 +193,7 @@ const cropLayout = {
 const rotateLeft = () => cropper.value?.rotateLeft?.()
 const rotateRight = () => cropper.value?.rotateRight?.()
 const rotateClear = () => cropper.value?.rotateClear?.()
+const reset = () => cropper.value?.reset?.()
 const zoomIn = () => cropper.value?.zoomIn?.()
 const zoomOut = () => cropper.value?.zoomOut?.()
 
@@ -301,6 +324,7 @@ import { VueCropper } from 'cropper-next-vue'`
           <section class="preview__tools">
             <el-button @click="pickRandomImage">{{ t.actions.randomImage }}</el-button>
             <el-button type="primary" :loading="exporting" @click="openExport">{{ t.actions.exportImage }}</el-button>
+            <el-button @click="reset">{{ t.actions.reset }}</el-button>
             <el-button-group>
               <el-button @click="rotateLeft">{{ t.actions.rotateLeft }}</el-button>
               <el-button @click="rotateRight">{{ t.actions.rotateRight }}</el-button>
@@ -310,6 +334,15 @@ import { VueCropper } from 'cropper-next-vue'`
               <el-button @click="zoomIn">{{ t.actions.zoomIn }}</el-button>
               <el-button @click="zoomOut">{{ t.actions.zoomOut }}</el-button>
             </el-button-group>
+            <el-switch
+              v-model="zoomAnchor"
+              active-value="pointer"
+              inactive-value="center"
+              :active-text="t.actions.zoomAtPointer"
+            />
+            <el-switch v-model="movable" :active-text="t.actions.movable" />
+            <el-switch v-model="zoomable" :active-text="t.actions.zoomable" />
+            <el-switch v-model="cropBoxResizable" :active-text="t.actions.cropBoxResizable" />
             <el-select v-model="mode" :teleported="false" class="preview__select">
               <el-option :label="`${t.actions.mode}: ${t.actions.modeCover}`" value="cover" />
               <el-option :label="`${t.actions.mode}: ${t.actions.modeContain}`" value="contain" />
@@ -337,6 +370,10 @@ import { VueCropper } from 'cropper-next-vue'`
             :crop-layout="cropLayout"
             :center-box="centerBox"
             :center-wrapper="centerWrapper"
+            :zoom-anchor="zoomAnchor"
+            :movable="movable"
+            :zoomable="zoomable"
+            :crop-box-resizable="cropBoxResizable"
             :mode="mode"
             :original="exportOriginal"
             :max-side-length="maxSideLength"

@@ -10,6 +10,7 @@
 `img-upload` | 拖拽上传或本地文件读取成功时触发 | `string`
 `real-time` | 图片或截图框变化时触发预览数据 | 预览对象
 `realTime` | `real-time` 的兼容别名 | 预览对象
+`change` | 图片或截图框状态变化时触发 | 完整裁剪状态对象
 
 ## `img-load`
 
@@ -82,6 +83,38 @@ const handlePreview = (payload) => {
 }
 ```
 
+## `change`
+
+`change` 在图片首次可用，以及图片位置、缩放、旋转、翻转、截图框位置或大小发生变化后触发。同一动画帧内的连续变化会合并为一次最新状态。
+
+```html
+<vue-cropper :img="img" @change="handleChange" />
+```
+
+```ts
+const handleChange = (state) => {
+  console.log(state.image.scale, state.crop.x)
+}
+```
+
+返回值结构：
+
+```ts
+{
+  image: {
+    x: number,
+    y: number,
+    scale: number,
+    rotate: number,
+    flipX: boolean,
+    flipY: boolean
+  },
+  crop: { x: number, y: number, width: number, height: number }
+}
+```
+
+调用 `getCropData()` 或 `getCropBlob()` 导出图片不会触发 `change`。
+
 ## 推荐用法（实时联动预览）
 
 当前版本更推荐使用 `payload.url` + `payload.img` 来做轻量的实时预览渲染（纯 CSS），不需要在实时交互过程中频繁调用 `getCropData()`：
@@ -134,6 +167,7 @@ Name | Description | Payload
 `img-upload` | Fired after drag upload or local file read succeeds | `string`
 `real-time` | Fired when the image or crop box changes and preview data is updated | preview object
 `realTime` | Compatibility alias of `real-time` | preview object
+`change` | Fired when image or crop-box state changes | complete cropper state object
 
 ## `img-load`
 
@@ -205,6 +239,38 @@ Payload shape:
   html: string
 }
 ```
+
+## `change`
+
+`change` fires when the image first becomes available and after the image position, scale, rotation, flip state, crop-box position, or crop-box size changes. Consecutive updates in the same animation frame are coalesced into the latest state.
+
+```html
+<vue-cropper :img="img" @change="handleChange" />
+```
+
+```ts
+const handleChange = (state) => {
+  console.log(state.image.scale, state.crop.x)
+}
+```
+
+Payload shape:
+
+```ts
+{
+  image: {
+    x: number,
+    y: number,
+    scale: number,
+    rotate: number,
+    flipX: boolean,
+    flipY: boolean
+  },
+  crop: { x: number, y: number, width: number, height: number }
+}
+```
+
+Calling `getCropData()` or `getCropBlob()` does not emit `change`.
 
 ## Recommended usage (live preview)
 

@@ -71,9 +71,7 @@
     overflow: hidden;
     width: 100%;
     height: 100%;
-    outline: 1px solid #fff;
-    // border: 1px solid #fff;
-    outline-color: #fff;
+    outline: 0;
     user-select: none;
   }
   .cropper-view-box img {
@@ -87,6 +85,205 @@
     left: 0;
     background-color: #fff;
     opacity: 0.1;
+  }
+
+  .cropper-frame {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    box-sizing: border-box;
+    border: 1px solid currentColor;
+    pointer-events: none;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  }
+
+  .cropper-grid {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 400ms ease-out;
+  }
+
+  .cropper-grid--active {
+    opacity: 1;
+  }
+
+  .cropper-grid-line {
+    position: absolute;
+    display: block;
+    background: currentColor;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.45);
+    opacity: 0.58;
+  }
+
+  .cropper-grid-line--vertical-start,
+  .cropper-grid-line--vertical-end {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+  }
+
+  .cropper-grid-line--vertical-start {
+    left: 33.3333%;
+  }
+
+  .cropper-grid-line--vertical-end {
+    left: 66.6667%;
+  }
+
+  .cropper-grid-line--horizontal-start,
+  .cropper-grid-line--horizontal-end {
+    right: 0;
+    left: 0;
+    height: 1px;
+  }
+
+  .cropper-grid-line--horizontal-start {
+    top: 33.3333%;
+  }
+
+  .cropper-grid-line--horizontal-end {
+    top: 66.6667%;
+  }
+
+  .cropper-resize-handle {
+    position: absolute;
+    z-index: 3;
+    width: 24px;
+    height: 24px;
+    touch-action: none;
+
+    &::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 3px;
+      box-sizing: border-box;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+      content: '';
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  .cropper-resize-handle--w::after,
+  .cropper-resize-handle--e::after {
+    width: 3px;
+    height: 20px;
+  }
+
+  .cropper-resize-handle--nw::after,
+  .cropper-resize-handle--ne::after,
+  .cropper-resize-handle--sw::after,
+  .cropper-resize-handle--se::after {
+    width: 20px;
+    height: 20px;
+    border: 0 solid currentColor;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .cropper-resize-handle--nw::after {
+    top: calc(50% - 3px);
+    left: calc(50% - 3px);
+    border-top-width: 3px;
+    border-left-width: 3px;
+    transform: none;
+  }
+
+  .cropper-resize-handle--ne::after {
+    top: calc(50% - 3px);
+    right: calc(50% - 3px);
+    left: auto;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    transform: none;
+  }
+
+  .cropper-resize-handle--sw::after {
+    top: auto;
+    bottom: calc(50% - 3px);
+    left: calc(50% - 3px);
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    transform: none;
+  }
+
+  .cropper-resize-handle--se::after {
+    top: auto;
+    right: calc(50% - 3px);
+    bottom: calc(50% - 3px);
+    left: auto;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    transform: none;
+  }
+
+  .cropper-resize-handle--n,
+  .cropper-resize-handle--s {
+    left: 50%;
+    cursor: ns-resize;
+    transform: translateX(-50%);
+  }
+
+  .cropper-resize-handle--n {
+    top: -12px;
+  }
+
+  .cropper-resize-handle--s {
+    bottom: -12px;
+  }
+
+  .cropper-resize-handle--w,
+  .cropper-resize-handle--e {
+    top: 50%;
+    cursor: ew-resize;
+    transform: translateY(-50%);
+  }
+
+  .cropper-resize-handle--w {
+    left: -12px;
+  }
+
+  .cropper-resize-handle--e {
+    right: -12px;
+  }
+
+  .cropper-resize-handle--nw,
+  .cropper-resize-handle--se {
+    cursor: nwse-resize;
+  }
+
+  .cropper-resize-handle--ne,
+  .cropper-resize-handle--sw {
+    cursor: nesw-resize;
+  }
+
+  .cropper-resize-handle--nw {
+    top: -12px;
+    left: -12px;
+  }
+
+  .cropper-resize-handle--ne {
+    top: -12px;
+    right: -12px;
+  }
+
+  .cropper-resize-handle--sw {
+    bottom: -12px;
+    left: -12px;
+  }
+
+  .cropper-resize-handle--se {
+    right: -12px;
+    bottom: -12px;
   }
 
   .cropper-loading {
