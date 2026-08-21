@@ -397,7 +397,6 @@ import { VueCropper } from 'cropper-next-vue'`
             v-else-if="exportUrl"
             class="export-image"
             :src="exportUrl"
-            :style="{ width: `${cropLayout.width}px`, height: `${cropLayout.height}px` }"
             alt="export result"
           />
         </section>
