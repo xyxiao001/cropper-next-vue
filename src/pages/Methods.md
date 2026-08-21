@@ -23,6 +23,9 @@ const cropper = ref()
 `cropper.value.rotateLeft()` | 向左旋转 `90deg`
 `cropper.value.rotateRight()` | 向右旋转 `90deg`
 `cropper.value.rotateClear()` | 清空旋转角度，恢复为 `0deg`
+`cropper.value.flipHorizontal()` | 相对屏幕方向切换水平翻转
+`cropper.value.flipVertical()` | 相对屏幕方向切换垂直翻转
+`cropper.value.getCropCoordinates()` | 同步获取原图裁剪四角、外接矩形、源图尺寸和变换信息
 `cropper.value.reload()` | 重新加载当前 `img`，并重新进入加载流程
 `cropper.value.reset()` | 不重新加载图片，恢复当前 props 对应的初始图片与截图框状态
 `cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
@@ -48,6 +51,7 @@ const cropper = ref()
 `reset()`
 
 - 恢复图片位置、缩放、旋转、截图框位置和截图框大小
+- 清除水平和垂直翻转状态
 - 使用调用时最新的 `mode`、`defaultRotate` 和 `cropLayout` props
 - 不重新请求、读取或解码图片；没有已加载图片时不改变状态
 
@@ -76,6 +80,13 @@ const cropper = ref()
 
 - 正数表示放大，负数表示缩小，例如 `changeScale(0.1)`、`changeScale(-0.1)`
 - 适合需要自己计算按钮步进或滑杆差值的场景
+- 三个公开缩放方法都遵守最新的 `minScale`、`maxScale` 和边界覆盖要求
+
+`getCropCoordinates()`
+
+- 没有已加载图片时返回 `null`，否则同步返回方向校正后源图坐标
+- `points` 依次对应截图框左上、右上、右下、左下，点位不会被限制到源图边界
+- 调用只读取当前状态，不触发 `change`、`real-time` 或图片导出
 
 ## 示例
 
@@ -133,6 +144,9 @@ Method | Description
 `cropper.value.rotateLeft()` | Rotate left by `90deg`
 `cropper.value.rotateRight()` | Rotate right by `90deg`
 `cropper.value.rotateClear()` | Reset rotation back to `0deg`
+`cropper.value.flipHorizontal()` | Toggle horizontal flip relative to the screen axis
+`cropper.value.flipVertical()` | Toggle vertical flip relative to the screen axis
+`cropper.value.getCropCoordinates()` | Synchronously read source crop corners, bounding box, source size, and transform
 `cropper.value.reload()` | Reload the current `img` and run the loading flow again
 `cropper.value.reset()` | Restore the initial image and crop-box state for the current props without reloading the image
 `cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
@@ -158,6 +172,7 @@ Method | Description
 `reset()`
 
 - restores image position, scale, rotation, crop-box position, and crop-box size
+- clears horizontal and vertical flip state
 - uses the latest `mode`, `defaultRotate`, and `cropLayout` props at call time
 - does not request, read, or decode the image again; it has no effect before an image is loaded
 
@@ -186,6 +201,13 @@ Method | Description
 
 - positive values zoom in and negative values zoom out, for example `changeScale(0.1)` and `changeScale(-0.1)`
 - useful when buttons or sliders calculate their own scale delta
+- all three public zoom methods respect the latest `minScale`, `maxScale`, and boundary coverage requirement
+
+`getCropCoordinates()`
+
+- returns `null` before an image is loaded; otherwise returns coordinates in the orientation-normalized source image
+- `points` follows crop-box top-left, top-right, bottom-right, and bottom-left order and is not clamped to source bounds
+- this is a read-only call and does not emit `change` / `real-time` or export an image
 
 ## Example
 

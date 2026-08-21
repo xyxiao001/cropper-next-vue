@@ -30,7 +30,7 @@ describe('useCropState', () => {
       imgs: ref(hasImage ? 'blob:preview' : ''),
       effectiveCropLayoutStyle: ref({ width: 200, height: 160 }),
       layout: {
-        imgAxis: { x: 10, y: 20, scale: 1.5, rotate: 90 },
+        imgAxis: { x: 10, y: 20, scale: 1.5, rotate: 90, flipX: true, flipY: false },
         cropAxis: { x: 30, y: 40 },
       },
       emit,
@@ -42,7 +42,7 @@ describe('useCropState', () => {
     const { state } = createState()
 
     expect(state.getCropperState()).toEqual({
-      image: { x: 10, y: 20, scale: 1.5, rotate: 90 },
+      image: { x: 10, y: 20, scale: 1.5, rotate: 90, flipX: true, flipY: false },
       crop: { x: 30, y: 40, width: 200, height: 160 },
     })
   })

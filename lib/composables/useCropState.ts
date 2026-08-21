@@ -1,9 +1,9 @@
 import { onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceCropperState } from '../interface'
+import type { InterfaceCropperState, InterfaceImgAxis } from '../interface'
 
 type LayoutContainerLike = {
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   cropAxis: { x: number; y: number }
 }
 

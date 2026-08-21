@@ -10,7 +10,7 @@ const createInteractions = (options: {
   const layout = {
     imgLayout: { width: 100, height: 80 },
     wrapLayout: { width: 300, height: 200 },
-    imgAxis: { x: 50, y: 40, scale: 1, rotate: 0 },
+    imgAxis: { x: 50, y: 40, scale: 1, rotate: 0, flipX: false, flipY: false },
     imgExhibitionStyle: {},
     cropAxis: { x: 0, y: 0 },
   }
@@ -30,6 +30,7 @@ const createInteractions = (options: {
     effectiveCropLayoutStyle: ref({ width: 200, height: 160 }),
     getBoundaryDuration: () => 100,
     queueRealTimeEmit,
+    clampScale: scale => Math.min(Math.max(scale, 0.5), 2),
   })
 
   return { layout, interactions, queueRealTimeEmit }
@@ -113,5 +114,22 @@ describe('useInteractions scale anchor', () => {
 
     expect(layout.imgAxis.scale).toBe(1)
     expect(queueRealTimeEmit).not.toHaveBeenCalled()
+  })
+
+  it('keeps position fixed when an anchored zoom exceeds the range', () => {
+    const { layout, interactions, queueRealTimeEmit } = createInteractions()
+
+    interactions.setScale(3, false, {
+      previous: { x: 150, y: 100 },
+      current: { x: 150, y: 100 },
+    })
+    const atMax = { ...layout.imgAxis }
+    interactions.setScale(4, false, {
+      previous: { x: 10, y: 10 },
+      current: { x: 20, y: 20 },
+    })
+
+    expect(layout.imgAxis).toEqual(atMax)
+    expect(queueRealTimeEmit).toHaveBeenCalledTimes(1)
   })
 })

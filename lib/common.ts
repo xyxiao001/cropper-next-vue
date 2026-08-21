@@ -105,7 +105,7 @@ export const createImgStyle = (
 }
 
 export const translateStyle = (style: InterfaceRenderImgLayout, axis?: InterfaceAxis): any => {
-  const { scale, imgStyle, layoutStyle, rotate } = style
+  const { scale, imgStyle, layoutStyle, rotate, flipX = false, flipY = false } = style
   const curStyle = {
     width: scale * imgStyle.width,
     height: scale * imgStyle.height,
@@ -130,7 +130,7 @@ export const translateStyle = (style: InterfaceRenderImgLayout, axis?: Interface
     imgExhibitionStyle: {
       width: `${imgStyle.width}px`,
       height: `${imgStyle.height}px`,
-      transform: `scale(${scale}, ${scale}) translate3d(${left}px, ${top}px, 0px) rotateZ(${rotate}deg)`,
+      transform: createTransform(scale, left, top, rotate, flipX, flipY),
     },
     // 返回左上角的坐标轴
     imgAxis: {
@@ -138,8 +138,25 @@ export const translateStyle = (style: InterfaceRenderImgLayout, axis?: Interface
       y,
       scale,
       rotate,
+      flipX,
+      flipY,
     },
   }
+}
+
+export const createTransform = (
+  scale: number,
+  x: number,
+  y: number,
+  rotate: number,
+  flipX: boolean = false,
+  flipY: boolean = false,
+  z: '0' | '0px' = '0px',
+): string => {
+  const flip = flipX || flipY
+    ? ` scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})`
+    : ''
+  return `scale(${scale}, ${scale}) translate3d(${x}px, ${y}px, ${z})${flip} rotateZ(${rotate}deg)`
 }
 
 interface CropImageOptions {
@@ -218,6 +235,8 @@ export const getImgCanvas = (
   imgLayout: InterfaceLayoutStyle,
   rotate: number = 0,
   scale: number = 1,
+  flipX: boolean = false,
+  flipY: boolean = false,
 ): HTMLCanvasElement => {
   // 图片放在外部加载 这里不处理图片加载
   const canvas = document.createElement('canvas')
@@ -240,10 +259,14 @@ export const getImgCanvas = (
     max = Math.ceil(Math.sqrt(width * width + height * height))
     canvas.width = max
     canvas.height = max
-    ctx.translate(max / 2, max / 2)
+  }
+
+  if (rotate || flipX || flipY) {
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1)
     ctx.rotate((rotate * Math.PI) / 180)
-    dx = -max / 2 + (max - width) / 2
-    dy = -max / 2 + (max - height) / 2
+    dx = -width / 2
+    dy = -height / 2
   }
 
   ctx.drawImage(img, dx, dy, width, height)
@@ -313,13 +336,27 @@ export const getCropImgData = async (options: CropImageOptions): Promise<string 
       if (sourceCanvas) {
         // Fast path: if no rotation and no intermediate scaling is needed, reuse the source canvas
         // to avoid an extra full-size copy allocation.
-        if (!imgAxis.rotate && canvasScale === 1) {
+        if (!imgAxis.rotate && !imgAxis.flipX && !imgAxis.flipY && canvasScale === 1) {
           imgCanvas = sourceCanvas
         } else {
-          imgCanvas = getImgCanvasFromCanvas(sourceCanvas, imgLayout, imgAxis.rotate, canvasScale)
+          imgCanvas = getImgCanvasFromCanvas(
+            sourceCanvas,
+            imgLayout,
+            imgAxis.rotate,
+            canvasScale,
+            imgAxis.flipX,
+            imgAxis.flipY,
+          )
         }
       } else {
-        imgCanvas = getImgCanvas(img as HTMLImageElement, imgLayout, imgAxis.rotate, canvasScale)
+        imgCanvas = getImgCanvas(
+          img as HTMLImageElement,
+          imgLayout,
+          imgAxis.rotate,
+          canvasScale,
+          imgAxis.flipX,
+          imgAxis.flipY,
+        )
       }
       let dx = scaledImgAxis.x - scaledCropAxis.x
       let dy = scaledImgAxis.y - scaledCropAxis.y
@@ -390,6 +427,8 @@ const getImgCanvasFromCanvas = (
   imgLayout: InterfaceLayoutStyle,
   rotate: number = 0,
   scale: number = 1,
+  flipX: boolean = false,
+  flipY: boolean = false,
 ): HTMLCanvasElement => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -409,10 +448,14 @@ const getImgCanvasFromCanvas = (
     max = Math.ceil(Math.sqrt(width * width + height * height))
     canvas.width = max
     canvas.height = max
-    ctx.translate(max / 2, max / 2)
+  }
+
+  if (rotate || flipX || flipY) {
+    ctx.translate(canvas.width / 2, canvas.height / 2)
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1)
     ctx.rotate((rotate * Math.PI) / 180)
-    dx = -max / 2 + (max - width) / 2
-    dy = -max / 2 + (max - height) / 2
+    dx = -width / 2
+    dy = -height / 2
   }
 
   ctx.drawImage(src, dx, dy, width, height)
@@ -453,17 +496,9 @@ export const boundaryCalculation = (
   ]
 
   const rotatedCropPoints = cropPoints.map(point => rotatePoint(point, -rotate))
-  const cropRangeX =
-    Math.max(...rotatedCropPoints.map(point => point.x)) -
-    Math.min(...rotatedCropPoints.map(point => point.x))
-  const cropRangeY =
-    Math.max(...rotatedCropPoints.map(point => point.y)) -
-    Math.min(...rotatedCropPoints.map(point => point.y))
-
   const scale = Math.max(
     imgAxis.scale,
-    cropRangeX / imgLayout.width,
-    cropRangeY / imgLayout.height,
+    getRequiredBoundaryScale(cropLayout, imgAxis.rotate, imgLayout),
   )
   const imgWidth = imgLayout.width * scale
   const imgHeight = imgLayout.height * scale
@@ -498,6 +533,29 @@ export const boundaryCalculation = (
   boundary.top = targetCenter.y - halfHeight
   boundary.bottom = targetCenter.y - halfHeight
   return boundary
+}
+
+export const getRequiredBoundaryScale = (
+  cropLayout: InterfaceLayoutStyle,
+  rotate: number,
+  imgLayout: InterfaceLayoutStyle,
+): number => {
+  const angle = (rotate * Math.PI) / 180
+  const cropPoints = [
+    { x: 0, y: 0 },
+    { x: cropLayout.width, y: 0 },
+    { x: cropLayout.width, y: cropLayout.height },
+    { x: 0, y: cropLayout.height },
+  ]
+  const rotatedCropPoints = cropPoints.map(point => rotatePoint(point, -angle))
+  const cropRangeX =
+    Math.max(...rotatedCropPoints.map(point => point.x)) -
+    Math.min(...rotatedCropPoints.map(point => point.x))
+  const cropRangeY =
+    Math.max(...rotatedCropPoints.map(point => point.y)) -
+    Math.min(...rotatedCropPoints.map(point => point.y))
+
+  return Math.max(cropRangeX / imgLayout.width, cropRangeY / imgLayout.height)
 }
 
 const clamp = (value: number, min: number, max: number): number => {

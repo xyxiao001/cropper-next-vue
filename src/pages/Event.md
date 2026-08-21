@@ -85,7 +85,7 @@ const handlePreview = (payload) => {
 
 ## `change`
 
-`change` 在图片首次可用，以及图片位置、缩放、旋转、截图框位置或大小发生变化后触发。同一动画帧内的连续变化会合并为一次最新状态。
+`change` 在图片首次可用，以及图片位置、缩放、旋转、翻转、截图框位置或大小发生变化后触发。同一动画帧内的连续变化会合并为一次最新状态。
 
 ```html
 <vue-cropper :img="img" @change="handleChange" />
@@ -101,7 +101,14 @@ const handleChange = (state) => {
 
 ```ts
 {
-  image: { x: number, y: number, scale: number, rotate: number },
+  image: {
+    x: number,
+    y: number,
+    scale: number,
+    rotate: number,
+    flipX: boolean,
+    flipY: boolean
+  },
   crop: { x: number, y: number, width: number, height: number }
 }
 ```
@@ -235,7 +242,7 @@ Payload shape:
 
 ## `change`
 
-`change` fires when the image first becomes available and after the image position, scale, rotation, crop-box position, or crop-box size changes. Consecutive updates in the same animation frame are coalesced into the latest state.
+`change` fires when the image first becomes available and after the image position, scale, rotation, flip state, crop-box position, or crop-box size changes. Consecutive updates in the same animation frame are coalesced into the latest state.
 
 ```html
 <vue-cropper :img="img" @change="handleChange" />
@@ -251,7 +258,14 @@ Payload shape:
 
 ```ts
 {
-  image: { x: number, y: number, scale: number, rotate: number },
+  image: {
+    x: number,
+    y: number,
+    scale: number,
+    rotate: number,
+    flipX: boolean,
+    flipY: boolean
+  },
   crop: { x: number, y: number, width: number, height: number }
 }
 ```

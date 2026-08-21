@@ -52,6 +52,8 @@ export interface InterfaceModeHandle {
 export interface InterfaceRenderImgLayout {
   scale: number
   rotate: number
+  flipX?: boolean
+  flipY?: boolean
   imgStyle: InterfaceLayoutStyle
   layoutStyle: InterfaceLayoutStyle
 }
@@ -80,7 +82,22 @@ export interface InterfaceScaleAnchor {
 export interface InterfaceImgAxis extends InterfaceAxis {
   scale: number
   rotate: number
+  flipX: boolean
+  flipY: boolean
 }
+
+export interface InterfaceCropCoordinates {
+  points: [InterfaceAxis, InterfaceAxis, InterfaceAxis, InterfaceAxis]
+  boundingBox: InterfaceAxis & InterfaceLayoutStyle
+  source: InterfaceLayoutStyle
+  transform: {
+    rotate: number
+    flipX: boolean
+    flipY: boolean
+  }
+}
+
+export type OriginalCropCoordinates = InterfaceCropCoordinates
 
 export interface InterfaceCropperState {
   image: InterfaceImgAxis

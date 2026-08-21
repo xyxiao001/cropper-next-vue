@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type {
   InterfaceAxis,
+  InterfaceImgAxis,
   InterfaceMessageEvent,
   InterfaceScaleAnchor,
   InterfaceZoomAnchor,
@@ -14,7 +15,7 @@ import TouchEvent from '../touch'
 type LayoutContainerLike = {
   imgLayout: { width: number; height: number }
   wrapLayout: { width: number; height: number }
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   imgExhibitionStyle: any
   cropAxis: InterfaceAxis
 }
@@ -35,6 +36,7 @@ export const useInteractions = (options: {
   effectiveCropLayoutStyle: Ref<CropLayoutLike>
   getBoundaryDuration: () => number
   queueRealTimeEmit: () => void
+  clampScale: (scale: number) => number
 }) => {
   const {
     cropperImg,
@@ -50,6 +52,7 @@ export const useInteractions = (options: {
     effectiveCropLayoutStyle,
     getBoundaryDuration,
     queueRealTimeEmit,
+    clampScale,
   } = options
 
   const setWaitFunc = ref<ReturnType<typeof window.setTimeout> | null>(null)
@@ -66,6 +69,8 @@ export const useInteractions = (options: {
         imgStyle: { ...layout.imgLayout },
         layoutStyle: { ...layout.wrapLayout },
         rotate: layout.imgAxis.rotate,
+        flipX: layout.imgAxis.flipX,
+        flipY: layout.imgAxis.flipY,
       },
       axis,
     )
@@ -161,6 +166,10 @@ export const useInteractions = (options: {
     keep: boolean = false,
     anchor?: InterfaceScaleAnchor,
   ) => {
+    scale = clampScale(scale)
+    if (scale === layout.imgAxis.scale) {
+      return
+    }
     const axis = {
       x: layout.imgAxis.x,
       y: layout.imgAxis.y,
@@ -180,6 +189,8 @@ export const useInteractions = (options: {
         imgStyle: { ...layout.imgLayout },
         layoutStyle: { ...layout.wrapLayout },
         rotate: layout.imgAxis.rotate,
+        flipX: layout.imgAxis.flipX,
+        flipY: layout.imgAxis.flipY,
       },
       axis,
     )

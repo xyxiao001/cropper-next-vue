@@ -12,7 +12,7 @@
 
 <script setup>
   import { ref } from 'vue'
-  const isShow = ref(true)
+  const isShow = ref(false)
 </script>
 
 <style lang="scss" scoped>

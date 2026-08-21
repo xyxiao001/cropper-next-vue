@@ -1,11 +1,12 @@
 import { computed } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceAxis, InterfaceTransformStyle } from '../interface'
+import type { InterfaceAxis, InterfaceImgAxis, InterfaceTransformStyle } from '../interface'
+import { createTransform } from '../common'
 
 type LayoutContainerLike = {
   wrapLayout: { width: number; height: number }
   imgLayout: { width: number; height: number }
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   cropAxis: InterfaceAxis
   cropExhibitionStyle: { div: any; img: any }
 }
@@ -68,7 +69,15 @@ export const useCropRender = (options: {
     const style = {
       width: `${layout.imgLayout.width}px`,
       height: `${layout.imgLayout.height}px`,
-      transform: `scale(${scale}, ${scale}) translate3d(${x}px, ${y}px, 0) rotateZ(${layout.imgAxis.rotate}deg)`,
+      transform: createTransform(
+        scale,
+        x,
+        y,
+        layout.imgAxis.rotate,
+        layout.imgAxis.flipX,
+        layout.imgAxis.flipY,
+        '0',
+      ),
     }
     layout.cropExhibitionStyle.img = style
     return style
@@ -92,4 +101,3 @@ export const useCropRender = (options: {
     onCropAxisChanged,
   }
 }
-

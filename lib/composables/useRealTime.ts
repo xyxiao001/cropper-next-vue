@@ -1,10 +1,11 @@
 import { onUnmounted } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceRealTimePreview } from '../interface'
+import type { InterfaceImgAxis, InterfaceRealTimePreview } from '../interface'
+import { createTransform } from '../common'
 
 type LayoutContainerLike = {
   imgLayout: { width: number; height: number }
-  imgAxis: { x: number; y: number; scale: number; rotate: number }
+  imgAxis: InterfaceImgAxis
   cropAxis: { x: number; y: number }
 }
 
@@ -29,7 +30,15 @@ export const useRealTime = (options: {
       ((layout.imgLayout.width * (scale - 1)) / 2 + (layout.imgAxis.x - layout.cropAxis.x)) / scale
     const transformY =
       ((layout.imgLayout.height * (scale - 1)) / 2 + (layout.imgAxis.y - layout.cropAxis.y)) / scale
-    const transform = `scale(${scale}, ${scale}) translate3d(${transformX}px, ${transformY}px, 0) rotateZ(${layout.imgAxis.rotate}deg)`
+    const transform = createTransform(
+      scale,
+      transformX,
+      transformY,
+      layout.imgAxis.rotate,
+      layout.imgAxis.flipX,
+      layout.imgAxis.flipY,
+      '0',
+    )
 
     const width = effectiveCropLayoutStyle.value.width
     const height = effectiveCropLayoutStyle.value.height
@@ -78,4 +87,3 @@ export const useRealTime = (options: {
     getRealTimePreview,
   }
 }
-

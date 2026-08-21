@@ -48,6 +48,8 @@ describe('common runtime helpers', () => {
   const OriginalImage = globalThis.Image
   const OriginalFileReader = globalThis.FileReader
   let drawImage: ReturnType<typeof vi.fn>
+  let scaleContext: ReturnType<typeof vi.fn>
+  let rotateContext: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     globalThis.Image = MockImage as never
@@ -58,14 +60,16 @@ describe('common runtime helpers', () => {
       value: 2,
     })
     drawImage = vi.fn()
+    scaleContext = vi.fn()
+    rotateContext = vi.fn()
     vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url')
     vi.spyOn(window, 'alert').mockImplementation(() => undefined)
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
       drawImage,
       translate: vi.fn(),
-      rotate: vi.fn(),
+      rotate: rotateContext,
       restore: vi.fn(),
-      scale: vi.fn(),
+      scale: scaleContext,
     } as unknown as CanvasRenderingContext2D)
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
       'data:image/png;base64,canvas',
@@ -111,6 +115,18 @@ describe('common runtime helpers', () => {
 
     expect(canvas.width).toBeGreaterThan(150)
     expect(canvas.height).toBe(canvas.width)
+  })
+
+  it('applies canvas flips on screen axes before rotation', () => {
+    const img = new Image()
+
+    getImgCanvas(img, { width: 100, height: 50 }, 90, 1, true, false)
+
+    expect(scaleContext).toHaveBeenCalledWith(-1, 1)
+    expect(rotateContext).toHaveBeenCalledWith(Math.PI / 2)
+    expect(scaleContext.mock.invocationCallOrder[0]).toBeLessThan(
+      rotateContext.mock.invocationCallOrder[0],
+    )
   })
 
   it('renders crop output for the visible crop box', async () => {

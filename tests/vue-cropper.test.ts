@@ -57,6 +57,8 @@ vi.mock('../lib/common', async () => {
           y,
           scale: style.scale,
           rotate: style.rotate,
+          flipX: style.flipX ?? false,
+          flipY: style.flipY ?? false,
         },
       }
     }),
@@ -109,6 +111,11 @@ describe('vue-cropper component api', () => {
     vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined)
   })
 
+  it('uses pointer and touch center zoom by default', () => {
+    expect((VueCropper as unknown as { props: Record<string, { default: unknown }> }).props.zoomAnchor.default)
+      .toBe('pointer')
+  })
+
   it('emits real-time preview payloads after image setup', async () => {
     const wrapper = mount(VueCropper, {
       props: {
@@ -151,7 +158,7 @@ describe('vue-cropper component api', () => {
     const initial = structuredClone(wrapper.emitted('change')?.at(-1)?.[0])
 
     expect(initial).toEqual({
-      image: { x: 0, y: 0, scale: 1, rotate: 0 },
+      image: { x: 0, y: 0, scale: 1, rotate: 0, flipX: false, flipY: false },
       crop: { x: 80, y: 60, width: 160, height: 120 },
     })
 
@@ -381,6 +388,111 @@ describe('vue-cropper component api', () => {
     vm.changeScale(-0.1)
     await vm.getCropData()
     expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBeCloseTo(zoomedOutScale - 0.1)
+  })
+
+  it('applies scale props to public zoom, reset and runtime updates', async () => {
+    const wrapper = mount(VueCropper, {
+      props: {
+        img: 'https://example.com/demo.jpg',
+        minScale: 0.8,
+        maxScale: 1.1,
+      },
+    })
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      zoomIn: (step?: number) => void
+      zoomOut: (step?: number) => void
+      reset: () => void
+      getCropData: () => Promise<string>
+    }
+
+    vm.zoomIn(1)
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBe(1.1)
+
+    vm.zoomOut(1)
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBe(0.8)
+
+    vm.reset()
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBe(1)
+
+    await wrapper.setProps({ minScale: 1.05, maxScale: 1.06 })
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.scale).toBe(1.05)
+  })
+
+  it('toggles screen-axis flips, exports state and clears flips on reset', async () => {
+    const wrapper = mount(VueCropper, {
+      props: { img: 'https://example.com/demo.jpg' },
+    })
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      flipHorizontal: () => void
+      flipVertical: () => void
+      setRotateAngle: (angle: number) => void
+      reset: () => void
+      getCropData: () => Promise<string>
+    }
+
+    vm.setRotateAngle(90)
+    vm.flipHorizontal()
+    vm.flipVertical()
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis).toMatchObject({
+      rotate: 90,
+      flipX: true,
+      flipY: true,
+    })
+    expect(wrapper.emitted('change')?.at(-1)?.[0]).toMatchObject({
+      image: { rotate: 90, flipX: true, flipY: true },
+    })
+
+    vm.flipHorizontal()
+    vm.flipHorizontal()
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis.flipX).toBe(true)
+
+    vm.reset()
+    await vm.getCropData()
+    expect(getCropImgData.mock.lastCall?.[0].imgAxis).toMatchObject({
+      rotate: 0,
+      flipX: false,
+      flipY: false,
+    })
+  })
+
+  it('returns original crop coordinates synchronously without emitting events', async () => {
+    const empty = mount(VueCropper)
+    expect((empty.vm as unknown as { getCropCoordinates: () => unknown }).getCropCoordinates()).toBeNull()
+
+    const wrapper = mount(VueCropper, {
+      props: { img: 'https://example.com/demo.jpg' },
+    })
+    await flush()
+    await flush()
+
+    const vm = wrapper.vm as unknown as {
+      getCropCoordinates: () => {
+        points: Array<{ x: number, y: number }>
+        source: { width: number, height: number }
+        transform: { rotate: number, flipX: boolean, flipY: boolean }
+      }
+    }
+    const changeCount = wrapper.emitted('change')?.length
+    const realTimeCount = wrapper.emitted('real-time')?.length
+    const result = vm.getCropCoordinates()
+
+    expect(result.points).toHaveLength(4)
+    expect(result.source).toEqual({ width: 300, height: 150 })
+    expect(result.transform).toEqual({ rotate: 0, flipX: false, flipY: false })
+    expect(wrapper.emitted('change')?.length).toBe(changeCount)
+    expect(wrapper.emitted('real-time')?.length).toBe(realTimeCount)
   })
 
   it('keeps public movement and zoom methods available when interactions are disabled', async () => {

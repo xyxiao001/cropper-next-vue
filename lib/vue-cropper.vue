@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots, watch } from 'vue'
 import type {
   InterfaceImgLoad,
   InterfaceCropperState,
@@ -10,6 +10,7 @@ import type {
   InterfaceZoomAnchor,
 } from './interface'
 import { supportWheel, changeImgSize, isIE } from './changeImgSize'
+import { getRequiredBoundaryScale } from './common'
 import { BOUNDARY_DURATION } from './config'
 
 import cropperLoading from './loading'
@@ -30,6 +31,8 @@ import { useBoundaryDuration } from './composables/useBoundaryDuration'
 import { usePreviewFactory } from './composables/usePreviewFactory'
 import { useCropperEmits } from './composables/useCropperEmits'
 import { useCropState } from './composables/useCropState'
+import { useScaleLimits } from './composables/useScaleLimits'
+import { useCropCoordinates } from './composables/useCropCoordinates'
 
 interface InterfaceVueCropperProps {
   // 图片地址
@@ -72,6 +75,9 @@ interface InterfaceVueCropperProps {
   movable?: boolean;
   // 是否允许用户通过滚轮或双指缩放
   zoomable?: boolean;
+  // 图片缩放范围
+  minScale?: number;
+  maxScale?: number;
 }
 const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   img: '',
@@ -99,9 +105,11 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   centerWrapper: false,
   centerBoxDelay: BOUNDARY_DURATION,
   centerWrapperDelay: BOUNDARY_DURATION,
-  zoomAnchor: 'center',
+  zoomAnchor: 'pointer',
   movable: true,
   zoomable: true,
+  minScale: 0.01,
+  maxScale: Infinity,
 })
 // 组件处理
 const cropperRef = ref()
@@ -152,6 +160,8 @@ const {
   zoomAnchor,
   movable,
   zoomable,
+  minScale,
+  maxScale,
 } = toRefs(props);
 
 const {
@@ -178,6 +188,24 @@ const { getBoundaryDuration } = useBoundaryDuration({
 })
 
 const { imgLoadEmit, imgUploadEmit, emitRealTime, emitChange } = useCropperEmits(emit)
+
+const { clampScale } = useScaleLimits({
+  minScale,
+  maxScale,
+  getBoundaryMin: () => {
+    if (!centerBox.value && !centerWrapper.value) {
+      return 0
+    }
+    const boundaryLayout = centerBox.value
+      ? effectiveCropLayoutStyle.value
+      : LayoutContainer.wrapLayout
+    return getRequiredBoundaryScale(
+      boundaryLayout,
+      LayoutContainer.imgAxis.rotate,
+      LayoutContainer.imgLayout,
+    )
+  },
+})
 
 const { queueRealTimeEmit } = useRealTime({
   imgs,
@@ -223,6 +251,7 @@ const {
   effectiveCropLayoutStyle,
   getBoundaryDuration,
   queueRealTimeEmit: queueStateEmit,
+  clampScale,
 })
 
 useDragUpload({
@@ -247,10 +276,22 @@ const {
   queueRealTimeEmit: queueStateEmit,
 })
 
+watch([minScale, maxScale], () => {
+  if (imgs.value) {
+    setScale(LayoutContainer.imgAxis.scale)
+  }
+})
+
 // These are replaced as whole objects during interactions; use refs to always read latest values.
 const imgAxisRef = toRef(LayoutContainer, 'imgAxis')
 const imgLayoutRef = toRef(LayoutContainer, 'imgLayout')
 const cropAxisRef = toRef(LayoutContainer, 'cropAxis')
+
+const { getCropCoordinates } = useCropCoordinates({
+  imgs,
+  layout: LayoutContainer,
+  cropLayout: effectiveCropLayoutStyle,
+})
 
 const { getCropData, getCropBlob } = useExport({
   canvas,
@@ -291,6 +332,7 @@ const { checkedImg, resetImageLayout } = useImagePipeline({
   renderCrop: () => renderCrop(),
   reboundImg,
   queueRealTimeEmit: queueStateEmit,
+  clampScale,
 })
 
 const { mouseInCropper, mouseOutCropper } = useWheelZoom({
@@ -338,6 +380,8 @@ const {
   rotateLeft,
   rotateRight,
   rotateClear,
+  flipHorizontal,
+  flipVertical,
   reload,
   reset,
   setRotateAngle,
@@ -382,9 +426,12 @@ const slots = useSlots()
 defineExpose({
   getCropData,
   getCropBlob,
+  getCropCoordinates,
   rotateLeft,
   rotateRight,
   rotateClear,
+  flipHorizontal,
+  flipVertical,
   reload,
   reset,
   setRotateAngle,
