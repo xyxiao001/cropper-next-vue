@@ -1,6 +1,10 @@
 import { computed, ref } from 'vue'
 import type { Ref } from 'vue'
-import type { InterfaceLayoutInput } from '../interface'
+import type {
+  InterfaceCropResizeConstraints,
+  InterfaceLayoutInput,
+} from '../interface'
+import { calculateConstrainedCropSize } from './useCropResize'
 import { normalizeLengthStyle, parseLength } from './utils'
 
 type WrapLayout = { width: number; height: number }
@@ -11,8 +15,20 @@ export const useCropLayout = (options: {
   layoutContainer: { wrapLayout: WrapLayout }
   imgs: Ref<string>
   cropping: Ref<boolean>
+  cropResizing: Ref<boolean>
+  constraintsEnabled: Ref<boolean>
+  constraints: Ref<InterfaceCropResizeConstraints>
 }) => {
-  const { props, cropperRef, layoutContainer, imgs, cropping } = options
+  const {
+    props,
+    cropperRef,
+    layoutContainer,
+    imgs,
+    cropping,
+    cropResizing,
+    constraintsEnabled,
+    constraints,
+  } = options
 
   const wrapperStyle = computed(() => ({
     ...props.wrapper,
@@ -44,10 +60,21 @@ export const useCropLayout = (options: {
     const cropWidth = cropLayoutStyle.value.width
     const cropHeight = cropLayoutStyle.value.height
 
-    return {
+    const requested = {
       width: wrapWidth > 0 ? Math.min(cropWidth, wrapWidth) : cropWidth,
       height: wrapHeight > 0 ? Math.min(cropHeight, wrapHeight) : cropHeight,
     }
+    if (!constraintsEnabled.value || cropResizing.value) {
+      return requested
+    }
+    return calculateConstrainedCropSize({
+      requested,
+      wrapper: {
+        width: wrapWidth > 0 ? wrapWidth : Infinity,
+        height: wrapHeight > 0 ? wrapHeight : Infinity,
+      },
+      constraints: constraints.value,
+    })
   })
 
   const shouldShowCropBox = computed(() => {
@@ -78,4 +105,3 @@ export const useCropLayout = (options: {
     updateWrapLayoutFromDom,
   }
 }
-

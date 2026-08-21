@@ -53,6 +53,7 @@ const cropper = ref()
 - 恢复图片位置、缩放、旋转、截图框位置和截图框大小
 - 清除水平和垂直翻转状态
 - 使用调用时最新的 `mode`、`defaultRotate` 和 `cropLayout` props
+- 开启 `cropBoxConstraintsEnabled` 时，恢复后的截图框大小会应用当前比例和最小/最大尺寸限制
 - 不重新请求、读取或解码图片；没有已加载图片时不改变状态
 
 `setRotateAngle(angle)`
@@ -64,6 +65,7 @@ const cropper = ref()
 
 - 支持 `number`、`'300px'`、`'60%'`
 - 设置后会重新布局截图框
+- 开启 `cropBoxConstraintsEnabled` 时，实际大小会应用当前比例和最小/最大尺寸限制
 
 `setCropAxis({ x, y })`
 
@@ -115,7 +117,7 @@ const zoomOut = () => {
 
 ## 说明
 
-当前版本仍然没有旧版的 `startCrop`、`stopCrop`、`clearCrop`、`getImgAxis`、`getCropAxis`、`goAutoCrop`。这些属于旧版“可变裁剪框”路线，和当前实现不一致。
+当前版本支持通过 `cropBoxResizable` 直接操作可缩放裁剪框，但仍不提供旧版的 `startCrop`、`stopCrop`、`clearCrop`、`getImgAxis`、`getCropAxis`、`goAutoCrop` 生命周期与读取方法；请使用当前 props、`change` 事件和实例方法完成对应集成。
 
 </LangBlock>
 
@@ -174,6 +176,7 @@ Method | Description
 - restores image position, scale, rotation, crop-box position, and crop-box size
 - clears horizontal and vertical flip state
 - uses the latest `mode`, `defaultRotate`, and `cropLayout` props at call time
+- when `cropBoxConstraintsEnabled` is enabled, the restored crop-box size applies the current ratio and min/max size constraints
 - does not request, read, or decode the image again; it has no effect before an image is loaded
 
 `setRotateAngle(angle)`
@@ -185,6 +188,7 @@ Method | Description
 
 - supports `number`, `'300px'`, and `'60%'`
 - re-layouts the crop box after updating
+- when `cropBoxConstraintsEnabled` is enabled, the actual size applies the current ratio and min/max size constraints
 
 `setCropAxis({ x, y })`
 
@@ -236,6 +240,6 @@ const zoomOut = () => {
 
 ## Notes
 
-The current version still does not include old APIs such as `startCrop`, `stopCrop`, `clearCrop`, `getImgAxis`, `getCropAxis`, or `goAutoCrop`. Those belonged to the old resizable crop-box direction.
+The crop box can now be resized directly through `cropBoxResizable`, but legacy lifecycle and read APIs such as `startCrop`, `stopCrop`, `clearCrop`, `getImgAxis`, `getCropAxis`, and `goAutoCrop` are still not exposed. Use the current props, `change` event, and instance methods instead.
 
 </LangBlock>

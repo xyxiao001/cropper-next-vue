@@ -23,6 +23,19 @@ const wrapper = { width: '100%', height: '100%' }
 const mode = ref('cover')
 const movable = ref(true)
 const zoomable = ref(true)
+const cropBoxResizable = ref(false)
+const cropBoxConstraintsEnabled = ref(false)
+const cropRatio = ref('free')
+const cropAspectRatio = computed(() => {
+  if (cropRatio.value === '1:1') return 1
+  if (cropRatio.value === '4:3') return 4 / 3
+  if (cropRatio.value === '16:9') return 16 / 9
+  return undefined
+})
+const minCropWidth = ref(24)
+const minCropHeight = ref(24)
+const maxCropWidth = ref(480)
+const maxCropHeight = ref(360)
 const zoomAnchor = ref<'center' | 'pointer'>('pointer')
 const minScale = ref(0.01)
 const maxScale = ref(4)
@@ -71,6 +84,14 @@ const labels = computed(() => isEn.value ? {
   mode: 'Layout mode',
   movable: 'Allow dragging',
   zoomable: 'Allow interactive zoom',
+  cropBoxResizable: 'Allow crop-box resizing',
+  cropBoxConstraintsEnabled: 'Enable crop-box constraints',
+  cropAspectRatio: 'Crop aspect ratio',
+  freeRatio: 'Free',
+  minCropWidth: 'Minimum width',
+  minCropHeight: 'Minimum height',
+  maxCropWidth: 'Maximum width',
+  maxCropHeight: 'Maximum height',
   zoomAtPointer: 'Zoom at pointer / touch center',
   minScale: 'Minimum scale',
   maxScale: 'Maximum scale',
@@ -129,6 +150,14 @@ const labels = computed(() => isEn.value ? {
   mode: '布局模式',
   movable: '允许拖拽',
   zoomable: '允许交互缩放',
+  cropBoxResizable: '允许缩放裁剪框',
+  cropBoxConstraintsEnabled: '启用裁剪框限制',
+  cropAspectRatio: '裁剪框比例',
+  freeRatio: '自由比例',
+  minCropWidth: '最小宽度',
+  minCropHeight: '最小高度',
+  maxCropWidth: '最大宽度',
+  maxCropHeight: '最大高度',
   zoomAtPointer: '以鼠标/双指中心缩放',
   minScale: '最小缩放比例',
   maxScale: '最大缩放比例',
@@ -173,6 +202,12 @@ const modeOptions = [
 ]
 
 const outputTypeOptions = ['png', 'jpeg', 'jpg', 'webp']
+const cropRatioOptions = computed(() => [
+  { label: labels.value.freeRatio, value: 'free' },
+  { label: '1:1', value: '1:1' },
+  { label: '4:3', value: '4:3' },
+  { label: '16:9', value: '16:9' },
+])
 const filterOptions = computed(() => [
   { label: labels.value.noFilter, value: 'none' },
   { label: labels.value.grayscale, value: 'grayscale' },
@@ -290,6 +325,13 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
             :mode="mode"
             :movable="movable"
             :zoomable="zoomable"
+            :crop-box-resizable="cropBoxResizable"
+            :crop-box-constraints-enabled="cropBoxConstraintsEnabled"
+            :crop-aspect-ratio="cropAspectRatio"
+            :min-crop-width="minCropWidth"
+            :min-crop-height="minCropHeight"
+            :max-crop-width="maxCropWidth"
+            :max-crop-height="maxCropHeight"
             :zoom-anchor="zoomAnchor"
             :min-scale="minScale"
             :max-scale="maxScale"
@@ -325,6 +367,19 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
                   <span>{{ labels.cropHeight }} <b>{{ cropHeight }}%</b></span>
                   <el-slider v-model="cropHeight" :min="20" :max="100" />
                 </label>
+                <label class="switch-row"><span>{{ labels.cropBoxConstraintsEnabled }}</span><el-switch v-model="cropBoxConstraintsEnabled" /></label>
+                <label class="field-row">
+                  <span>{{ labels.cropAspectRatio }}</span>
+                  <el-select v-model="cropRatio" :teleported="false">
+                    <el-option v-for="item in cropRatioOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </label>
+                <section class="dual-field">
+                  <label><span>{{ labels.minCropWidth }}</span><el-input-number v-model="minCropWidth" :min="1" :max="2000" /></label>
+                  <label><span>{{ labels.maxCropWidth }}</span><el-input-number v-model="maxCropWidth" :min="1" :max="2000" /></label>
+                  <label><span>{{ labels.minCropHeight }}</span><el-input-number v-model="minCropHeight" :min="1" :max="2000" /></label>
+                  <label><span>{{ labels.maxCropHeight }}</span><el-input-number v-model="maxCropHeight" :min="1" :max="2000" /></label>
+                </section>
               </section>
 
               <section class="inspector-section">
@@ -337,6 +392,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
                 </label>
                 <label class="switch-row"><span>{{ labels.movable }}</span><el-switch v-model="movable" /></label>
                 <label class="switch-row"><span>{{ labels.zoomable }}</span><el-switch v-model="zoomable" /></label>
+                <label class="switch-row"><span>{{ labels.cropBoxResizable }}</span><el-switch v-model="cropBoxResizable" /></label>
                 <label class="switch-row"><span>{{ labels.zoomAtPointer }}</span><el-switch v-model="zoomAnchor" active-value="pointer" inactive-value="center" /></label>
                 <section class="dual-field">
                   <label><span>{{ labels.minScale }}</span><el-input-number v-model="minScale" :min="0.01" :max="10" :step="0.1" /></label>
@@ -376,7 +432,12 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
               <section class="inspector-section method-list">
                 <label class="method-row"><span>{{ labels.setRotateAngle }}</span><el-input-number v-model="methodRotate" :min="0" :max="720" /><el-button @click="cropper?.setRotateAngle?.(methodRotate)">{{ labels.apply }}</el-button></label>
                 <label class="method-row method-row--wide"><span>{{ labels.setCropLayout }}</span><input v-model="methodCropLayout.width" /><input v-model="methodCropLayout.height" /><el-button @click="applyCropLayout">{{ labels.apply }}</el-button></label>
-                <label class="method-row method-row--wide"><span>{{ labels.setCropAxis }}</span><el-input-number v-model="methodCropAxis.x" /><el-input-number v-model="methodCropAxis.y" /><el-button @click="applyCropAxis">{{ labels.apply }}</el-button></label>
+                <label class="method-row method-row--axis">
+                  <span>{{ labels.setCropAxis }}</span>
+                  <input v-model.number="methodCropAxis.x" type="number" aria-label="x" />
+                  <input v-model.number="methodCropAxis.y" type="number" aria-label="y" />
+                  <el-button @click="applyCropAxis">{{ labels.apply }}</el-button>
+                </label>
                 <el-button @click="syncCoordinates">{{ labels.readCoordinates }}</el-button>
               </section>
             </el-tab-pane>
@@ -617,12 +678,30 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   grid-template-columns: 1fr 72px 72px auto;
 }
 
+.method-row--axis {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.method-row--axis > span {
+  grid-column: 1 / -1;
+}
+
 .method-row input {
   width: 100%;
   height: 32px;
   padding: 0 8px;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
+}
+
+.method-row input[type='number'] {
+  appearance: textfield;
+}
+
+.method-row input[type='number']::-webkit-inner-spin-button,
+.method-row input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .method-row :deep(.el-input-number) {

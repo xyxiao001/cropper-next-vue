@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, toRef, toRefs, useSlots, watch } from 'vue'
 import type {
   InterfaceImgLoad,
   InterfaceCropperState,
@@ -33,6 +33,11 @@ import { useCropperEmits } from './composables/useCropperEmits'
 import { useCropState } from './composables/useCropState'
 import { useScaleLimits } from './composables/useScaleLimits'
 import { useCropCoordinates } from './composables/useCropCoordinates'
+import {
+  CROP_BOX_MIN_SIZE,
+  DEFAULT_CROP_RESIZE_CONSTRAINTS,
+  useCropResize,
+} from './composables/useCropResize'
 
 interface InterfaceVueCropperProps {
   // 图片地址
@@ -78,6 +83,17 @@ interface InterfaceVueCropperProps {
   // 图片缩放范围
   minScale?: number;
   maxScale?: number;
+  // 是否允许用户缩放裁剪框
+  cropBoxResizable?: boolean;
+  // 是否启用裁剪框比例与尺寸限制
+  cropBoxConstraintsEnabled?: boolean;
+  // 裁剪框保持的宽高比
+  cropAspectRatio?: number;
+  // 裁剪框允许的宽高范围
+  minCropWidth?: number;
+  minCropHeight?: number;
+  maxCropWidth?: number;
+  maxCropHeight?: number;
 }
 const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   img: '',
@@ -110,6 +126,12 @@ const props = withDefaults(defineProps<InterfaceVueCropperProps>(), {
   zoomable: true,
   minScale: 0.01,
   maxScale: Infinity,
+  cropBoxResizable: false,
+  cropBoxConstraintsEnabled: false,
+  minCropWidth: CROP_BOX_MIN_SIZE,
+  minCropHeight: CROP_BOX_MIN_SIZE,
+  maxCropWidth: Infinity,
+  maxCropHeight: Infinity,
 })
 // 组件处理
 const cropperRef = ref()
@@ -139,6 +161,7 @@ const isDrag = ref(false)
 // 裁剪过程中的一些状态
 // 处于生成了截图的状态
 const cropping = ref(true)
+const cropResizing = ref(false)
 
 // 处理 props
 const {
@@ -162,7 +185,27 @@ const {
   zoomable,
   minScale,
   maxScale,
+  cropBoxResizable,
+  cropBoxConstraintsEnabled,
+  cropAspectRatio,
+  minCropWidth,
+  minCropHeight,
+  maxCropWidth,
+  maxCropHeight,
 } = toRefs(props);
+
+const cropResizeConstraints = computed(() => {
+  if (!cropBoxConstraintsEnabled.value) {
+    return { ...DEFAULT_CROP_RESIZE_CONSTRAINTS }
+  }
+  return {
+    aspectRatio: cropAspectRatio.value,
+    minWidth: minCropWidth.value,
+    minHeight: minCropHeight.value,
+    maxWidth: maxCropWidth.value,
+    maxHeight: maxCropHeight.value,
+  }
+})
 
 const {
   wrapperStyle,
@@ -178,6 +221,9 @@ const {
   layoutContainer: LayoutContainer as any,
   imgs,
   cropping,
+  cropResizing,
+  constraintsEnabled: cropBoxConstraintsEnabled,
+  constraints: cropResizeConstraints,
 })
 
 const { getBoundaryDuration } = useBoundaryDuration({
@@ -227,6 +273,9 @@ const queueStateEmit = () => {
   queueChangeEmit()
 }
 
+const cropResizeDirections = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se'] as const
+const cropGridLines = ['vertical-start', 'vertical-end', 'horizontal-start', 'horizontal-end'] as const
+
 const {
   bindMoveImg,
   unbindMoveImg,
@@ -254,6 +303,21 @@ const {
   clampScale,
 })
 
+const {
+  startCropResize,
+  destroyCropResize,
+} = useCropResize({
+  layout: LayoutContainer,
+  innerCropLayout,
+  effectiveCropLayoutStyle,
+  constraints: cropResizeConstraints,
+  constraintsEnabled: cropBoxConstraintsEnabled,
+  cropResizing,
+  onStart: cancelPendingRebound,
+  onResize: queueStateEmit,
+  onEnd: reboundImg,
+})
+
 useDragUpload({
   cropperRef,
   isDrag,
@@ -269,7 +333,6 @@ const {
   layout: LayoutContainer as any,
   imgs,
   cropping,
-  cropLayoutStyle,
   effectiveCropLayoutStyle,
   shouldShowCropBox,
   checkedCrop,
@@ -357,10 +420,12 @@ useCropperWatchers({
   defaultRotate,
   cropLayout,
   wrapperStyle,
-  cropLayoutStyle,
+  effectiveCropLayoutStyle,
+  cropBoxConstraintsEnabled,
   shouldShowCropBox,
   centerBox,
   centerWrapper,
+  cropResizing,
   innerCropLayout,
   layout: LayoutContainer as any,
   checkedImg,
@@ -419,6 +484,7 @@ onUnmounted(() => {
   // 释放滚轮事件绑定
   unbindMoveImg()
   unbindMoveCrop()
+  destroyCropResize()
 })
 
 const slots = useSlots()
@@ -470,6 +536,32 @@ defineExpose({
         <img v-if="img" :src="imgs" :style="getCropImgStyle()" alt="cropper-img" />
       </span>
       <span class="cropper-face cropper-move" ref="cropperBox" />
+      <span class="cropper-frame" :style="{ color: cropColor }" aria-hidden="true" />
+      <template v-if="cropBoxResizable">
+        <span
+          class="cropper-grid"
+          :class="{ 'cropper-grid--active': cropResizing }"
+          :style="{ color: cropColor }"
+          :aria-hidden="!cropResizing"
+        >
+          <span
+            v-for="line in cropGridLines"
+            :key="line"
+            class="cropper-grid-line"
+            :class="`cropper-grid-line--${line}`"
+          />
+        </span>
+        <span
+          v-for="direction in cropResizeDirections"
+          :key="direction"
+          class="cropper-resize-handle"
+          :class="`cropper-resize-handle--${direction}`"
+          :style="{ color: cropColor }"
+          :data-direction="direction"
+          @mousedown="startCropResize(direction, $event)"
+          @touchstart="startCropResize(direction, $event)"
+        />
+      </template>
     </section>
     <section v-if="isFullCropMode" class="cropper-full-mask cropper-fade-in" />
     <section v-if="isDrag" class="drag">

@@ -17,10 +17,12 @@ export const useCropperWatchers = (options: {
   defaultRotate: Ref<number>
   cropLayout: Ref<InterfaceLayoutInput>
   wrapperStyle: Ref<any>
-  cropLayoutStyle: Ref<{ width: number; height: number }>
+  effectiveCropLayoutStyle: Ref<{ width: number; height: number }>
+  cropBoxConstraintsEnabled: Ref<boolean>
   shouldShowCropBox: Ref<boolean>
   centerBox: Ref<boolean>
   centerWrapper: Ref<boolean>
+  cropResizing: Ref<boolean>
   innerCropLayout: Ref<InterfaceLayoutInput>
   layout: LayoutContainerLike
 
@@ -45,10 +47,12 @@ export const useCropperWatchers = (options: {
     defaultRotate,
     cropLayout,
     wrapperStyle,
-    cropLayoutStyle,
+    effectiveCropLayoutStyle,
+    cropBoxConstraintsEnabled,
     shouldShowCropBox,
     centerBox,
     centerWrapper,
+    cropResizing,
     innerCropLayout,
     layout,
     checkedImg,
@@ -131,15 +135,19 @@ export const useCropperWatchers = (options: {
   )
 
   watch(
-    cropLayoutStyle,
-    () => {
+    [effectiveCropLayoutStyle, cropBoxConstraintsEnabled],
+    ([, constraintsEnabled], [, previousConstraintsEnabled]) => {
       if (!imgs.value) {
         return
       }
       if (cropping.value) {
-        renderCrop({ ...layout.cropAxis })
+        renderCrop(constraintsEnabled && !previousConstraintsEnabled
+          ? undefined
+          : { ...layout.cropAxis })
       }
-      reboundImg()
+      if (!cropResizing.value) {
+        reboundImg()
+      }
     },
     { deep: true },
   )
@@ -173,4 +181,3 @@ export const useCropperWatchers = (options: {
     }
   })
 }
-

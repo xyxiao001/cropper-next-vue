@@ -15,24 +15,17 @@ export const useCropRender = (options: {
   layout: LayoutContainerLike
   imgs: Ref<string>
   cropping: Ref<boolean>
-  cropLayoutStyle: Ref<{ width: number; height: number }>
   effectiveCropLayoutStyle: Ref<{ width: number; height: number }>
   shouldShowCropBox: Ref<boolean>
   checkedCrop: (axis: InterfaceAxis) => void
   queueRealTimeEmit: () => void
 }) => {
-  const { layout, imgs, cropping, cropLayoutStyle, effectiveCropLayoutStyle, shouldShowCropBox, checkedCrop, queueRealTimeEmit } = options
+  const { layout, imgs, cropping, effectiveCropLayoutStyle, shouldShowCropBox, checkedCrop, queueRealTimeEmit } = options
 
   const renderCrop = (axis?: InterfaceAxis): void => {
     const { width, height } = layout.wrapLayout
-    let cropW = cropLayoutStyle.value.width
-    let cropH = cropLayoutStyle.value.height
-    if (width > 0) {
-      cropW = Math.min(cropW, width)
-    }
-    if (height > 0) {
-      cropH = Math.min(cropH, height)
-    }
+    const cropW = effectiveCropLayoutStyle.value.width
+    const cropH = effectiveCropLayoutStyle.value.height
     const defaultAxis: InterfaceAxis = {
       x: (width - cropW) / 2,
       y: (height - cropH) / 2,

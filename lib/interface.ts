@@ -72,6 +72,26 @@ export interface InterfaceAxis {
   y: number
 }
 
+export type InterfaceCropResizeDirection = 'n' | 's' | 'w' | 'e' | 'nw' | 'ne' | 'sw' | 'se'
+
+export interface InterfaceCropGeometry extends InterfaceAxis, InterfaceLayoutStyle {}
+
+export interface InterfaceCropResizeConstraints {
+  aspectRatio?: number
+  minWidth: number
+  minHeight: number
+  maxWidth: number
+  maxHeight: number
+}
+
+export interface InterfaceCropResizeSession {
+  direction: InterfaceCropResizeDirection
+  startPointer: InterfaceAxis
+  startCrop: InterfaceCropGeometry
+  constraints: InterfaceCropResizeConstraints
+  active: boolean
+}
+
 export type InterfaceZoomAnchor = 'center' | 'pointer'
 
 export interface InterfaceScaleAnchor {
