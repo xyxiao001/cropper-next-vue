@@ -4,24 +4,25 @@
 
 ## 开发要求
 
-- Node.js `>=18`
-- npm `>=9`
+- Node.js `>=22`
+- pnpm `9.15.9`
 
 ## 本地流程
 
 ```bash
-npm install
-npm run dev
+corepack enable
+pnpm install
+pnpm run dev
 ```
 
 常用检查命令：
 
 ```bash
-npm run typecheck
-npm run test:coverage
-npm run build:lib
-npm run build:docs
-npm run check
+pnpm run typecheck
+pnpm run test:coverage
+pnpm run build:lib
+pnpm run build:docs
+pnpm run check
 ```
 
 ## 提交要求
@@ -29,7 +30,12 @@ npm run check
 - 保持库构建和文档构建都可用
 - 新增行为优先补测试
 - 不提交无关构建产物或临时调试代码
-- 发布前至少执行一次 `npm run check`
+- 发布前至少执行一次 `pnpm run check`
+
+## 提交 Issue
+
+- Bug 请提供最小复现、浏览器信息以及 Vue 和 `cropper-next-vue` 版本
+- 功能建议请说明使用场景、预期行为和替代方案
 
 ## 变更范围
 

@@ -1,0 +1,66 @@
+name: Bug report
+description: 报告可复现的组件问题
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请提供最小复现，帮助我们快速定位问题。
+  - type: input
+    id: package-version
+    attributes:
+      label: cropper-next-vue 版本
+      placeholder: 例如 0.4.0
+    validations:
+      required: true
+  - type: input
+    id: vue-version
+    attributes:
+      label: Vue 版本
+      placeholder: 例如 3.5.29
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器与操作系统
+      placeholder: 例如 Chrome 140 / macOS
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 最小复现
+      description: 请提供仓库、在线示例或可以直接运行的代码。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 配置组件参数……
+        2. 执行……
+        3. 观察到……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 可补充截图、事件输出或相关 Props。
+

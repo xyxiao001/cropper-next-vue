@@ -2,6 +2,14 @@
   "name": "cropper-next-vue",
   "version": "0.4.0",
   "description": "A Vue 3 image cropper focused on rotation, boundary control, and clean library distribution.",
+  "homepage": "https://cropper-next-vue.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xyxiao001/cropper-next-vue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xyxiao001/cropper-next-vue/issues"
+  },
   "packageManager": "pnpm@9.15.9",
   "main": "./dist/cropper-next-vue.cjs",
   "module": "./dist/cropper-next-vue.mjs",
@@ -37,7 +45,7 @@
     "image-cropper",
     "vue-component"
   ],
-  "author": "",
+  "author": "xyxiao001",
   "license": "ISC",
   "scripts": {
     "dev": "vite",

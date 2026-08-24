@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://cropper-next-vue.vercel.app/
+    about: 查看在线文档和示例

@@ -1,0 +1,31 @@
+name: Feature request
+description: 建议新的公开能力或交互行为
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 请描述要解决的问题及实际业务场景。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 请描述理想的组件 API 或用户交互结果。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 已尝试的替代方案
+      description: 当前是否可以通过现有 Props、事件或实例方法实现？
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 可附上设计图、示例或相关项目链接。
+
