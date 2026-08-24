@@ -88,6 +88,23 @@
       ]
     },
     {
+      title: isEn.value ? 'Real-world' : '真实场景',
+      items: [
+        {
+          name: isEn.value ? 'Avatar Upload' : '头像上传',
+          path: '/scenario-avatar'
+        },
+        {
+          name: isEn.value ? 'Article Cover' : '文章封面',
+          path: '/scenario-cover'
+        },
+        {
+          name: isEn.value ? 'Product Image' : '商品主图',
+          path: '/scenario-product'
+        }
+      ]
+    },
+    {
       title: isEn.value ? 'Demos' : '示例',
       items: [
         {

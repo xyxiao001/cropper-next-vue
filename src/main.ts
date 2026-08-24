@@ -50,6 +50,21 @@ const router = createRouter({
       component: () => import('./pages/Event.md'),
     },
     {
+      name: 'ScenarioAvatar',
+      path: '/scenario-avatar',
+      component: () => import('./pages/ScenarioAvatar.vue'),
+    },
+    {
+      name: 'ScenarioCover',
+      path: '/scenario-cover',
+      component: () => import('./pages/ScenarioCover.vue'),
+    },
+    {
+      name: 'ScenarioProduct',
+      path: '/scenario-product',
+      component: () => import('./pages/ScenarioProduct.vue'),
+    },
+    {
       name: 'DemoBasic',
       path: '/demo-basic',
       component: () => import('./pages/DemoBasic.md'),
