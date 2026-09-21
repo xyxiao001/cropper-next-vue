@@ -100,14 +100,14 @@ const labels = computed(() => isEn.value ? {
   centerWrapper: 'Keep wrapper covered',
   delay: 'Rebound duration',
   visual: 'Appearance',
-  themeColor: 'Theme color',
+  themeColor: 'Theme color (reserved)',
   filter: 'Filter',
   cropColor: 'Crop color',
   rotation: 'Default rotation',
   outputType: 'Output type',
   outputSize: 'Output quality',
   full: 'High-DPI export',
-  original: 'Export with original ratio',
+  original: 'Undo zoom for export',
   maxSideLength: 'Export max side',
   previewMaxSide: 'Preview max side',
   setRotateAngle: 'Set rotation angle',
@@ -166,14 +166,14 @@ const labels = computed(() => isEn.value ? {
   centerWrapper: '覆盖容器',
   delay: '回弹时长',
   visual: '外观',
-  themeColor: '主题色',
+  themeColor: '主题色（预留）',
   filter: '滤镜',
   cropColor: '裁剪框颜色',
   rotation: '默认旋转角度',
   outputType: '输出格式',
   outputSize: '输出质量',
   full: '高分屏导出',
-  original: '按原图比例导出',
+  original: '按原图像素导出',
   maxSideLength: '导出最长边',
   previewMaxSide: '预览最长边',
   setRotateAngle: '设置旋转角度',
@@ -201,7 +201,7 @@ const modeOptions = [
   { label: 'default', value: 'default' },
 ]
 
-const outputTypeOptions = ['png', 'jpeg', 'jpg', 'webp']
+const outputTypeOptions = ['png', 'jpeg', 'webp']
 const cropRatioOptions = computed(() => [
   { label: labels.value.freeRatio, value: 'free' },
   { label: '1:1', value: '1:1' },
@@ -359,85 +359,85 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
             <el-tab-pane :label="labels.edit" name="edit">
               <section class="inspector-section">
                 <h2>{{ labels.layout }}</h2>
-                <label class="slider-field">
+                <div class="slider-field">
                   <span>{{ labels.cropWidth }} <b>{{ cropWidth }}%</b></span>
-                  <el-slider v-model="cropWidth" :min="20" :max="100" />
-                </label>
-                <label class="slider-field">
+                  <el-slider :aria-label="labels.cropWidth" v-model="cropWidth" :min="20" :max="100" />
+                </div>
+                <div class="slider-field">
                   <span>{{ labels.cropHeight }} <b>{{ cropHeight }}%</b></span>
-                  <el-slider v-model="cropHeight" :min="20" :max="100" />
-                </label>
-                <label class="switch-row"><span>{{ labels.cropBoxConstraintsEnabled }}</span><el-switch v-model="cropBoxConstraintsEnabled" /></label>
-                <label class="field-row">
+                  <el-slider :aria-label="labels.cropHeight" v-model="cropHeight" :min="20" :max="100" />
+                </div>
+                <div class="switch-row"><span>{{ labels.cropBoxConstraintsEnabled }}</span><el-switch :aria-label="labels.cropBoxConstraintsEnabled" v-model="cropBoxConstraintsEnabled" /></div>
+                <div class="field-row">
                   <span>{{ labels.cropAspectRatio }}</span>
-                  <el-select v-model="cropRatio" :teleported="false">
+                  <el-select :aria-label="labels.cropAspectRatio" v-model="cropRatio">
                     <el-option v-for="item in cropRatioOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
-                </label>
+                </div>
                 <section class="dual-field">
-                  <label><span>{{ labels.minCropWidth }}</span><el-input-number v-model="minCropWidth" :min="1" :max="2000" /></label>
-                  <label><span>{{ labels.maxCropWidth }}</span><el-input-number v-model="maxCropWidth" :min="1" :max="2000" /></label>
-                  <label><span>{{ labels.minCropHeight }}</span><el-input-number v-model="minCropHeight" :min="1" :max="2000" /></label>
-                  <label><span>{{ labels.maxCropHeight }}</span><el-input-number v-model="maxCropHeight" :min="1" :max="2000" /></label>
+                  <div><span>{{ labels.minCropWidth }}</span><el-input-number :aria-label="labels.minCropWidth" v-model="minCropWidth" :min="1" :max="2000" /></div>
+                  <div><span>{{ labels.maxCropWidth }}</span><el-input-number :aria-label="labels.maxCropWidth" v-model="maxCropWidth" :min="1" :max="2000" /></div>
+                  <div><span>{{ labels.minCropHeight }}</span><el-input-number :aria-label="labels.minCropHeight" v-model="minCropHeight" :min="1" :max="2000" /></div>
+                  <div><span>{{ labels.maxCropHeight }}</span><el-input-number :aria-label="labels.maxCropHeight" v-model="maxCropHeight" :min="1" :max="2000" /></div>
                 </section>
               </section>
 
               <section class="inspector-section">
                 <h2>{{ labels.behavior }}</h2>
-                <label class="field-row">
+                <div class="field-row">
                   <span>{{ labels.mode }}</span>
-                  <el-select v-model="mode" :teleported="false">
+                  <el-select :aria-label="labels.mode" v-model="mode">
                     <el-option v-for="item in modeOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
-                </label>
-                <label class="switch-row"><span>{{ labels.movable }}</span><el-switch v-model="movable" /></label>
-                <label class="switch-row"><span>{{ labels.zoomable }}</span><el-switch v-model="zoomable" /></label>
-                <label class="switch-row"><span>{{ labels.cropBoxResizable }}</span><el-switch v-model="cropBoxResizable" /></label>
-                <label class="switch-row"><span>{{ labels.zoomAtPointer }}</span><el-switch v-model="zoomAnchor" active-value="pointer" inactive-value="center" /></label>
+                </div>
+                <div class="switch-row"><span>{{ labels.movable }}</span><el-switch :aria-label="labels.movable" v-model="movable" /></div>
+                <div class="switch-row"><span>{{ labels.zoomable }}</span><el-switch :aria-label="labels.zoomable" v-model="zoomable" /></div>
+                <div class="switch-row"><span>{{ labels.cropBoxResizable }}</span><el-switch :aria-label="labels.cropBoxResizable" v-model="cropBoxResizable" /></div>
+                <div class="switch-row"><span>{{ labels.zoomAtPointer }}</span><el-switch :aria-label="labels.zoomAtPointer" v-model="zoomAnchor" active-value="pointer" inactive-value="center" /></div>
                 <section class="dual-field">
-                  <label><span>{{ labels.minScale }}</span><el-input-number v-model="minScale" :min="0.01" :max="10" :step="0.1" /></label>
-                  <label><span>{{ labels.maxScale }}</span><el-input-number v-model="maxScale" :min="0.01" :max="10" :step="0.1" /></label>
+                  <div><span>{{ labels.minScale }}</span><el-input-number :aria-label="labels.minScale" v-model="minScale" :min="0.01" :max="10" :step="0.1" /></div>
+                  <div><span>{{ labels.maxScale }}</span><el-input-number :aria-label="labels.maxScale" v-model="maxScale" :min="0.01" :max="10" :step="0.1" /></div>
                 </section>
               </section>
 
               <section class="inspector-section">
                 <h2>{{ labels.boundary }}</h2>
                 <el-segmented v-model="boundaryMode" :options="boundaryOptions" />
-                <label v-if="centerBox" class="field-row"><span>{{ labels.delay }}</span><el-input-number v-model="centerBoxDelay" :min="0" :max="1000" :step="50" /></label>
-                <label v-if="centerWrapper" class="field-row"><span>{{ labels.delay }}</span><el-input-number v-model="centerWrapperDelay" :min="0" :max="1000" :step="50" /></label>
+                <div v-if="centerBox" class="field-row"><span>{{ labels.delay }}</span><el-input-number :aria-label="labels.delay" v-model="centerBoxDelay" :min="0" :max="1000" :step="50" /></div>
+                <div v-if="centerWrapper" class="field-row"><span>{{ labels.delay }}</span><el-input-number :aria-label="labels.delay" v-model="centerWrapperDelay" :min="0" :max="1000" :step="50" /></div>
               </section>
 
               <section class="inspector-section">
                 <h2>{{ labels.visual }}</h2>
-                <label class="field-row"><span>{{ labels.filter }}</span><el-select v-model="filter" :teleported="false"><el-option v-for="item in filterOptions" :key="item.value" :label="item.label" :value="item.value" /></el-select></label>
-                <label class="field-row"><span>{{ labels.themeColor }}</span><input v-model="color" type="color" /></label>
-                <label class="field-row"><span>{{ labels.cropColor }}</span><input v-model="cropColor" type="color" /></label>
-                <label class="slider-field"><span>{{ labels.rotation }} <b>{{ defaultRotate }}°</b></span><el-slider v-model="defaultRotate" :min="0" :max="360" /></label>
+                <div class="field-row"><span>{{ labels.filter }}</span><el-select :aria-label="labels.filter" v-model="filter"><el-option v-for="item in filterOptions" :key="item.value" :label="item.label" :value="item.value" /></el-select></div>
+                <div class="field-row"><span>{{ labels.themeColor }}</span><input :aria-label="labels.themeColor" v-model="color" type="color" /></div>
+                <div class="field-row"><span>{{ labels.cropColor }}</span><input :aria-label="labels.cropColor" v-model="cropColor" type="color" /></div>
+                <div class="slider-field"><span>{{ labels.rotation }} <b>{{ defaultRotate }}°</b></span><el-slider :aria-label="labels.rotation" v-model="defaultRotate" :min="0" :max="360" /></div>
               </section>
             </el-tab-pane>
 
             <el-tab-pane :label="labels.export" name="export">
               <section class="inspector-section">
-                <label class="field-row"><span>{{ labels.outputType }}</span><el-select v-model="outputType" :teleported="false"><el-option v-for="item in outputTypeOptions" :key="item" :label="item" :value="item" /></el-select></label>
-                <label class="slider-field"><span>{{ labels.outputSize }} <b>{{ outputSize }}</b></span><el-slider v-model="outputSize" :min="0.1" :max="1" :step="0.1" /></label>
-                <label class="switch-row"><span>{{ labels.full }}</span><el-switch v-model="full" /></label>
-                <label class="switch-row"><span>{{ labels.original }}</span><el-switch v-model="original" /></label>
-                <label class="field-row"><span>{{ labels.maxSideLength }}</span><el-input-number v-model="maxSideLength" :min="0" :max="12000" :step="100" /></label>
-                <label class="field-row"><span>{{ labels.previewMaxSide }}</span><el-input-number v-model="previewMaxSide" :min="0" :max="12000" :step="100" /></label>
+                <div class="field-row"><span>{{ labels.outputType }}</span><el-select :aria-label="labels.outputType" v-model="outputType"><el-option v-for="item in outputTypeOptions" :key="item" :label="item" :value="item" /></el-select></div>
+                <div class="slider-field"><span>{{ labels.outputSize }} <b>{{ outputSize }}</b></span><el-slider :aria-label="labels.outputSize" v-model="outputSize" :min="0.1" :max="1" :step="0.1" /></div>
+                <div class="switch-row"><span>{{ labels.full }}</span><el-switch :aria-label="labels.full" v-model="full" /></div>
+                <div class="switch-row"><span>{{ labels.original }}</span><el-switch :aria-label="labels.original" v-model="original" /></div>
+                <div class="field-row"><span>{{ labels.maxSideLength }}</span><el-input-number :aria-label="labels.maxSideLength" v-model="maxSideLength" :min="0" :max="12000" :step="100" /></div>
+                <div class="field-row"><span>{{ labels.previewMaxSide }}</span><el-input-number :aria-label="labels.previewMaxSide" v-model="previewMaxSide" :min="0" :max="12000" :step="100" /></div>
               </section>
               <crop-export-panel :cropper="cropper" :display-width="displayCropWidth" :display-height="displayCropHeight" />
             </el-tab-pane>
 
             <el-tab-pane :label="labels.methods" name="methods">
               <section class="inspector-section method-list">
-                <label class="method-row"><span>{{ labels.setRotateAngle }}</span><el-input-number v-model="methodRotate" :min="0" :max="720" /><el-button @click="cropper?.setRotateAngle?.(methodRotate)">{{ labels.apply }}</el-button></label>
-                <label class="method-row method-row--wide"><span>{{ labels.setCropLayout }}</span><input v-model="methodCropLayout.width" /><input v-model="methodCropLayout.height" /><el-button @click="applyCropLayout">{{ labels.apply }}</el-button></label>
-                <label class="method-row method-row--axis">
+                <div class="method-row"><span>{{ labels.setRotateAngle }}</span><el-input-number :aria-label="labels.setRotateAngle" v-model="methodRotate" :min="0" :max="720" /><el-button @click="cropper?.setRotateAngle?.(methodRotate)">{{ labels.apply }}</el-button></div>
+                <div class="method-row method-row--wide"><span>{{ labels.setCropLayout }}</span><input v-model="methodCropLayout.width" :aria-label="isEn ? 'Crop width (px or %)' : '裁剪宽度（px 或 %）'" /><input v-model="methodCropLayout.height" :aria-label="isEn ? 'Crop height (px or %)' : '裁剪高度（px 或 %）'" /><el-button @click="applyCropLayout">{{ labels.apply }}</el-button></div>
+                <div class="method-row method-row--axis">
                   <span>{{ labels.setCropAxis }}</span>
                   <input v-model.number="methodCropAxis.x" type="number" aria-label="x" />
                   <input v-model.number="methodCropAxis.y" type="number" aria-label="y" />
                   <el-button @click="applyCropAxis">{{ labels.apply }}</el-button>
-                </label>
+                </div>
                 <el-button @click="syncCoordinates">{{ labels.readCoordinates }}</el-button>
               </section>
             </el-tab-pane>
@@ -470,8 +470,8 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 16px 20px 20px;
-  color: #24364b;
+  padding: 0;
+  color: var(--doc-ink);
 }
 
 .page-intro {
@@ -483,7 +483,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 
 .page-intro h1 {
   margin: 0;
-  color: #24364b;
+  color: var(--doc-ink);
   font-size: 26px;
   font-weight: 650;
   line-height: 1.25;
@@ -491,13 +491,13 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 
 .page-intro p {
   margin: 4px 0 0;
-  color: #748296;
+  color: var(--doc-muted);
   font-size: 13px;
 }
 
 .editor-shell {
   display: grid;
-  grid-template-rows: 46px minmax(0, 1fr) 34px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 560px;
   overflow: hidden;
   border: 1px solid #dfe5ec;
@@ -532,7 +532,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 
 .editor-body {
   display: grid;
-  grid-template-columns: minmax(520px, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 305px;
   min-height: 0;
 }
 
@@ -542,7 +542,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   padding: 16px;
   background:
     radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.9), transparent 48%),
-    linear-gradient(145deg, #eef2f7, #e6ebf2);
+    linear-gradient(145deg, #edf1e6, #e1e8d9);
 }
 
 .stage :deep(.vue-cropper) {
@@ -555,7 +555,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border-left: 1px solid #e4e9ef;
+  border-left: 1px solid var(--doc-line);
   background: #fff;
 }
 
@@ -595,7 +595,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 .inspector-section h2,
 .data-heading h2 {
   margin: 0 0 10px;
-  color: #26384d;
+  color: var(--doc-ink);
   font-size: 13px;
   font-weight: 650;
 }
@@ -608,7 +608,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   justify-content: space-between;
   gap: 12px;
   min-height: 34px;
-  color: #536174;
+  color: var(--doc-muted);
   font-size: 12px;
 }
 
@@ -634,7 +634,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 }
 
 .slider-field b {
-  color: #2f78d1;
+  color: var(--doc-green);
   font-weight: 600;
 }
 
@@ -645,10 +645,10 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   margin-top: 8px;
 }
 
-.dual-field label {
+.dual-field > div {
   display: grid;
   gap: 5px;
-  color: #536174;
+  color: var(--doc-muted);
   font-size: 12px;
 }
 
@@ -667,22 +667,22 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
 
 .method-row {
   display: grid;
-  grid-template-columns: 1fr 110px auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  color: #536174;
+  color: var(--doc-muted);
   font-size: 12px;
 }
 
 .method-row--wide {
-  grid-template-columns: 1fr 72px 72px auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 }
 
 .method-row--axis {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 }
 
-.method-row--axis > span {
+.method-row > span {
   grid-column: 1 / -1;
 }
 
@@ -720,7 +720,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   justify-content: space-between;
   gap: 8px;
   color: #8a96a6;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .data-heading h2 {
@@ -735,7 +735,7 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   border-radius: 7px;
   background: #f5f7f9;
   color: #344054;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -761,21 +761,21 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   padding: 0 12px;
   border-top: 1px solid #e8edf2;
   background: #fbfcfd;
-  color: #748296;
-  font-size: 11px;
+  color: var(--doc-muted);
+  font-size: 12px;
   white-space: nowrap;
 }
 
 @media (max-width: 1080px) {
   .editor-body {
-    grid-template-columns: minmax(440px, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 860px) {
   .workspace-page {
     height: auto;
-    padding: 12px;
+    padding: 0;
   }
 
   .page-intro {
@@ -793,12 +793,21 @@ watch([centerBox, centerWrapper], () => syncCoordinates())
   }
 
   .inspector {
-    border-top: 1px solid #e4e9ef;
+    border-top: 1px solid var(--doc-line);
     border-left: 0;
   }
 
   .editor-toolbar {
-    overflow-x: auto;
+    flex-wrap: wrap;
   }
 }
+</style>
+
+<style scoped lang="scss">
+@media (min-width: 1201px) {
+  .editor-shell { height: max(560px, calc(100dvh - 300px)); }
+  .page-intro :deep(.demo-image-switch) { flex: none; flex-wrap: nowrap; margin: 0; }
+  .page-intro :deep(.demo-image-switch .select) { width: 150px; }
+}
+.inspector :deep(.el-tabs__item) { padding: 0 12px; font-size: 12px; }
 </style>

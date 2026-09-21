@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import codeExample from '../examples/ProductCrop.vue?raw'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { loadFile } from '../../lib/common'
 import ScenarioCodeExample from '../components/ScenarioCodeExample.vue'
@@ -18,44 +19,6 @@ const resultSize = ref('')
 const exporting = ref(false)
 const wrapper = { width: '100%', height: 'min(440px, calc(100vw - 72px))', background: '#f2f3f5' }
 const cropLayout = { width: 300, height: 300 }
-const codeExample = `<script setup>
-import { ref } from 'vue'
-
-const cropper = ref()
-const image = ref('/product.jpg')
-const outputType = ref('webp')
-const outputSize = ref(0.9)
-
-const saveProductImage = async () => {
-  const blob = await cropper.value.getCropBlob()
-  const formData = new FormData()
-  formData.append('image', blob, 'product.' + outputType.value)
-  await fetch('/api/products/image', { method: 'POST', body: formData })
-}
-${'</' + 'script>'}
-
-<template>
-  <vue-cropper
-    ref="cropper"
-    :img="image"
-    :wrapper="{ width: 480, height: 480, background: '#f2f3f5' }"
-    :crop-layout="{ width: 300, height: 300 }"
-    :crop-box-resizable="true"
-    :crop-box-constraints-enabled="true"
-    :crop-aspect-ratio="1"
-    :center-box="true"
-    :output-type="outputType"
-    :output-size="outputSize"
-    :full="true"
-    :max-side-length="2400"
-  />
-  <select v-model="outputType">
-    <option value="webp">WebP</option>
-    <option value="jpeg">JPEG</option>
-  </select>
-  <input v-model="outputSize" type="range" min="0.5" max="1" step="0.1" />
-  <button @click="saveProductImage">Save product image</button>
-</template>`
 const labels = computed(() => isEn.value ? {
   eyebrow: 'REAL-WORLD EXAMPLE', title: 'Prepare a product image',
   description: 'Crop a consistent square product image, choose an output format and quality, then inspect list and detail previews.',
@@ -113,7 +76,7 @@ onBeforeUnmount(() => {
     <section class="scenario-card product-layout">
       <section class="editor-column">
         <div class="section-heading">
-          <div><h2>{{ labels.editor }}</h2><p>1:1 · high-DPI · max 2400px</p></div>
+          <div><h2 id="editor">{{ labels.editor }}</h2><p>1:1 · high-DPI · max 2400px</p></div>
           <el-button @click="chooseFile">{{ labels.replace }}</el-button>
         </div>
         <input ref="fileInput" hidden type="file" accept="image/*" @change="handleFileChange" />
@@ -147,7 +110,7 @@ onBeforeUnmount(() => {
         </label>
         <label class="quality-field">
           <span>{{ labels.quality }} <b>{{ outputSize }}</b></span>
-          <el-slider v-model="outputSize" :min="0.5" :max="1" :step="0.1" />
+          <el-slider :aria-label="labels.quality" v-model="outputSize" :min="0.5" :max="1" :step="0.1" />
         </label>
         <el-button class="save-button" type="primary" :loading="exporting" @click="exportProduct">{{ labels.save }}</el-button>
 
@@ -165,6 +128,7 @@ onBeforeUnmount(() => {
         <p v-if="resultUrl" class="result-meta">{{ labels.result }} · {{ labels.fileSize }}: {{ resultSize }}</p>
       </aside>
     </section>
+    <p class="integration-note">{{ isEn ? 'The complete example uses only the public package. Add your own photo.jpg or choose a local file; export returns a Blob without calling an upload service.' : '完整示例只依赖公开 npm 包。放入自己的 photo.jpg 或选择本地图片；导出得到 Blob，不会调用上传服务。' }}</p>
     <ScenarioCodeExample
       :title="labels.viewCode"
       :code="codeExample"
@@ -177,32 +141,32 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .scenario-page { width: 100%; max-width: 1180px; margin: 0 auto; }
 .scenario-intro { margin-bottom: 20px; }
-.scenario-intro span { color: #3370ff; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: #1d2129; }
-.scenario-intro p, .section-heading p, .list-card p, .result-meta { margin: 0; color: #86909c; line-height: 1.7; }
-.scenario-card { border: 1px solid #e5e6eb; border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
+.scenario-intro span { color: var(--doc-green); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: var(--doc-ink); }
+.scenario-intro p, .section-heading p, .list-card p, .result-meta { margin: 0; color: var(--doc-muted); line-height: 1.7; }
+.scenario-card { border: 1px solid var(--doc-line); border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
 .product-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .75fr); }
 .editor-column, .preview-column { padding: 22px; }
-.preview-column { background: #f7f8fa; border-left: 1px solid #e5e6eb; }
+.preview-column { background: var(--doc-paper); border-left: 1px solid var(--doc-line); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-h2 { margin: 0 0 4px; font-size: 18px; color: #1d2129; }
-.field-row, .quality-field { display: grid; gap: 8px; margin-top: 18px; color: #4e5969; font-size: 13px; }
+h2 { margin: 0 0 4px; font-size: 18px; color: var(--doc-ink); }
+.field-row, .quality-field { display: grid; gap: 8px; margin-top: 18px; color: var(--doc-muted); font-size: 13px; }
 .quality-field span { display: flex; justify-content: space-between; }
 .save-button { width: 100%; margin-top: 14px; }
-.store-preview { margin-top: 26px; padding-top: 22px; border-top: 1px solid #e5e6eb; }
+.store-preview { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--doc-line); }
 .list-card { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: center; margin-top: 14px; padding: 12px; border-radius: 12px; background: #fff; }
-.image-placeholder, .detail-image { overflow: hidden; background: #e5e6eb; }
+.image-placeholder, .detail-image { overflow: hidden; background: var(--doc-line); }
 .image-placeholder { width: 88px; height: 88px; border-radius: 10px; }
 .image-placeholder img, .detail-image img { width: 100%; height: 100%; object-fit: cover; }
-.list-card span, .detail-card > span { color: #86909c; font-size: 11px; }
-.list-card strong { display: block; margin: 6px 0 2px; color: #1d2129; }
+.list-card span, .detail-card > span { color: var(--doc-muted); font-size: 11px; }
+.list-card strong { display: block; margin: 6px 0 2px; color: var(--doc-ink); }
 .list-card p { font-size: 12px; }
 .detail-card { margin-top: 14px; padding: 12px; border-radius: 12px; background: #fff; }
 .detail-image { width: 100%; margin-top: 8px; aspect-ratio: 1; border-radius: 10px; }
 .result-meta { margin-top: 12px; font-size: 12px; }
 @media (max-width: 960px) {
   .product-layout { grid-template-columns: 1fr; }
-  .preview-column { border-top: 1px solid #e5e6eb; border-left: 0; }
+  .preview-column { border-top: 1px solid var(--doc-line); border-left: 0; }
 }
 @media (max-width: 560px) {
   .editor-column, .preview-column { padding: 16px; }

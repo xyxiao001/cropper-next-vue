@@ -49,7 +49,7 @@ const pickRandom = () => {
 <template>
   <section class="demo-image-switch">
     <span class="label">{{ labels.title }}</span>
-    <el-select v-model="value" class="select" :teleported="false">
+    <el-select v-model="value" class="select" :aria-label="isEn ? 'Example image' : '示例图片'">
       <el-option
         v-for="(item, index) in images"
         :key="item"
@@ -71,10 +71,12 @@ const pickRandom = () => {
 }
 
 .label {
-  color: #666;
+  color: var(--doc-muted);
 }
 
 .select {
-  width: 260px;
+  flex: 1;
+  min-width: 80px;
+  max-width: 210px;
 }
 </style>

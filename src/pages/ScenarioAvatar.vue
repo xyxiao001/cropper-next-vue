@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import codeExample from '../examples/AvatarCrop.vue?raw'
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { loadFile } from '../../lib/common'
 import type { InterfaceRealTimePreview } from '../../lib/interface'
@@ -33,45 +34,6 @@ const previewStyle = computed(() => ({
   height: `${preview.h}px`,
   zoom: preview.w ? 112 / preview.w : 1,
 }))
-const codeExample = `<script setup>
-import { reactive, ref } from 'vue'
-
-const cropper = ref()
-const image = ref('')
-const preview = reactive({ w: 0, h: 0, url: '', img: {} })
-
-const selectAvatar = (event) => {
-  const file = event.target.files[0]
-  image.value = URL.createObjectURL(file)
-}
-
-const handlePreview = (payload) => Object.assign(preview, payload)
-
-const saveAvatar = async () => {
-  const blob = await cropper.value.getCropBlob()
-  const formData = new FormData()
-  formData.append('avatar', blob, 'avatar.webp')
-  await fetch('/api/avatar', { method: 'POST', body: formData })
-}
-${'</' + 'script>'}
-
-<template>
-  <input type="file" accept="image/*" @change="selectAvatar" />
-  <vue-cropper
-    ref="cropper"
-    :img="image"
-    :wrapper="{ width: 480, height: 480 }"
-    :crop-layout="{ width: 260, height: 260 }"
-    :crop-box-resizable="true"
-    :crop-box-constraints-enabled="true"
-    :crop-aspect-ratio="1"
-    :center-box="true"
-    output-type="webp"
-    :max-side-length="1024"
-    @real-time="handlePreview"
-  />
-  <button @click="saveAvatar">Save avatar</button>
-</template>`
 const labels = computed(() => isEn.value ? {
   eyebrow: 'REAL-WORLD EXAMPLE',
   title: 'Update profile photo',
@@ -86,11 +48,11 @@ const labels = computed(() => isEn.value ? {
   saved: 'Saved result',
   fileSize: 'Blob size',
   empty: 'Adjust the image to preview your avatar.',
-  viewCode: 'View avatar upload code', copyCode: 'Copy code', copied: 'Copied',
+  viewCode: 'Complete avatar example', copyCode: 'Copy code', copied: 'Copied',
 } : {
   eyebrow: '真实场景示例',
   title: '更新个人头像',
-  description: '选择图片并调整正方形裁剪区域，通过圆形头像预览确认效果，最后导出 Blob 模拟上传。',
+  description: '选择图片并调整正方形裁剪区域，通过圆形头像预览确认效果，最后导出 Blob，准备接入你的上传流程。',
   editor: '调整图片',
   preview: '头像预览',
   previewHint: '圆形仅用于界面预览，实际导出结果仍为正方形图片。',
@@ -101,7 +63,7 @@ const labels = computed(() => isEn.value ? {
   saved: '保存结果',
   fileSize: 'Blob 大小',
   empty: '调整图片后可在这里预览头像效果。',
-  viewCode: '查看头像上传代码', copyCode: '复制代码', copied: '已复制',
+  viewCode: '完整头像接入示例', copyCode: '复制代码', copied: '已复制',
 })
 
 const formatBytes = (size: number) => size < 1024 * 1024
@@ -164,7 +126,7 @@ onBeforeUnmount(clearSaved)
       <section class="editor-column">
         <div class="section-heading">
           <div>
-            <h2>{{ labels.editor }}</h2>
+            <h2 id="editor">{{ labels.editor }}</h2>
             <p>1:1 · WebP · max 1024px</p>
           </div>
           <el-button @click="chooseFile">{{ labels.replace }}</el-button>
@@ -213,6 +175,7 @@ onBeforeUnmount(clearSaved)
         </section>
       </aside>
     </section>
+    <p class="integration-note">{{ isEn ? 'The complete example uses only the public package. Add your own photo.jpg or choose a local file; export returns a Blob without calling an upload service.' : '完整示例只依赖公开 npm 包。放入自己的 photo.jpg 或选择本地图片；导出得到 Blob，不会调用上传服务。' }}</p>
     <ScenarioCodeExample
       :title="labels.viewCode"
       :code="codeExample"
@@ -225,25 +188,25 @@ onBeforeUnmount(clearSaved)
 <style scoped lang="scss">
 .scenario-page { width: 100%; max-width: 1180px; margin: 0 auto; }
 .scenario-intro { margin-bottom: 20px; }
-.scenario-intro span { color: #3370ff; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: #1d2129; }
-.scenario-intro p, .section-heading p, .preview-hint, .saved-result p { margin: 0; color: #86909c; line-height: 1.7; }
-.scenario-card { border: 1px solid #e5e6eb; border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
+.scenario-intro span { color: var(--doc-green); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: var(--doc-ink); }
+.scenario-intro p, .section-heading p, .preview-hint, .saved-result p { margin: 0; color: var(--doc-muted); line-height: 1.7; }
+.scenario-card { border: 1px solid var(--doc-line); border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
 .avatar-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .7fr); }
 .editor-column, .preview-column { padding: 22px; }
-.preview-column { background: #f7f8fa; border-left: 1px solid #e5e6eb; }
+.preview-column { background: var(--doc-paper); border-left: 1px solid var(--doc-line); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-h2 { margin: 0 0 4px; font-size: 18px; color: #1d2129; }
-.avatar-preview { display: flex; align-items: center; justify-content: center; width: 112px; height: 112px; margin: 28px auto 16px; border-radius: 50%; overflow: hidden; background: #e5e6eb; color: #86909c; font-size: 12px; text-align: center; }
+h2 { margin: 0 0 4px; font-size: 18px; color: var(--doc-ink); }
+.avatar-preview { display: flex; align-items: center; justify-content: center; width: 112px; height: 112px; margin: 28px auto 16px; border-radius: 50%; overflow: hidden; background: var(--doc-line); color: var(--doc-muted); font-size: 12px; text-align: center; }
 .realtime-preview { margin: 0; overflow: hidden; transform-origin: 0 0; }
 .realtime-preview img { display: block; }
 .scenario-actions { display: flex; gap: 10px; margin-top: 24px; }
-.saved-result { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #e5e6eb; }
+.saved-result { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--doc-line); }
 .saved-result img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-.saved-result strong { color: #1d2129; }
+.saved-result strong { color: var(--doc-ink); }
 @media (max-width: 900px) {
   .avatar-layout { grid-template-columns: 1fr; }
-  .preview-column { border-top: 1px solid #e5e6eb; border-left: 0; }
+  .preview-column { border-top: 1px solid var(--doc-line); border-left: 0; }
 }
 @media (max-width: 560px) {
   .editor-column, .preview-column { padding: 16px; }

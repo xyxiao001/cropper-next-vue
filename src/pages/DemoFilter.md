@@ -2,7 +2,7 @@
 
 # 图片滤镜
 
-### 图片滤镜控制
+<h3 id="section-1">图片滤镜控制</h3>
 
 </LangBlock>
 
@@ -10,7 +10,7 @@
 
 # Image Filter
 
-### Filter control
+<h3 id="section-1">Filter control</h3>
 
 </LangBlock>
 
@@ -18,6 +18,7 @@
 ```html
 <vue-cropper 
   ref="cropper"
+  @change="cropSize = $event.crop"
   :img="img"
   :filter="filterFunc"
   :wrapper="{ width: 480, height: 480 }"
@@ -26,7 +27,7 @@
 </vue-cropper>
 <demo-image-switch v-model="img" />
 <section class="control">
-  <el-select v-model="filter">
+  <el-select v-model="filter" :aria-label="isEn ? 'Image filter' : '图片滤镜'">
     <el-option
       v-for="item in options"
       :key="item.value"
@@ -35,7 +36,7 @@
     />
   </el-select>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
 ```
 
 ```js
@@ -45,6 +46,7 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const filter = ref(1)
   const { isEn } = useLocale()
@@ -95,6 +97,7 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const filter = ref(1)
   const { isEn } = useLocale()

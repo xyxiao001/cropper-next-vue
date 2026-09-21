@@ -1,20 +1,20 @@
 <LangBlock lang="zh">
 
-# 替换 loading 样式例子
+# 自定义加载状态
 
 当前版本支持通过 `loading` 插槽替换默认加载态。您可以通过下方的选择器切换不同的 loading 样式。
 
-### 功能展示
+<h3 id="section-1">功能展示</h3>
 
 </LangBlock>
 
 <LangBlock lang="en">
 
-# Loading Slot Demo
+# Loading states
 
 The current version supports replacing the default loading state through the `loading` slot. You can switch between different loading styles using the selector below.
 
-### Demo
+<h3 id="section-1">Demo</h3>
 
 </LangBlock>
 
@@ -22,7 +22,7 @@ The current version supports replacing the default loading state through the `lo
 ```html
 <div class="loading-toolbar">
   <label>{{ labels.selectLoading }}</label>
-  <select v-model="loadingType">
+  <select v-model="loadingType" :aria-label="labels.selectLoading">
     <option value="text">{{ labels.textLoading }}</option>
     <option value="spinner">{{ labels.spinnerLoading }}</option>
     <option value="pulse">{{ labels.pulseLoading }}</option>
@@ -32,8 +32,32 @@ The current version supports replacing the default loading state through the `lo
   </select>
 </div>
 
+<div class="loading-preview">
+  <span class="loading-preview-label">{{ labels.preview }}</span>
+  <div class="loading-preview-stage">
+    <div v-if="loadingType === 'text'" class="loading-text">{{ labels.loading }}</div>
+    <div v-else-if="loadingType === 'spinner'" class="loading-spinner"></div>
+    <div v-else-if="loadingType === 'pulse'" class="loading-pulse"></div>
+    <div v-else-if="loadingType === 'progress'" class="loading-progress">
+      <div class="loading-progress-bar"></div>
+    </div>
+    <div v-else-if="loadingType === 'dots'" class="loading-dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+    <div v-else-if="loadingType === 'wave'" class="loading-wave">
+      <span class="wave"></span>
+      <span class="wave"></span>
+      <span class="wave"></span>
+    </div>
+  </div>
+  <p>{{ labels.previewHint }}</p>
+</div>
+
 <vue-cropper
   ref="cropper"
+  @change="cropSize = $event.crop"
   :img="img"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
@@ -59,7 +83,7 @@ The current version supports replacing the default loading state through the `lo
 </vue-cropper>
 
 <demo-image-switch v-model="img" />
-<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
 ```
 
 ```js
@@ -69,6 +93,7 @@ The current version supports replacing the default loading state through the `lo
   import { imageList } from '../utils/image'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const loadingType = ref('text')
   watch(loadingType, () => {
@@ -78,6 +103,8 @@ The current version supports replacing the default loading state through the `lo
   })
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
+    preview: 'Style preview',
+    previewHint: 'This preview stays visible. The cropper slot appears only while an image is loading.',
     loading: 'Loading...',
     changeImage: 'Change image',
     selectLoading: 'Select loading style:',
@@ -88,6 +115,8 @@ The current version supports replacing the default loading state through the `lo
     dotsLoading: 'Bouncing Dots',
     waveLoading: 'Wave',
   } : {
+    preview: '样式预览',
+    previewHint: '这里持续展示所选样式；裁剪区的插槽只在图片加载时出现。',
     loading: '加载中...',
     changeImage: '切换图片',
     selectLoading: '选择加载样式:',
@@ -105,14 +134,14 @@ The current version supports replacing the default loading state through the `lo
 <style scoped>
 .loading-text {
   text-align: center;
-  color: #666;
+  color: var(--doc-muted);
 }
 
 .loading-spinner {
   width: 30px;
   height: 30px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #3498db;
+  border-top-color: var(--doc-green);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto;
@@ -125,7 +154,7 @@ The current version supports replacing the default loading state through the `lo
 .loading-pulse {
   width: 20px;
   height: 20px;
-  background-color: #3498db;
+  background-color: var(--doc-green);
   border-radius: 50%;
   animation: pulse 1.5s ease-in-out infinite;
   margin: 0 auto;
@@ -148,7 +177,7 @@ The current version supports replacing the default loading state through the `lo
 
 .loading-progress-bar {
   height: 100%;
-  background-color: #3498db;
+  background-color: var(--doc-green);
   border-radius: 2px;
   animation: progress 1.5s ease-in-out infinite;
 }
@@ -169,7 +198,7 @@ The current version supports replacing the default loading state through the `lo
 .dot {
   width: 8px;
   height: 8px;
-  background-color: #3498db;
+  background-color: var(--doc-green);
   border-radius: 50%;
   animation: bounce 1.4s ease-in-out infinite both;
 }
@@ -192,7 +221,7 @@ The current version supports replacing the default loading state through the `lo
 .wave {
   width: 3px;
   height: 15px;
-  background-color: #3498db;
+  background-color: var(--doc-green);
   border-radius: 3px;
   animation: wave 1.2s ease-in-out infinite;
 }
@@ -214,6 +243,7 @@ The current version supports replacing the default loading state through the `lo
   import { imageList } from '../utils/image'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const loadingType = ref('text')
   watch(loadingType, () => {
@@ -223,6 +253,8 @@ The current version supports replacing the default loading state through the `lo
   })
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
+    preview: 'Style preview',
+    previewHint: 'This preview stays visible. The cropper slot appears only while an image is loading.',
     loading: 'Loading...',
     changeImage: 'Change image',
     selectLoading: 'Select loading style:',
@@ -233,6 +265,8 @@ The current version supports replacing the default loading state through the `lo
     dotsLoading: 'Bouncing Dots',
     waveLoading: 'Wave',
   } : {
+    preview: '样式预览',
+    previewHint: '这里持续展示所选样式；裁剪区的插槽只在图片加载时出现。',
     loading: '加载中...',
     changeImage: '切换图片',
     selectLoading: '选择加载样式:',
@@ -246,29 +280,38 @@ The current version supports replacing the default loading state through the `lo
 </script>
 
 <style lang="scss" scoped>
-  button {
-    margin-top: 30px;
-  }
+  .loading-preview { padding: 20px; margin-bottom: 20px; border: 1px solid var(--doc-line); border-radius: 8px; background: var(--doc-paper); }
+  .loading-preview-label { font-size: 12px; color: var(--doc-muted); }
+  .loading-preview-stage { min-height: 72px; display: grid; place-items: center; }
+  .loading-preview p { font-size: 13px; color: var(--doc-muted); margin: 8px 0 0; line-height: 1.7; }
 
   .loading-toolbar {
     margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
   }
 
   .loading-toolbar select {
-    margin-left: 10px;
-    padding: 5px;
+    padding: 8px 12px;
+    border: 1px solid var(--doc-line);
+    border-radius: 6px;
+    color: var(--doc-ink);
+    background: var(--doc-paper);
+    font: inherit;
   }
 
   .loading-text {
     text-align: center;
-    color: #666;
+    color: var(--doc-muted);
   }
 
   .loading-spinner {
     width: 30px;
     height: 30px;
     border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #3498db;
+    border-top-color: var(--doc-green);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
@@ -281,7 +324,7 @@ The current version supports replacing the default loading state through the `lo
   .loading-pulse {
     width: 20px;
     height: 20px;
-    background-color: #3498db;
+    background-color: var(--doc-green);
     border-radius: 50%;
     animation: pulse 1.5s ease-in-out infinite;
     margin: 0 auto;
@@ -304,7 +347,7 @@ The current version supports replacing the default loading state through the `lo
 
   .loading-progress-bar {
     height: 100%;
-    background-color: #3498db;
+    background-color: var(--doc-green);
     border-radius: 2px;
     animation: progress 1.5s ease-in-out infinite;
   }
@@ -325,7 +368,7 @@ The current version supports replacing the default loading state through the `lo
   .dot {
     width: 8px;
     height: 8px;
-    background-color: #3498db;
+    background-color: var(--doc-green);
     border-radius: 50%;
     animation: bounce 1.4s ease-in-out infinite both;
   }
@@ -348,7 +391,7 @@ The current version supports replacing the default loading state through the `lo
   .wave {
     width: 3px;
     height: 15px;
-    background-color: #3498db;
+    background-color: var(--doc-green);
     border-radius: 3px;
     animation: wave 1.2s ease-in-out infinite;
   }

@@ -1,8 +1,8 @@
 <LangBlock lang="zh">
 
-# 拖拽和本地上传图片渲染例子
+# 使用本地图片
 
-### 功能展示
+<h3 id="section-1">功能展示</h3>
 
 #### 选择一张本地图片拖拽到截图区域或者点击按钮进行图片上传
 
@@ -10,9 +10,9 @@
 
 <LangBlock lang="en">
 
-# Drag And Upload Demo
+# Local images
 
-### Demo
+<h3 id="section-1">Demo</h3>
 
 #### Drag a local image into the crop area or choose a file from the upload button
 
@@ -22,6 +22,7 @@
 ```html
 <vue-cropper 
   ref="cropper"
+  @change="cropSize = $event.crop"
   :img="img"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
@@ -42,7 +43,7 @@
     </template>
   </el-upload>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
 ```
 
 ```js
@@ -53,6 +54,7 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
@@ -85,6 +87,7 @@
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {

@@ -21,8 +21,8 @@ const labels = computed(() =>
         exportBase64: 'Export base64',
         exportBlob: 'Export Blob',
         reset: 'Reset result',
-        displaySize: 'Display size',
-        exportPixels: 'Export pixels',
+        displaySize: 'Selection · CSS px',
+        exportPixels: 'Output · pixels',
         fileSize: 'File size',
         pixelRatio: 'Pixel ratio',
         ok: 'OK',
@@ -31,8 +31,8 @@ const labels = computed(() =>
         exportBase64: '导出 base64',
         exportBlob: '导出 Blob',
         reset: '清空结果',
-        displaySize: '展示尺寸',
-        exportPixels: '导出像素',
+        displaySize: '选区 · 容器像素',
+        exportPixels: '导出 · 图片像素',
         fileSize: '文件大小',
         pixelRatio: '像素倍率',
         ok: '完成',
@@ -161,10 +161,10 @@ onBeforeUnmount(() => {
         alt="crop result"
       />
       <section v-if="resultInfo" class="result-meta">
-        <p>{{ labels.displaySize }}: {{ displayWidth }} x {{ displayHeight }}</p>
-        <p>{{ labels.exportPixels }}: {{ resultInfo.width }} x {{ resultInfo.height }}</p>
-        <p>{{ labels.fileSize }}: {{ resultInfo.sizeText }}</p>
-        <p>{{ labels.pixelRatio }}: {{ resultInfo.pixelRatioText }}</p>
+        <div><span>{{ labels.displaySize }}</span><strong>{{ displayWidth.toLocaleString(isEn ? 'en' : 'zh', { maximumFractionDigits: 1 }) }} × {{ displayHeight.toLocaleString(isEn ? 'en' : 'zh', { maximumFractionDigits: 1 }) }}</strong></div>
+        <div><span>{{ labels.exportPixels }}</span><strong>{{ resultInfo.width }} × {{ resultInfo.height }}</strong></div>
+        <div><span>{{ labels.fileSize }}</span><strong>{{ resultInfo.sizeText }}</strong></div>
+        <div><span>{{ labels.pixelRatio }}</span><strong>{{ resultInfo.pixelRatioText }}</strong></div>
       </section>
     </section>
   </section>
@@ -187,16 +187,29 @@ onBeforeUnmount(() => {
 
 .result-image {
   display: block;
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 8px;
   object-fit: contain;
-  border: 1px solid #e5e6eb;
+  border: 1px solid var(--doc-line);
   background: #fff;
 }
 
 .result-meta {
-  margin-top: 8px;
-  color: #666;
-  line-height: 1.8;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--doc-line);
+  border-radius: 8px;
+  background: var(--doc-paper);
+  color: var(--doc-muted);
+  line-height: 1.7;
 }
+.result-meta span { display: block; font-size: 12px; }
+.result-meta strong { display: block; margin-top: 3px; font-size: 14px; font-weight: 600; color: var(--doc-ink); font-variant-numeric: tabular-nums; }
+.actions .el-button + .el-button { margin-left: 0; }
 
 p {
   margin: 0;

@@ -7,7 +7,7 @@
 - 每次旋转后都会重新做边界校验
 - 你既可以用 `defaultRotate` 外部控制，也可以用实例方法旋转
 
-### 旋转和边界联动
+<h3 id="section-1">旋转和边界联动</h3>
 
 </LangBlock>
 
@@ -20,7 +20,7 @@ This demo highlights two things:
 - boundary checks are recalculated after every rotation
 - you can rotate through `defaultRotate` or through instance methods
 
-### Rotation with boundary constraints
+<h3 id="section-1">Rotation with boundary constraints</h3>
 
 </LangBlock>
 
@@ -34,18 +34,19 @@ This demo highlights two things:
   :default-rotate="rotate"
   :wrapper="wrapper"
   ref="cropper"
+  @change="cropSize = $event.crop"
   :img="img"
   :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <demo-image-switch v-model="img" />
 <p>
-  <el-switch v-model="centerBox" :active-text="labels.centerBox" />
+  <el-switch v-model="centerBox" :aria-label="labels.centerBox" :active-text="labels.centerBox" />
   <span class="delay-label">{{ labels.rebound }} {{ centerBoxDelay }}ms</span>
   <el-slider v-model="centerBoxDelay" :min="0" :max="1000" :step="50" />
 </p>
 <p>
-  <el-switch v-model="centerWrapper" :active-text="labels.centerWrapper" />
+  <el-switch v-model="centerWrapper" :aria-label="labels.centerWrapper" :active-text="labels.centerWrapper" />
   <span class="delay-label">{{ labels.rebound }} {{ centerWrapperDelay }}ms</span>
   <el-slider v-model="centerWrapperDelay" :min="0" :max="1000" :step="50" />
 </p>
@@ -59,7 +60,7 @@ This demo highlights two things:
   <el-button @click="rotateRight">{{ labels.rotateRight }}</el-button>
   <el-button @click="rotateClear">{{ labels.rotateClear }}</el-button>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
 ```
 
 ```js
@@ -68,6 +69,7 @@ This demo highlights two things:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const centerBox = ref(false)
   const centerBoxDelay = ref(100)
@@ -85,8 +87,8 @@ This demo highlights two things:
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
   } : {
-    centerBox: '图片限制截图框内',
-    centerWrapper: '图片限制容器内',
+    centerBox: '图片覆盖裁剪框',
+    centerWrapper: '图片覆盖整个容器',
     rebound: '回弹时长',
     rotation: '图片角度',
     rotateLeft: '向左旋转 90°',
@@ -117,6 +119,7 @@ This demo highlights two things:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const centerBox = ref(false)
   const centerBoxDelay = ref(100)
@@ -134,8 +137,8 @@ This demo highlights two things:
     rotateRight: 'Rotate right 90°',
     rotateClear: 'Clear rotation',
   } : {
-    centerBox: '图片限制截图框内',
-    centerWrapper: '图片限制容器内',
+    centerBox: '图片覆盖裁剪框',
+    centerWrapper: '图片覆盖整个容器',
     rebound: '回弹时长',
     rotation: '图片角度',
     rotateLeft: '向左旋转 90°',

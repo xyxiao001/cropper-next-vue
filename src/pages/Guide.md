@@ -1,126 +1,77 @@
 <LangBlock lang="zh">
 
-# 快速开始
+# 你的第一张裁剪图。
 
-`cropper-next-vue` 当前更适合这样理解：
+提供一张图片，调整你想保留的区域，再获取裁剪结果。这个示例使用 Vue 3 和公开的 `cropper-next-vue` 包。
 
-- 默认固定、可按需开启八方向缩放的截图框
-- 可选开启固定比例和最小/最大裁剪框尺寸限制，并统一作用于交互与程序化尺寸入口
-- 图片可拖拽、缩放、旋转
-- 支持边界限制
-- 调整裁剪框时提供九宫格构图参考，松手后渐隐
-- 支持实时预览和高分屏导出
+<h2 id="installation">1. 安装组件</h2>
 
-### 安装
+在已有的 Vue 3 项目中安装：
 
 ```bash
-npm install cropper-next-vue
+pnpm add cropper-next-vue
+# 或 npm install cropper-next-vue
+# 或 yarn add cropper-next-vue
 ```
 
-```bash
-yarn add cropper-next-vue
-```
+<h2 id="first-crop">2. 放入图片</h2>
 
-### 使用
+将自己的图片放在项目的 `public/photo.jpg`，或使用示例中的文件选择按钮。复制下面的完整内容到一个 Vue 组件，即可显示裁剪工作区。
 
-`Vue 3` 组件内引入
+- **拖动图片**：选择想保留的位置。
+- **滚轮或双指缩放**：调整图片在选区中的大小。
+- **点击 Export image**：在下方看到实际导出结果。
 
-```ts
-import 'cropper-next-vue/style.css'
-import { VueCropper } from 'cropper-next-vue'
-```
-
-`Vue 3` 全局引入
-
-```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import CropperNextVue from 'cropper-next-vue'
-import 'cropper-next-vue/style.css'
-
-const app = createApp(App)
-app.use(CropperNextVue)
-app.mount('#app')
-```
-
-### 本地开发命令
-
-```bash
-# 文档站开发
-pnpm run dev
-
-# 构建 npm 包
-pnpm run build:lib
-
-# 构建文档站
-pnpm run build:docs
-```
-
-### 推荐阅读路径
-
-如果你第一次接触这个库，建议按这个顺序看文档：
-
-1. [基础例子](#/demo-basic)：先跑通最小裁剪和导出。
-2. [导出能力](#/demo-export)：理解 `outputType`、`outputSize`、`full`、`getCropBlob`。
-3. [截图框操作](#/demo-crop)：理解八方向缩放、九宫格、比例和尺寸限制。
-4. [边界控制](#/demo-img)：理解 `centerBox` 和 `centerWrapper`。
-5. [旋转控制](#/demo-rotate)：理解旋转和边界约束的组合。
-6. [实时预览](#/demo-realtime)：理解 `real-time`、实例旋转方法和联动预览。
-7. [全功能工作台](#/demo-all)：直接组合验证裁剪框比例、尺寸限制、状态、坐标和导出。
-
-### 当前能力边界
-
-当前版本默认保持固定截图框；传入 `:crop-box-resizable="true"` 后，可通过四边和四角调整裁剪框。`cropBoxConstraintsEnabled` 默认关闭；开启后，`cropAspectRatio` 可以固定宽高比，`minCropWidth`、`minCropHeight`、`maxCropWidth` 和 `maxCropHeight` 可以限制实际裁剪框尺寸。拖动控制区时显示九宫格构图参考，松手后渐隐。
-
-```vue
-<VueCropper
-  :crop-box-resizable="true"
-  :crop-box-constraints-enabled="true"
-  :crop-aspect-ratio="4 / 3"
-  :min-crop-width="160"
-  :min-crop-height="120"
-  :max-crop-width="640"
-  :max-crop-height="480"
-/>
-```
-
-限制开启后会统一作用于用户拖动、初始及运行时 `cropLayout`、`setCropLayout()` 和 `reset()`，从设置阶段阻止超限尺寸；运行时从关闭切换为开启限制时，应用限制后的裁剪框会重新居中。限制已开启后的比例或尺寸参数更新继续保留当前位置，`setCropAxis()` 也只改变坐标。程序化宽高不符合固定比例时，会在请求范围内取最大的目标比例框。当前版本仍不包含旧版裁剪生命周期 API。
+> 组件样式需要单独引入。示例使用容器宽度的 60% 作为选区宽度，裁剪框尺寸与最终输出像素可能不同。
 
 </LangBlock>
-
 <LangBlock lang="en">
 
-# Guide
+# Your first cropped image.
 
-`cropper-next-vue` is best understood as:
+Provide an image, adjust the selection, and export the result. This example uses Vue 3 and the public `cropper-next-vue` package.
 
-- a crop box that is fixed by default and optionally resizable in eight directions
-- optional aspect-ratio and min/max crop-box constraints for both handle dragging and programmatic size entries
-- draggable, scalable, and rotatable image editing
-- boundary control support
-- a rule-of-thirds grid while resizing that fades after release
-- realtime preview and high-DPI export support
+<h2 id="installation">1. Install</h2>
 
-### Install
+Install in an existing Vue 3 project:
 
 ```bash
-npm install cropper-next-vue
+pnpm add cropper-next-vue
+# or npm install cropper-next-vue
+# or yarn add cropper-next-vue
 ```
 
-```bash
-yarn add cropper-next-vue
-```
+<h2 id="first-crop">2. Add an image</h2>
 
-### Usage
+Place your image at `public/photo.jpg`, or use the file picker in the example. Copy the complete code below into a Vue component to display the workspace.
 
-Import inside a Vue 3 component:
+- **Drag the image** to choose the area to keep.
+- **Scroll or pinch** to change its scale inside the selection.
+- **Click Export image** to see the actual result below the editor.
 
-```ts
-import 'cropper-next-vue/style.css'
-import { VueCropper } from 'cropper-next-vue'
-```
+> Import the component stylesheet separately. This example uses 60% of the wrapper width for the selection. Display size and export pixels may differ.
 
-Global registration in Vue 3:
+</LangBlock>
+
+<ScenarioCodeExample :title="isEn ? 'Complete App.vue' : '完整 App.vue 示例'" :code="code" :copy-label="isEn ? 'Copy code' : '复制代码'" :copied-label="isEn ? 'Copied' : '已复制'" />
+
+<LangBlock lang="zh">
+
+<h2 id="export-result">3. 获取结果</h2>
+
+`getCropBlob()` 返回真实的图片 Blob。示例将它转成临时地址显示出来；接入业务时，可以把同一个 Blob 加入 `FormData` 并提交到你自己的上传接口。
+
+需要 base64 时使用 `getCropData()`。输出格式由 `outputType` 决定，默认为 PNG。
+
+[立即体验基础裁剪](#/demo-basic) · [理解导出尺寸与质量](#/demo-export)
+
+<h2 id="understand">接下来，理解你的选区</h2>
+
+组件默认允许图片拖动和缩放，裁剪框缩放默认关闭。需要调整选区大小时开启 `cropBoxResizable`；需要固定比例时，同时显式启用 `cropBoxConstraintsEnabled` 并设置 `cropAspectRatio`。
+
+[认识容器、图片与裁剪框](#/concepts) · [尝试头像上传](#/scenario-avatar) · [打开完整工作台](#/demo-all)
+
+<h2 id="global-registration">可选：全局注册</h2>
 
 ```ts
 import { createApp } from 'vue'
@@ -128,52 +79,61 @@ import App from './App.vue'
 import CropperNextVue from 'cropper-next-vue'
 import 'cropper-next-vue/style.css'
 
-const app = createApp(App)
-app.use(CropperNextVue)
-app.mount('#app')
+createApp(App).use(CropperNextVue).mount('#app')
 ```
 
-### Local development commands
+<h2 id="contributing">开发文档站</h2>
+
+仅在维护本仓库时使用以下命令。需要 Node.js ≥22 和 pnpm 9.15.9。
 
 ```bash
-# docs dev server
 pnpm run dev
-
-# build npm package
 pnpm run build:lib
-
-# build docs site
 pnpm run build:docs
 ```
 
-### Recommended reading order
+</LangBlock>
+<LangBlock lang="en">
 
-If this is your first time using the library, this sequence works best:
+<h2 id="export-result">3. Get the result</h2>
 
-1. [Basic Demo](#/demo-basic): get the minimal crop and export flow working.
-2. [Export](#/demo-export): understand `outputType`, `outputSize`, `full`, and `getCropBlob`.
-3. [Crop Box](#/demo-crop): understand eight-direction resizing, the rule-of-thirds grid, ratio, and size constraints.
-4. [Boundary](#/demo-img): understand `centerBox` and `centerWrapper`.
-5. [Rotation](#/demo-rotate): understand rotation plus boundary constraints.
-6. [Realtime Preview](#/demo-realtime): understand `real-time`, rotation methods, and linked preview.
-7. [Full-featured Workspace](#/demo-all): combine crop ratio, size limits, state, coordinates, and export.
+`getCropBlob()` returns an image Blob. The example creates a temporary URL to display it. For your application, add the same Blob to `FormData` and submit it to your own upload endpoint.
 
-### Current scope
+Use `getCropData()` for base64. `outputType` sets the export format; the default is PNG.
 
-The crop box remains fixed by default. Pass `:crop-box-resizable="true"` to resize it from four edges and four corners. `cropBoxConstraintsEnabled` is disabled by default. When enabled, use `cropAspectRatio` to keep a fixed ratio and the min/max crop props to constrain the actual crop-box size. A rule-of-thirds grid appears while dragging and fades after release.
+[Try basic cropping](#/demo-basic) · [Understand export size and quality](#/demo-export)
 
-```vue
-<VueCropper
-  :crop-box-resizable="true"
-  :crop-box-constraints-enabled="true"
-  :crop-aspect-ratio="4 / 3"
-  :min-crop-width="160"
-  :min-crop-height="120"
-  :max-crop-width="640"
-  :max-crop-height="480"
-/>
+<h2 id="understand">Next, understand your selection</h2>
+
+Dragging and zooming the image are enabled by default. Resizing the crop box is off by default. Enable `cropBoxResizable` to resize it; for a fixed ratio, also enable `cropBoxConstraintsEnabled` and set `cropAspectRatio`.
+
+[Workspace, image and crop box](#/concepts) · [Try profile photos](#/scenario-avatar) · [Open the playground](#/demo-all)
+
+<h2 id="global-registration">Optional: global registration</h2>
+
+```ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import CropperNextVue from 'cropper-next-vue'
+import 'cropper-next-vue/style.css'
+
+createApp(App).use(CropperNextVue).mount('#app')
 ```
 
-When enabled, these constraints apply to handle dragging, initial and runtime `cropLayout`, `setCropLayout()`, and `reset()`, preventing oversized programmatic results before the first drag. Switching constraints from disabled to enabled at runtime recenters the constrained crop box. Later ratio or size-limit updates preserve its current position, and `setCropAxis()` changes coordinates only. A programmatic size that does not match the fixed ratio uses the largest target-ratio box inside the requested size. Legacy crop lifecycle APIs remain out of scope.
+<h2 id="contributing">Working on this documentation</h2>
+
+These commands are for repository contributors. Use Node.js ≥22 and pnpm 9.15.9.
+
+```bash
+pnpm run dev
+pnpm run build:lib
+pnpm run build:docs
+```
 
 </LangBlock>
+<script setup>
+import ScenarioCodeExample from '../components/ScenarioCodeExample.vue'
+import code from '../examples/BasicCrop.vue?raw'
+import { useLocale } from '../composables/useLocale'
+const { isEn } = useLocale()
+</script>

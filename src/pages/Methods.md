@@ -2,46 +2,64 @@
 
 # 方法
 
-当前版本通过组件 `ref` 暴露的方法较少，主要用于获取裁剪结果。
+通过组件 `ref` 调用 16 个公开方法：导出图片、控制变换、设置裁剪框，以及读取状态。需要完整接入代码时，先看 [快速开始](#/guide)。
 
-## 获取实例
+<h2 id="section-1">获取实例</h2>
 
 ```ts
-const cropper = ref()
+import { ref } from 'vue'
+import { VueCropper } from 'cropper-next-vue'
+const cropper = ref<InstanceType<typeof VueCropper>>()
 ```
 
 ```html
 <vue-cropper ref="cropper" :img="img" />
 ```
 
-## 方法列表
+
+<h2 id="export-methods">导出结果</h2>
 
 方法 | 说明
 --- | ---
-`cropper.value.getCropData(type?)` | 获取裁剪结果，返回 `Promise<string>`
+`cropper.value.getCropData(type?)` | 按 `type` 返回 base64 或 Blob，声明类型为 `Promise<string \| Blob>`
 `cropper.value.getCropBlob()` | 获取裁剪结果，返回 `Promise<Blob>`
+
+<h2 id="transforms">旋转、翻转与缩放</h2>
+
+方法 | 说明
+--- | ---
 `cropper.value.rotateLeft()` | 向左旋转 `90deg`
 `cropper.value.rotateRight()` | 向右旋转 `90deg`
 `cropper.value.rotateClear()` | 清空旋转角度，恢复为 `0deg`
+`cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
 `cropper.value.flipHorizontal()` | 相对屏幕方向切换水平翻转
 `cropper.value.flipVertical()` | 相对屏幕方向切换垂直翻转
-`cropper.value.getCropCoordinates()` | 同步获取原图裁剪四角、外接矩形、源图尺寸和变换信息
-`cropper.value.reload()` | 重新加载当前 `img`，并重新进入加载流程
-`cropper.value.reset()` | 不重新加载图片，恢复当前 props 对应的初始图片与截图框状态
-`cropper.value.setRotateAngle(angle)` | 直接设置图片旋转角度，自动归一化到 `0-360`
-`cropper.value.setCropLayout({ width, height })` | 手动设置截图框大小，支持数字、`px`、`%`
-`cropper.value.setCropAxis({ x, y })` | 手动设置截图框坐标，并按当前边界规则校验
 `cropper.value.zoomIn(step?)` | 按当前缩放比例放大图片，默认步进为 `0.1`
 `cropper.value.zoomOut(step?)` | 按当前缩放比例缩小图片，默认步进为 `0.1`
 `cropper.value.changeScale(value?)` | 按传入值改变缩放比例，正数放大、负数缩小
 
-## 参数说明
+<h2 id="crop-methods">控制裁剪框</h2>
+
+方法 | 说明
+--- | ---
+`cropper.value.setCropLayout({ width, height })` | 手动设置截图框大小，支持数字、`px`、`%`
+`cropper.value.setCropAxis({ x, y })` | 手动设置截图框坐标，并按当前边界规则校验
+
+<h2 id="state-methods">读取与恢复状态</h2>
+
+方法 | 说明
+--- | ---
+`cropper.value.getCropCoordinates()` | 同步获取原图裁剪四角、外接矩形、源图尺寸和变换信息
+`cropper.value.reset()` | 不重新加载图片，恢复当前 props 对应的初始图片与截图框状态
+`cropper.value.reload()` | 重新加载当前 `img`，并重新进入加载流程
+
+<h2 id="section-2">参数说明</h2>
 
 `getCropData(type?)`
 
 - 默认返回 base64 数据
 - 当前实现会根据组件的 `outputType` 输出对应格式
-- `type` 参数当前主要用于兼容调用方式，推荐直接使用默认值
+- `type` 可传 `'base64'`（默认）或 `'blob'`；需要 Blob 时，优先用有明确返回类型的 `getCropBlob()`
 
 `getCropBlob()`
 
@@ -90,7 +108,7 @@ const cropper = ref()
 - `points` 依次对应截图框左上、右上、右下、左下，点位不会被限制到源图边界
 - 调用只读取当前状态，不触发 `change`、`real-time` 或图片导出
 
-## 示例
+<h2 id="section-3">示例</h2>
 
 ```ts
 cropper.value.getCropData().then((data) => {
@@ -115,7 +133,7 @@ const zoomOut = () => {
 }
 ```
 
-## 说明
+<h2 id="section-4">说明</h2>
 
 当前版本支持通过 `cropBoxResizable` 直接操作可缩放裁剪框，但仍不提供旧版的 `startCrop`、`stopCrop`、`clearCrop`、`getImgAxis`、`getCropAxis`、`goAutoCrop` 生命周期与读取方法；请使用当前 props、`change` 事件和实例方法完成对应集成。
 
@@ -125,46 +143,64 @@ const zoomOut = () => {
 
 # Methods
 
-The current version exposes a small set of instance methods through component `ref`, mainly focused on export and rotation control.
+Use the component ref to call 16 public methods for export, transformations, crop-box control, and state. See [Quick start](#/guide) for a complete integration.
 
-## Get the instance
+<h2 id="section-1">Get the instance</h2>
 
 ```ts
-const cropper = ref()
+import { ref } from 'vue'
+import { VueCropper } from 'cropper-next-vue'
+const cropper = ref<InstanceType<typeof VueCropper>>()
 ```
 
 ```html
 <vue-cropper ref="cropper" :img="img" />
 ```
 
-## Method list
+
+<h2 id="export-methods">Export</h2>
 
 Method | Description
 --- | ---
-`cropper.value.getCropData(type?)` | Get crop result as `Promise<string>`
+`cropper.value.getCropData(type?)` | Return base64 or Blob according to `type`; declared as `Promise<string \| Blob>`
 `cropper.value.getCropBlob()` | Get crop result as `Promise<Blob>`
+
+<h2 id="transforms">Rotate, flip, and zoom</h2>
+
+Method | Description
+--- | ---
 `cropper.value.rotateLeft()` | Rotate left by `90deg`
 `cropper.value.rotateRight()` | Rotate right by `90deg`
 `cropper.value.rotateClear()` | Reset rotation back to `0deg`
+`cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
 `cropper.value.flipHorizontal()` | Toggle horizontal flip relative to the screen axis
 `cropper.value.flipVertical()` | Toggle vertical flip relative to the screen axis
-`cropper.value.getCropCoordinates()` | Synchronously read source crop corners, bounding box, source size, and transform
-`cropper.value.reload()` | Reload the current `img` and run the loading flow again
-`cropper.value.reset()` | Restore the initial image and crop-box state for the current props without reloading the image
-`cropper.value.setRotateAngle(angle)` | Set the image rotation angle and normalize it to `0-360`
-`cropper.value.setCropLayout({ width, height })` | Set the crop-box size manually, supports numbers, `px`, and `%`
-`cropper.value.setCropAxis({ x, y })` | Set the crop-box position manually and re-check boundaries
 `cropper.value.zoomIn(step?)` | Zoom in by the current scale ratio, default step is `0.1`
 `cropper.value.zoomOut(step?)` | Zoom out by the current scale ratio, default step is `0.1`
 `cropper.value.changeScale(value?)` | Change scale by the given delta. Positive zooms in, negative zooms out
 
-## Details
+<h2 id="crop-methods">Control the crop box</h2>
+
+Method | Description
+--- | ---
+`cropper.value.setCropLayout({ width, height })` | Set the crop-box size manually, supports numbers, `px`, and `%`
+`cropper.value.setCropAxis({ x, y })` | Set the crop-box position manually and re-check boundaries
+
+<h2 id="state-methods">Read and restore state</h2>
+
+Method | Description
+--- | ---
+`cropper.value.getCropCoordinates()` | Synchronously read source crop corners, bounding box, source size, and transform
+`cropper.value.reset()` | Restore the initial image and crop-box state for the current props without reloading the image
+`cropper.value.reload()` | Reload the current `img` and run the loading flow again
+
+<h2 id="section-2">Details</h2>
 
 `getCropData(type?)`
 
 - returns base64 by default
 - uses the component `outputType` as the export format
-- the `type` parameter is kept mainly for compatibility, and the default is recommended
+- `type` accepts `'base64'` (default) or `'blob'`; prefer the explicitly typed `getCropBlob()` when you need a Blob
 
 `getCropBlob()`
 
@@ -213,7 +249,7 @@ Method | Description
 - `points` follows crop-box top-left, top-right, bottom-right, and bottom-left order and is not clamped to source bounds
 - this is a read-only call and does not emit `change` / `real-time` or export an image
 
-## Example
+<h2 id="section-3">Example</h2>
 
 ```ts
 cropper.value.getCropData().then((data) => {
@@ -238,7 +274,7 @@ const zoomOut = () => {
 }
 ```
 
-## Notes
+<h2 id="section-4">Notes</h2>
 
 The crop box can now be resized directly through `cropBoxResizable`, but legacy lifecycle and read APIs such as `startCrop`, `stopCrop`, `clearCrop`, `getImgAxis`, `getCropAxis`, and `goAutoCrop` are still not exposed. Use the current props, `change` event, and instance methods instead.
 

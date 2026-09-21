@@ -25,9 +25,9 @@ const copyCode = async () => {
       <summary>{{ title }}</summary>
       <div class="code-toolbar">
         <span>Vue SFC</span>
-        <el-button size="small" @click="copyCode">
+        <button class="code-copy" type="button" @click="copyCode">
           {{ copied ? copiedLabel : copyLabel }}
-        </el-button>
+        </button>
       </div>
       <pre><code>{{ code }}</code></pre>
     </details>
@@ -37,15 +37,15 @@ const copyCode = async () => {
 <style scoped lang="scss">
 .code-example {
   margin-top: 20px;
-  border: 1px solid #e5e6eb;
-  border-radius: 14px;
+  border: 1px solid var(--doc-line);
+  border-radius: 7px;
   background: #fff;
   overflow: hidden;
 }
 
 summary {
   padding: 16px 18px;
-  color: #1d2129;
+  color: var(--doc-ink);
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -56,9 +56,9 @@ summary {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-top: 1px solid #e5e6eb;
+  border-top: 1px solid var(--doc-line);
   border-bottom: 1px solid #30343b;
-  background: #25282e;
+  background: #24382f;
   color: #c9cdd4;
   font-size: 12px;
 }
@@ -68,8 +68,8 @@ pre {
   margin: 0;
   padding: 18px;
   overflow: auto;
-  background: #1f2329;
-  color: #e5e6eb;
+  background: var(--doc-code);
+  color: var(--doc-line);
   font: 13px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   tab-size: 2;
 }
@@ -77,4 +77,5 @@ pre {
 code {
   white-space: pre;
 }
+.code-copy { background: transparent; color: #e1ebd8; border: 1px solid #53654e; border-radius: 4px; padding: 5px 9px; font-size: 12px; }
 </style>
