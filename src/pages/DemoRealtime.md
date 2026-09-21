@@ -8,7 +8,7 @@
 - `@realTime`
 - `rotateLeft / rotateRight / rotateClear`
 
-### 旋转方法和实时预览
+<h3 id="section-1">旋转方法和实时预览</h3>
 
 </LangBlock>
 
@@ -22,7 +22,7 @@ This page demonstrates the APIs that work best for live business integration:
 - `@realTime`
 - `rotateLeft / rotateRight / rotateClear`
 
-### Rotation methods with realtime preview
+<h3 id="section-1">Rotation methods with realtime preview</h3>
 
 </LangBlock>
 
@@ -291,9 +291,13 @@ This page demonstrates the APIs that work best for live business integration:
   .demo-grid {
     display: grid;
     gap: 24px;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     align-items: start;
   }
+
+  .demo-grid > section { min-width: 0; }
+
+  @media (max-width: 1200px) { .demo-grid { grid-template-columns: minmax(0, 1fr); } }
 
   .actions {
     display: flex;
@@ -304,9 +308,9 @@ This page demonstrates the APIs that work best for live business integration:
 
   .preview {
     padding: 16px;
-    border: 1px solid #e5e6eb;
+    border: 1px solid var(--doc-line);
     border-radius: 12px;
-    background: #fafafa;
+    background: var(--doc-paper);
   }
 
   .preview-box {
@@ -322,12 +326,12 @@ This page demonstrates the APIs that work best for live business integration:
   .preview-item-title {
     margin: 0 0 8px;
     font-size: 13px;
-    color: #4e5969;
+    color: var(--doc-muted);
   }
 
   .realtime-preview {
     overflow: hidden;
-    border: 1px solid #e5e6eb;
+    border: 1px solid var(--doc-line);
     background: #fff;
   }
 

@@ -30,7 +30,7 @@ const { locale, setLocale } = useLocale()
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
-  background: #f2f3f5;
+  background: transparent;
   gap: 4px;
 }
 
@@ -38,13 +38,13 @@ const { locale, setLocale } = useLocale()
   border: 0;
   background: transparent;
   border-radius: 999px;
-  padding: 6px 12px;
-  color: #4e5969;
+  padding: 5px 9px;
+  color: var(--doc-muted);
   cursor: pointer;
 }
 
 .locale-button.active {
-  background: #1d2129;
+  background: var(--doc-green);
   color: white;
 }
 </style>

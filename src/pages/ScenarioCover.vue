@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import codeExample from '../examples/CoverCrop.vue?raw'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import type { InterfaceRealTimePreview } from '../../lib/interface'
 import ScenarioCodeExample from '../components/ScenarioCodeExample.vue'
 import { useLocale } from '../composables/useLocale'
@@ -15,46 +16,19 @@ const { isEn } = useLocale()
 const cropper = ref<CropperInstance | null>(null)
 const img = ref(imageList[6])
 const resultUrl = ref('')
+const desktopPreview = ref<HTMLElement | null>(null)
+const desktopPreviewWidth = ref(0)
+let previewResizeObserver: ResizeObserver
+onMounted(() => {
+  previewResizeObserver = new ResizeObserver(([entry]) => {
+    desktopPreviewWidth.value = entry.contentRect.width
+  })
+  previewResizeObserver.observe(desktopPreview.value!)
+})
 const exporting = ref(false)
 const preview = reactive({ w: 0, h: 0, url: '', img: {} as InterfaceRealTimePreview['img'] })
 const wrapper = { width: '100%', height: 'min(420px, calc(100vw - 72px))' }
 const cropLayout = { width: '82%', height: '46.125%' }
-const codeExample = `<script setup>
-import { reactive, ref } from 'vue'
-
-const cropper = ref()
-const image = ref('/article-cover.jpg')
-const preview = reactive({ w: 0, h: 0, url: '', img: {} })
-
-const handlePreview = (payload) => Object.assign(preview, payload)
-
-const applyCover = async () => {
-  const blob = await cropper.value.getCropBlob()
-  const formData = new FormData()
-  formData.append('cover', blob, 'cover.webp')
-  await fetch('/api/articles/cover', { method: 'POST', body: formData })
-}
-${'</' + 'script>'}
-
-<template>
-  <vue-cropper
-    ref="cropper"
-    :img="image"
-    :wrapper="{ width: 720, height: 420 }"
-    :crop-layout="{ width: 560, height: 315 }"
-    :crop-box-resizable="true"
-    :crop-box-constraints-enabled="true"
-    :crop-aspect-ratio="16 / 9"
-    :center-box="true"
-    output-type="webp"
-    :output-size="0.9"
-    :max-side-length="1920"
-    @real-time="handlePreview"
-  />
-  <button @click="cropper.rotateLeft()">Rotate left</button>
-  <button @click="cropper.rotateRight()">Rotate right</button>
-  <button @click="applyCover">Apply cover</button>
-</template>`
 
 const previewStyle = (width: number) => ({
   width: `${preview.w}px`,
@@ -94,6 +68,7 @@ const exportCover = async () => {
 }
 
 onBeforeUnmount(() => {
+  previewResizeObserver.disconnect()
   if (resultUrl.value) URL.revokeObjectURL(resultUrl.value)
 })
 </script>
@@ -108,7 +83,7 @@ onBeforeUnmount(() => {
     <section class="scenario-card cover-layout">
       <section class="editor-column">
         <div class="section-heading">
-          <div><h2>{{ labels.editor }}</h2><p>16:9 · WebP · max 1920px</p></div>
+          <div><h2 id="editor">{{ labels.editor }}</h2><p>16:9 · WebP · max 1920px</p></div>
           <div class="compact-actions">
             <el-button @click="cropper?.rotateLeft()">{{ labels.rotateLeft }}</el-button>
             <el-button @click="cropper?.rotateRight()">{{ labels.rotateRight }}</el-button>
@@ -136,8 +111,8 @@ onBeforeUnmount(() => {
         <h2>{{ labels.preview }}</h2>
         <section class="preview-block">
           <span>{{ labels.desktop }}</span>
-          <div class="cover-preview desktop-preview">
-            <section v-if="preview.url" :style="previewStyle(320)"><img :src="preview.url" :style="preview.img" alt="desktop cover preview" /></section>
+          <div ref="desktopPreview" class="cover-preview desktop-preview">
+            <section v-if="preview.url" :style="previewStyle(desktopPreviewWidth)"><img :src="preview.url" :style="preview.img" alt="desktop cover preview" /></section>
           </div>
           <div class="fake-copy"><b></b><i></i><i></i></div>
         </section>
@@ -157,6 +132,7 @@ onBeforeUnmount(() => {
         </section>
       </aside>
     </section>
+    <p class="integration-note">{{ isEn ? 'The complete example uses only the public package. Add your own photo.jpg or choose a local file; export returns a Blob without calling an upload service.' : '完整示例只依赖公开 npm 包。放入自己的 photo.jpg 或选择本地图片；导出得到 Blob，不会调用上传服务。' }}</p>
     <ScenarioCodeExample
       :title="labels.viewCode"
       :code="codeExample"
@@ -169,36 +145,36 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .scenario-page { width: 100%; max-width: 1180px; margin: 0 auto; }
 .scenario-intro { margin-bottom: 20px; }
-.scenario-intro span { color: #3370ff; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: #1d2129; }
-.scenario-intro p, .section-heading p { margin: 0; color: #86909c; line-height: 1.7; }
-.scenario-card { border: 1px solid #e5e6eb; border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
+.scenario-intro span { color: var(--doc-green); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.scenario-intro h1 { margin: 8px 0; font-size: clamp(28px, 4vw, 40px); color: var(--doc-ink); }
+.scenario-intro p, .section-heading p { margin: 0; color: var(--doc-muted); line-height: 1.7; }
+.scenario-card { border: 1px solid var(--doc-line); border-radius: 18px; background: #fff; box-shadow: 0 12px 36px rgba(29, 33, 41, .06); overflow: hidden; }
 .cover-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(340px, .75fr); }
 .editor-column, .preview-column { padding: 22px; }
-.preview-column { background: #f7f8fa; border-left: 1px solid #e5e6eb; }
+.preview-column { background: var(--doc-paper); border-left: 1px solid var(--doc-line); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-h2 { margin: 0 0 4px; font-size: 18px; color: #1d2129; }
+h2 { margin: 0 0 4px; font-size: 18px; color: var(--doc-ink); }
 .compact-actions { display: flex; gap: 8px; }
-.preview-block { margin-top: 18px; padding: 14px; border: 1px solid #e5e6eb; border-radius: 12px; background: #fff; }
-.preview-block > span, .mobile-card span { display: block; margin-bottom: 10px; color: #4e5969; font-size: 12px; font-weight: 600; }
-.cover-preview { overflow: hidden; background: #e5e6eb; }
+.preview-block { margin-top: 18px; padding: 14px; border: 1px solid var(--doc-line); border-radius: 12px; background: #fff; }
+.preview-block > span, .mobile-card span { display: block; margin-bottom: 10px; color: var(--doc-muted); font-size: 12px; font-weight: 600; }
+.cover-preview { overflow: hidden; background: var(--doc-line); }
 .cover-preview section { overflow: hidden; transform-origin: 0 0; }
 .cover-preview img { display: block; }
 .desktop-preview { width: 100%; max-width: 320px; aspect-ratio: 16 / 9; }
 .mobile-preview { width: 128px; aspect-ratio: 16 / 9; flex-shrink: 0; }
 .fake-copy { display: grid; gap: 7px; margin-top: 12px; }
-.fake-copy b, .fake-copy i { display: block; height: 8px; border-radius: 8px; background: #e5e6eb; }
+.fake-copy b, .fake-copy i { display: block; height: 8px; border-radius: 8px; background: var(--doc-line); }
 .fake-copy b { width: 72%; height: 11px; background: #c9cdd4; }
 .fake-copy i:last-child { width: 54%; }
 .mobile-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.mobile-card > div:first-child { flex: 1; }
+.mobile-card > div:first-child { flex: 1; min-width: 0; }
 .apply-button { width: 100%; margin-top: 18px; }
 .result-card { margin-top: 14px; }
 .result-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; }
-.result-card strong { display: block; margin-top: 8px; color: #4e5969; font-size: 13px; }
+.result-card strong { display: block; margin-top: 8px; color: var(--doc-muted); font-size: 13px; }
 @media (max-width: 960px) {
-  .cover-layout { grid-template-columns: 1fr; }
-  .preview-column { border-top: 1px solid #e5e6eb; border-left: 0; }
+  .cover-layout { grid-template-columns: minmax(0, 1fr); }
+  .preview-column { border-top: 1px solid var(--doc-line); border-left: 0; }
 }
 @media (max-width: 560px) {
   .editor-column, .preview-column { padding: 16px; }

@@ -1,6 +1,6 @@
 <LangBlock lang="zh">
 
-# 基础例子
+# 基础裁剪
 
 这个页面建议先完成 3 个动作：
 
@@ -8,13 +8,13 @@
 2. 鼠标滚轮缩放，观察截图结果。
 3. 点击导出，确认已经能拿到 base64 结果。
 
-### 最小可用示例
+<h3 id="section-1">最小可用示例</h3>
 
 </LangBlock>
 
 <LangBlock lang="en">
 
-# Basic Demo
+# Basic cropping
 
 Try these three actions first:
 
@@ -22,7 +22,7 @@ Try these three actions first:
 2. Use the mouse wheel to zoom.
 3. Export once and confirm you receive a base64 result.
 
-### Minimal working example
+<h3 id="section-1">Minimal working example</h3>
 
 </LangBlock>
 
@@ -30,6 +30,7 @@ Try these three actions first:
 ```html
 <vue-cropper
   ref="cropper"
+  @change="cropSize = $event.crop"
   :img="img"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
@@ -40,7 +41,7 @@ Try these three actions first:
   <p>{{ labels.tipFlow }}</p>
   <p>{{ labels.tipRetina }}</p>
 </section>
-<crop-export-panel :cropper="cropper" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper" :display-width="cropSize.width" :display-height="cropSize.height" />
 ```
 
 ```js
@@ -49,6 +50,7 @@ Try these three actions first:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
@@ -67,6 +69,7 @@ Try these three actions first:
   import { useLocale } from '../composables/useLocale'
 
   const cropper = ref()
+  const cropSize = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {

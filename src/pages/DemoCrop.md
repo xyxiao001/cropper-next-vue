@@ -1,20 +1,20 @@
 <LangBlock lang="zh">
 
-# 截图框操作例子
+# 裁剪框与比例
 
 这页用于单独验证裁剪框的外观、八方向缩放、固定比例和尺寸限制。拖动控制点时会显示九宫格，松手后自动渐隐。
 
-### 裁剪框缩放与限制
+<h3 id="section-1">裁剪框缩放与限制</h3>
 
 </LangBlock>
 
 <LangBlock lang="en">
 
-# Crop Box Demo
+# Crop box & ratio
 
 This page focuses on crop-box appearance, eight-direction resizing, fixed ratios, and size constraints. The rule-of-thirds grid appears while dragging a handle and fades after release.
 
-### Crop-box resizing and constraints
+<h3 id="section-1">Crop-box resizing and constraints</h3>
 
 </LangBlock>
 

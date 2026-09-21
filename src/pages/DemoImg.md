@@ -5,11 +5,11 @@
 这页用来理解两种最核心的限制策略：
 
 - `centerBox`：图片必须完整包住截图框
-- `centerWrapper`：图片必须留在外层容器内
+- `centerWrapper`：图片必须完整覆盖外层容器
 
-建议你分别拖动、缩放，再对比两组行为差异。
+分别拖动、缩放两组图片，观察覆盖范围与松手后的回弹。两者同时开启时 `centerBox` 优先。
 
-### 图片限制示例
+<h3 id="section-1">图片限制示例</h3>
 
 </LangBlock>
 
@@ -20,11 +20,11 @@
 This page explains the two core boundary strategies:
 
 - `centerBox`: the image must fully cover the crop box
-- `centerWrapper`: the image must stay inside the wrapper
+- `centerWrapper`: the image must fully cover the wrapper
 
-Try dragging and zooming both demos to compare the behavior.
+Drag and zoom both demos to compare coverage and rebound after release. When both options are enabled, `centerBox` takes priority.
 
-### Boundary examples
+<h3 id="section-1">Boundary examples</h3>
 
 </LangBlock>
 
@@ -35,6 +35,7 @@ Try dragging and zooming both demos to compare the behavior.
   center-box
   :center-box-delay="150"
   ref="cropper1"
+  @change="cropSize1 = $event.crop"
   :img="img"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
@@ -42,20 +43,21 @@ Try dragging and zooming both demos to compare the behavior.
 </vue-cropper>
 <demo-image-switch v-model="img" />
 <p class="desc">{{ labels.centerBoxDesc }}</p>
-<crop-export-panel :cropper="cropper1" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper1" :display-width="cropSize1.width" :display-height="cropSize1.height" />
 
 <p class="title">{{ labels.centerWrapperTitle }}</p>
 <vue-cropper 
   center-wrapper
   :center-wrapper-delay="150"
   ref="cropper2"
+  @change="cropSize2 = $event.crop"
   :img="img"
   :wrapper="{ width: 480, height: 480 }"
   :crop-layout="{ width: 320, height: 320 }"
 >
 </vue-cropper>
 <p class="desc">{{ labels.centerWrapperDesc }}</p>
-<crop-export-panel :cropper="cropper2" :display-width="320" :display-height="320" />
+<crop-export-panel :cropper="cropper2" :display-width="cropSize2.width" :display-height="cropSize2.height" />
 ```
 
 ```js
@@ -64,19 +66,21 @@ Try dragging and zooming both demos to compare the behavior.
   import { useLocale } from '../composables/useLocale'
 
   const cropper1 = ref()
+  const cropSize1 = ref({ width: 320, height: 320 })
   const cropper2 = ref()
+  const cropSize2 = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     centerBoxTitle: 'Keep image covering crop box',
     centerBoxDesc: 'Useful when the final output must fully cover the crop area, such as avatar cropping.',
-    centerWrapperTitle: 'Keep image inside wrapper',
-    centerWrapperDesc: 'Useful for editing flows where the image must always remain inside the workspace.',
+    centerWrapperTitle: 'Keep image covering wrapper',
+    centerWrapperDesc: 'Keeps the entire workspace covered, including the area outside the crop box.',
   } : {
-    centerBoxTitle: '图片限制截图框内',
+    centerBoxTitle: '图片覆盖裁剪框',
     centerBoxDesc: '适合最终必须铺满裁剪区域的场景，比如头像裁剪。',
-    centerWrapperTitle: '图片限制容器内',
-    centerWrapperDesc: '适合希望图片始终留在工作区内的编辑场景。',
+    centerWrapperTitle: '图片覆盖整个容器',
+    centerWrapperDesc: '使整个工作区始终被图片覆盖，包括裁剪框以外的区域。',
   })
 </script>
 ```
@@ -87,19 +91,21 @@ Try dragging and zooming both demos to compare the behavior.
   import { useLocale } from '../composables/useLocale'
 
   const cropper1 = ref()
+  const cropSize1 = ref({ width: 320, height: 320 })
   const cropper2 = ref()
+  const cropSize2 = ref({ width: 320, height: 320 })
   const img = ref('')
   const { isEn } = useLocale()
   const labels = computed(() => isEn.value ? {
     centerBoxTitle: 'Keep image covering crop box',
     centerBoxDesc: 'Useful when the final output must fully cover the crop area, such as avatar cropping.',
-    centerWrapperTitle: 'Keep image inside wrapper',
-    centerWrapperDesc: 'Useful for editing flows where the image must always remain inside the workspace.',
+    centerWrapperTitle: 'Keep image covering wrapper',
+    centerWrapperDesc: 'Keeps the entire workspace covered, including the area outside the crop box.',
   } : {
-    centerBoxTitle: '图片限制截图框内',
+    centerBoxTitle: '图片覆盖裁剪框',
     centerBoxDesc: '适合最终必须铺满裁剪区域的场景，比如头像裁剪。',
-    centerWrapperTitle: '图片限制容器内',
-    centerWrapperDesc: '适合希望图片始终留在工作区内的编辑场景。',
+    centerWrapperTitle: '图片覆盖整个容器',
+    centerWrapperDesc: '使整个工作区始终被图片覆盖，包括裁剪框以外的区域。',
   })
 </script>
 
